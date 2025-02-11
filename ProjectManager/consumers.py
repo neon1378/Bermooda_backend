@@ -389,6 +389,7 @@ class ProjectTask(WebsocketConsumer):
 
             }
         ))
+
     def disconnect(self,code=None):
         
          async_to_sync(self.channel_layer.group_discard)(

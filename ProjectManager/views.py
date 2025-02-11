@@ -19,6 +19,8 @@ from MailManager.serializers import MemberSerializer
 from Notification.views import create_notification
 from django.db import transaction
 load_dotenv()
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
 #Project Manager Begin Bord Project 
 
 
@@ -467,8 +469,11 @@ class TaskManager(APIView):
             report_obj = get_object_or_404(TaskReport,id=report_id)
             report_obj.task=task
             report_obj.save()
-# 
-
+        channel_layer = get_channel_layer()
+        event ={
+            "type":"category_change"
+        }
+        async_to_sync(channel_layer.group_send)(f"{project.id}_amin",event)
         return Response(status=status.HTTP_201_CREATED, data={"status": True, "message": "تسک جدید با موفقیت ثبت شد", "data": response_data})
 
     def put(self, request):
@@ -509,6 +514,11 @@ class TaskManager(APIView):
             sub_title = f"وضیفه {task.title} توسط {request.user.fullname} بروزرسانی شد"
             create_notification(related_instance=task,workspace=workspace_obj,user=member,title=title,sub_title=sub_title,side_type="update_task")
         task.save()
+        channel_layer = get_channel_layer()
+        event ={
+            "type":"category_change"
+        }
+        async_to_sync(channel_layer.group_send)(f"{task.project.id}_amin",event)
         return Response(status=status.HTTP_202_ACCEPTED, data={"status": True, "message": "تسک با موفقیت آپدیت شد"})
 
     def delete(self, request):
@@ -563,6 +573,11 @@ class CheckListManager(APIView):
             check_list_obj.responsible_for_doing_id=responsible_for_doing
         
         check_list_obj.save()
+        channel_layer = get_channel_layer()
+        event ={
+            "type":"category_change"
+        }
+        async_to_sync(channel_layer.group_send)(f"{task_obj.project.id}_amin",event)
         return Response(status=status.HTTP_200_OK,data={
             "status":True,
             "message":"success",

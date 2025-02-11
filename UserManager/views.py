@@ -532,7 +532,7 @@ def create_username_pass(request):
         user_acc.username = username
         user_acc.set_password(password)
         user_acc.is_register= True
-        user_acc.fullname
+        user_acc.fullname=fullname
         user_acc.save()
         jadoo_base_url = os.getenv("JADOO_BASE_URL")
         #send user to jadoo 
