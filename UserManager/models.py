@@ -71,7 +71,7 @@ class UserAccount(AbstractBaseUser,PermissionsMixin):
     username = models.CharField(max_length=70, unique=True,null=True)
     state = models.ForeignKey(State, on_delete=models.SET_NULL, null=True)
     city = models.ForeignKey(City, on_delete=models.SET_NULL, null=True)
-    
+    fake_name = models.CharField(max_length=55,null=True)
     is_bonos = models.BooleanField(default=True)
     is_active = models.BooleanField(default =True)
     is_admin = models.BooleanField(default =True)
