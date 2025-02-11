@@ -1,0 +1,72 @@
+from django.db import models
+
+
+from extensions.utils import costum_date
+
+
+from core.models import City,State,MainFile
+
+class Information(models.Model):
+
+    fullname_or_company_name = models.CharField(max_length=50,null=True)
+    email = models.EmailField(null=True,blank=True)
+    address =models.TextField(null=True)
+    city = models.ForeignKey(City,on_delete=models.CASCADE,null=True,related_name="city_buyer")
+    state = models.ForeignKey(City,on_delete=models.CASCADE,null=True,related_name="state_buyer")
+    phone_number = models.CharField(max_length=40,null=True)
+
+    def __str__(self):
+        return f"{self.id}"
+    def city_name (self):
+        return self.city.name
+    def state_name (self):
+        return self.state.name
+    
+class ProductInvoice(models.Model):
+    title = models.CharField(max_length=50,null=True)
+    count = models.PositiveIntegerField(default=0)
+    price = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="تومان",null=True)
+
+    def __str__(self):
+        return f"{self.id}"
+
+    def total_price (self):
+        try:
+            return self.price * self.count
+        except:
+            return 0 
+        
+
+
+class Invoice(models.Model):
+    title = models.CharField(max_length=60,null=True)
+    seller_information = models.OneToOneField(Information,on_delete=models.CASCADE,null=True,related_name="information_seller")
+    buyer_information = models.OneToOneField(Information,on_delete=models.CASCADE,null=True,related_name="information_buyer")
+    product = models.ManyToManyField(ProductInvoice)
+    description = models.TextField(null=True)
+    signature_main = models.ForeignKey(MainFile,on_delete=models.SET_NULL,null=True,related_name="invoice_signature")
+    logo_main = models.ForeignKey(MainFile,on_delete=models.SET_NULL,null=True,related_name="invoice_logo")
+    discount = models.PositiveIntegerField(default=0)
+    taxes = models.PositiveIntegerField(default=0)
+    created = models.DateField(auto_now_add=True)
+    invoice_code = models.CharField(max_length=90,null=True)
+
+    def invoice_date (self):
+        return costum_date(self.created)
+    
+
+    def factor_price (self):
+            factor_price = 0
+            for product in self.product.all():
+                total_price = product.total_price()
+                factor_price+=total_price
+            factor_price = (int(factor_price) - (int(factor_price) *   int(self.discount) / 100 )) + (int(factor_price) * (int(self.taxes) / 100))
+            
+            return factor_price
+    
+        
+        
+
+
+
+

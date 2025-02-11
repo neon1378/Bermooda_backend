@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>صفحه چت</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5>اتاق چت</h5>
+            </div>
+            <div class="card-body" id="chat-box" style="height: 300px; overflow-y: scroll;">
+                <!-- پیام‌های چت اینجا نمایش داده می‌شوند -->
+            </div>
+            <div class="card-footer">
+                <div class="input-group">
+                    <input type="text" id="message-input" class="form-control" placeholder="پیام خود را بنویسید...">
+                    <div class="input-group-append">
+                        <button class="btn btn-primary" id="send-btn">ارسال</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <input type="hidden" name="" value="{{user_id}}" id="user_id">
+    <script>
+        $(document).ready(function () {
+            // اتصال به WebSocket
+            user_id = $("#user_id").val()
+            const socket = new WebSocket('wss://api.bermooda.app:8001/RoomMessageWs/1?token=8bc6a0d614914d8582b19c807993f9529204b763');
+
+            // رویداد اتصال موفق
+            socket.onopen = function () {
+                $('#chat-box').append('<div class="text-success">اتصال برقرار شد!</div>');
+            };
+
+            // رویداد دریافت پیام
+            socket.onmessage = function (event) {
+                const data = JSON.parse(event.data);
+                if (Array.isArray(data)) {
+                    data.forEach(item => {
+                        // Do something with each item
+                        if (item.type == "operator"){
+
+                            var message_data =` اوپراتور :${item.body} `
+                        }else{
+                            var message_data =`مشتری : ${item.body} `
+
+                        }
+                        $('#chat-box').append('<div class="text-left">' + message_data + '</div>');
+                    });
+                } else {
+                    if (data.type == "operator"){
+
+                    var message_data =` اوپراتور :${data.body} `
+                    }else{
+                    var message_data =`مشتری : ${data.body} `
+
+                    }
+                    // If data is not an array, handle it accordingly (optional)
+                    $('#chat-box').append('<div class="text-left">' + message_data + '</div>');
+                }
+                console.log(data)
+                $(data).each(item)
+                // $('#chat-box').append('<div class="text-left">' + data.message + '</div>');
+                // $('#chat-box').scrollTop($('#chat-box')[0].scrollHeight);
+            };
+
+            // رویداد قطع اتصال
+            socket.onclose = function () {
+                $('#chat-box').append('<div class="text-danger">اتصال قطع شد.</div>');
+            };
+
+            // رویداد خطا
+            socket.onerror = function (error) {
+                $('#chat-box').append('<div class="text-danger">خطا در اتصال به WebSocket</div>');
+            };
+
+            // ارسال پیام
+            $('#send-btn').click(function () {
+                const message = $('#message-input').val();
+                if (message) {
+                    const messageData = {
+                        body: message,
+                        type:"operator",
+
+                        operator_id:user_id
+                    };
+                    socket.send(JSON.stringify(messageData));  // ارسال پیام به سرور
+                    // $('#chat-box').append('<div class="text-right text-primary">شما: ' + message + '</div>');
+                    // $('#message-input').val('');  // پاک کردن ورودی
+                    // $('#chat-box').scrollTop($('#chat-box')[0].scrollHeight);
+                }
+            });
+
+            // ارسال پیام با زدن Enter
+            $('#message-input').keypress(function (e) {
+                if (e.which === 13) {
+                    $('#send-btn').click();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

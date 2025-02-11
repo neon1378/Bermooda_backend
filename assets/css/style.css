@@ -1,0 +1,244 @@
+@font-face {
+  font-family: iransans;
+  font-style: normal;
+  font-weight: 100;
+  src: url("../fonts/IRANSansX-UltraLight.woff2") format("woff2");
+}
+@font-face {
+  font-family: iransans;
+  font-style: normal;
+  font-weight: 400;
+  src: url("../fonts/IRANSansX-Regular.woff2") format("woff2");
+}
+@font-face {
+  font-family: iransans;
+  font-style: normal;
+  font-weight: 500;
+  src: url("../fonts/IRANSansX-Medium.woff2") format("woff2");
+}
+@font-face {
+  font-family: iransans;
+  font-style: normal;
+  font-weight: 600;
+  src: url("../fonts/IRANSansX-DemiBold.woff2") format("woff2");
+}
+@font-face {
+  font-family: iransans;
+  font-style: normal;
+  font-weight: 700;
+  src: url("../fonts/IRANSansX-Bold.woff2") format("woff2");
+}
+@font-face {
+  font-family: iransans;
+  font-style: normal;
+  font-weight: 800;
+  src: url("../fonts/IRANSansX-ExtraBold.woff2") format("woff2");
+}
+* {
+  box-sizing: border-box;
+  direction: rtl;
+  padding: 0;
+  margin: 0;
+  outline: none;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin: 0;
+  padding: 0;
+  font-family: iransans;
+}
+
+body {
+  font-size: 14px;
+  font-family: iransans;
+  background-color: #f0f3f8;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100dvh;
+  font-feature-settings: "ss02";
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+a:hover {
+  color: inherit;
+}
+
+li,
+ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+p {
+  margin: 0;
+  padding: 0;
+  font-family: iransans;
+}
+
+button {
+  padding: 0;
+  margin: 0;
+  outline: 0;
+  border: 0;
+  background-color: inherit;
+  cursor: pointer;
+  font-family: iransans;
+}
+
+
+.Container {
+  display: flex;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+  flex-direction: column;
+  gap: 1rem;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  max-width: 500px;
+  margin: auto;
+}
+
+.FirstSec {
+  width: 100%;
+  background-color: white;
+  border-radius: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 3rem 2rem;
+}
+.FirstSec > p {
+  text-align: center;
+  line-height: 1.4rem;
+  max-width: 320px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+.FirstSec > h3 {
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+.FirstSec > button {
+  padding: 0.5rem 3rem;
+  font-weight: 600;
+  color: white;
+  background-color: #2649e7;
+  border-radius: 8px;
+  transition: all ease 0.3s;
+}
+.FirstSec > button:hover {
+  background-color: #0930db;
+}
+
+.Description {
+  width: 100%;
+  background-color: white;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  gap: 1rem;
+  min-height: 498px;
+  padding: 4rem 4rem 2rem 4rem;
+}
+.Description > button {
+  padding: 0.5rem 2rem;
+  margin-top: auto;
+  font-weight: 600;
+  color: white;
+  background-color: #2649e7;
+  border-radius: 8px;
+  transition: all ease 0.3s;
+  width: 100%;
+}
+.Description > button:hover {
+  background-color: #0930db;
+}
+.Description > .header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  border-bottom: 1px solid #dbdbdb;
+  padding-bottom: 1rem;
+}
+.Description > .header > span:nth-of-type(1) {
+  font-weight: 700;
+  color: #2649e7;
+}
+.Description > .header > span:nth-of-type(2) {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: #979797;
+  font-weight: 500;
+}
+.Description > .detailsList {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  width: 100%;
+  margin-bottom: 3rem;
+}
+.Description > .detailsList > li {
+  display: flex;
+  font-size: 12px;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logoAndTitle {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+.logoAndTitle > span {
+  margin-top: 1rem;
+  font-weight: 600;
+}
+
+.RedirectHeading {
+  font-weight: 900;
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.RedirectDiv {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 1.2rem;
+}
+.RedirectDiv > h6 {
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+.RedirectDiv > button {
+  padding: 0.5rem 2rem;
+  margin-top: auto;
+  font-weight: 600;
+  color: white;
+  background-color: #2649e7;
+  border-radius: 8px;
+  transition: all ease 0.3s;
+  width: 100%;
+  max-width: 350px;
+}
+.RedirectDiv > button:hover {
+  background-color: #0930db;
+}/*# sourceMappingURL=style.css.map */

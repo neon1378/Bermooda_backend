@@ -1,0 +1,100 @@
+[
+    {
+        "name": "مدیریت پروژه ها",
+        "real_name":"بورد پروژه",
+        "view_names": [
+            {
+                "name": "projectmanager",
+                "nessery_manager": "false"
+               
+            }
+        ]
+    },
+    {
+        "name": "مدیریت تسک ها ",
+        "real_name":"بورد پروژه",
+        "view_names": [
+            {
+                "name": "taskmanager",
+                "nessery_manager": "false"
+         
+            }
+        ]
+    },
+    {
+        "real_name":"فروش",
+        "name": " مدیریت دسته بندی مشتریان",
+        "view_names": [
+            {
+                "name": "categorymanager",
+                "uniq_name":"categorym",
+                "nessery_manager": "false"
+            }
+            
+
+
+        ]
+    },
+    {
+        "real_name":"فروش",
+        "name": "مدیریت گروه بندی مشتریان",
+        "view_names": [
+            {
+                "name": "groupcrmmanager",
+                "uniq_name":"gpmanager",
+                "nessery_manager": "false"
+            }
+            
+
+
+        ]
+    },
+    {
+        "real_name":"فروش",
+        "name": " مدیریت وضعیت مشتریان",
+        "view_names": [
+            {
+                "name": "labelmangaer",
+                "nessery_manager": "false"
+            }
+        ]
+    },
+    {
+        "real_name":"فروش",
+        "name": "مدیریت مشتریان",
+        "view_names": [{"name":"customerusermanager","nessery_manager":"false"}]
+    },
+
+    {
+        "real_name":"فروش",
+        "name": "مدیریت گزارشات مشتریان",
+        "view_names": [
+            {
+                "name": "reportmanager",
+                "nessery_manager": "false"
+            }
+        ]
+    },
+    {
+        "real_name":"فروش",
+        "name": "مدیریت سفارشات مشتریان",
+        "view_names": [
+            {
+                "name": "invoicemanager",
+                "nessery_manager": "false"
+            }
+        ]
+    },
+    {
+        "real_name":"تیم",
+        "name": "مدیریت اعضای تیم",
+        "view_names": [
+            {
+                "name": "useraccountmanager",
+                "nessery_manager": "false"
+            }
+        ]
+    }
+
+
+]

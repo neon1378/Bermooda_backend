@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-analytics.js";
+        import { getMessaging, getToken } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-messaging.js";
+    
+        const firebaseConfig = {
+
+        apiKey: "AIzaSyDSpEvVOnVjosvlTzLJEd3uY7m3xG5mDVA",
+
+        authDomain: "crmm-7593d.firebaseapp.com",
+
+        projectId: "crmm-7593d",
+
+        storageBucket: "crmm-7593d.firebasestorage.app",
+
+        messagingSenderId: "244441251545",
+
+        appId: "1:244441251545:web:5a1253e4285697f06348c8",
+
+        measurementId: "G-4MYBYY3MY8"
+
+        };
+
+
+        // Initialize Firebase
+
+        const app = initializeApp(firebaseConfig);
+
+        const analytics = getAnalytics(app);
+
+        console.log(analytics);
+        const messaging = getMessaging(app);
+    
+        async function getFcmToken() {
+            try {
+                const token = await getToken(messaging, { vapidKey: "705f8dfe24aeee99b9e563327300750326ddb4c4" });
+                if (token) {
+                    console.log("FCM Token:", token);
+                    // Send token to the server
+                    
+                    await sendTokenToServer(token);
+                } else {
+                    console.log("No registration token available. Request permission to generate one.");
+                }
+            } catch (error) {
+                console.error("An error occurred while retrieving token.", error);
+            }
+        }
+    
+        async function sendTokenToServer(token) {
+            try {
+                const response = await fetch("http://localhost:801/v1/SupportManager/get_fcm_token", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ token })
+                });
+                if (response.ok) {
+                    console.log("Token sent to server successfully.");
+                } else {
+                    console.error("Failed to send token to server:", response.statusText);
+                }
+            } catch (error) {
+                console.error("Error sending token to server:", error);
+            }
+        }
+    
+        async function requestNotificationPermission() {
+            try {
+                const permission = await Notification.requestPermission();
+                if (permission === "granted") {
+                    console.log("Notification permission granted.");
+                    getFcmToken(); // Retrieve the token after permission is granted
+                } else {
+                    console.log("Notification permission denied.");
+                }
+            } catch (error) {
+                console.error("An error occurred while requesting notification permission.", error);
+            }
+        }
+    
+        // Start the permission request flow
+        requestNotificationPermission();
+    </script>
+
+</body>
+</html>
