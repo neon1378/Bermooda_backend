@@ -193,6 +193,7 @@ SIMPLE_JWT = {
     'SIGNING_KEY': SECRET_KEY,  # Ensure this is secure
     'AUTH_HEADER_TYPES': ('Bearer',),
 
+
     "VERIFYING_KEY": None,
 
     "USER_ID_FIELD": "id",
