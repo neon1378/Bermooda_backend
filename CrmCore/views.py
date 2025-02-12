@@ -872,19 +872,21 @@ class CustomerUserView(APIView):
         data_list = []
         for custommer_obj in custommer_objs:
             not_exsit =True
-
-            for data in data_list:
-                if data['label_id'] == custommer_obj.label.id:
-                    data['customer_list'].append(CustomerSmallSerializer(custommer_obj).data)
-                    not_exsit=False
-                    break
-            if not_exsit:
-                data_list.append({
-                    "label_id":custommer_obj.label.id,
-                    "color":custommer_obj.label.color,
-                    "title":custommer_obj.label.title,
-                    "customer_list":[CustomerSmallSerializer(custommer_obj).data]
-                })
+            try:
+                for data in data_list:
+                    if data['label_id'] == custommer_obj.label.id:
+                        data['customer_list'].append(CustomerSmallSerializer(custommer_obj).data)
+                        not_exsit=False
+                        break
+                if not_exsit:
+                    data_list.append({
+                        "label_id":custommer_obj.label.id,
+                        "color":custommer_obj.label.color,
+                        "title":custommer_obj.label.title,
+                        "customer_list":[CustomerSmallSerializer(custommer_obj).data]
+                    })
+            except:
+                pass
 
 
         # serializer_data = CustomerSmallSerializer(custommer_objs,many=True)
