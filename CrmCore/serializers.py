@@ -2,7 +2,7 @@ from rest_framework import serializers
 from .models import *
 from django.shortcuts import get_object_or_404
 from UserManager.serializers import UserDetailSerializer
-
+from MailManager.serializers import  MemberSerializer
 class CrmDepartmentSerializer(serializers.ModelSerializer):
     workspace_id = serializers.IntegerField(write_only=True,required=True)
     manager_id = serializers.IntegerField(write_only=True,required=True)
@@ -133,10 +133,12 @@ class CustomerSmallSerializer(serializers.ModelSerializer):
     group_crm_id = serializers.IntegerField(write_only=True,required=True)
     workspace_id = serializers.IntegerField(write_only=True,required=True)
     label = LabelSerializer(read_only=True)
+    user_account = MemberSerializer(read_only=True)
     avatar_id = serializers.CharField(max_length=55,write_only=True,required=False)
     class Meta:
         model = CustomerUser
         fields = [
+            "user_account",
             "user_account_id",
             "avatar_id",
             "group_crm_id",
