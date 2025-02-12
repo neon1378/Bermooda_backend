@@ -321,7 +321,7 @@ class TaskManager(APIView):
     def task_url_creator(self, task_obj):
         """Generate file URLs for a given task."""
         base_url = os.getenv("BASE_URL", "")
-        return [{"file_url": f"{base_url}{file.file.url}"} for file in task_obj.main_file.all()]
+        return [{"file_url": f"{base_url}{file.file.url}","id":file.id} for file in task_obj.main_file.all()]
 
     def get_task_data(self, task, project):
         """Serialize task data."""
