@@ -166,7 +166,7 @@ class CustomerSmallSerializer(serializers.ModelSerializer):
             phone_number = validated_data.pop("phone_number",None)
             email = validated_data.pop("email",None)
             new_customer = CustomerUser.objects.create(**validated_data)
-            if avatar_id and avatar_id != 0:
+            if avatar_id and int(avatar_id) != 0:
                 main_file = MainFile.objects.get(id=avatar_id)
                 main_file.its_blong =True
                 main_file.save()
