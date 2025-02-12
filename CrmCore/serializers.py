@@ -26,7 +26,11 @@ class LabelSerializer(serializers.ModelSerializer):
     class Meta:
         
         model = Label
-        fields = "__all__"
+        fields = [
+            "id",
+            "title",
+            "color",
+        ]
 
 
 
@@ -120,3 +124,64 @@ class CustomerSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
     
+
+
+
+class CustomerSmallSerializer(serializers.ModelSerializer):
+    label_id = serializers.IntegerField(write_only=True,required=True)
+    group_crm_id = serializers.IntegerField(write_only=True,required=True)
+    workspace_id = serializers.IntegerField(write_only=True,required=True)
+    label = LabelSerializer(read_only=True)
+    avatar_id = serializers.IntegerField(write_only=True,required=False)
+    class Meta:
+        model = CustomerUser
+        fields = [
+            "avatar_id",
+            "group_crm_id",
+            "avatar_url",
+            "workspace_id",
+            "id",
+            "label",
+            "label_id"
+            "personal_type",
+            "fullname_or_company_name",
+            "conection_type",
+            "phone_number",
+            "email",
+            "date_time_to_remember",
+            "agent_status",
+            "agent_name",
+            "agent_phone_number",
+
+        ]
+        def create(self,validated_data):
+            workspace_id = validated_data.pop("workspace_id")
+            avatar_id = validated_data.pop("avatar_id",None)
+            agent_status = validated_data.pop("agent_status",False)
+            agent_name = validated_data.pop("agent_name",None)
+            agent_phone_number = validated_data.pop("agent_phone_number",None)
+            conection_type = validated_data.pop("conection_type","phone")
+            phone_number = validated_data.pop("phone_number",None)
+            email = validated_data.pop("email",None)
+            new_customer = CustomerUser.objects.create(**validated_data)
+            if avatar_id:
+                main_file = MainFile.objects.get(id=avatar_id)
+                main_file.its_blong =True
+                main_file.save()
+                new_customer.avatar = main_file
+
+            if agent_status:
+                new_customer.agent_status = True
+                new_customer.agent_name = agent_name
+                new_customer.agent_phone_number= agent_phone_number
+
+
+            if conection_type == "phone":
+                new_customer.connection_type =conection_type
+                new_customer.phone_number = phone_number
+            else:
+                new_customer.connection_type = conection_type
+                new_customer.email = email
+
+            new_customer.save()
+            return new_customer

@@ -177,6 +177,7 @@ class CustomerUser(models.Model):
         ("حقیقی","حقیقی"),
         ("حقوقی","حقوقی")
     )
+    avatar = models.ForeignKey(MainFile,on_delete=models.SET_NULL,null=True)
     personal_type = models.CharField(max_length=9, choices=PERSONAL_TYPE,null=True)
     conection_type = models.CharField(max_length=30,choices=CONECTION_TYPE,default="phone")
 
@@ -218,7 +219,12 @@ class CustomerUser(models.Model):
      
 
 
-
+    def avatar_url(self):
+        try:
+            base_url = os.getenv("BASE_URl")
+            return f"{base_url}{self.avatar.file.url}"
+        except:
+            return ""
 
 
     def city_name(self):

@@ -854,3 +854,25 @@ def exist_member_in_crm(request,group_id):
         "message":"success",
         "data":serializer_data
     })
+
+
+class CustomerUserView(APIView):
+    permission_classes  = [IsAuthenticated]
+    def post(self,request):
+        data= request.data
+        data['workspace_id'] =request.user.current_workspace_id
+        serializer_data = CustomerSmallSerializer(data=request.data)
+        if serializer_data.is_valid():
+            serializer_data.save()
+            return Response(status=status.HTTP_201_CREATED,data={
+                "status":True,
+                "message":"مشتری با موفقیت حذف شد",
+                "data":serializer_data.data
+            })
+        return Response(status=status.HTTP_400_BAD_REQUEST,data={
+            "status":False,
+            "message":"اطلاعات به درستی ثبت نشده است ",
+            "data":serializer_data.errors
+        })
+
+
