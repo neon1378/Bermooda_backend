@@ -133,7 +133,7 @@ class CustomerSmallSerializer(serializers.ModelSerializer):
     group_crm_id = serializers.IntegerField(write_only=True,required=True)
     workspace_id = serializers.IntegerField(write_only=True,required=True)
     label = LabelSerializer(read_only=True)
-    avatar_id = serializers.IntegerField(write_only=True,required=False)
+    avatar_id = serializers.CharField(max_length=55,write_only=True,required=False)
     class Meta:
         model = CustomerUser
         fields = [
@@ -166,7 +166,7 @@ class CustomerSmallSerializer(serializers.ModelSerializer):
             phone_number = validated_data.pop("phone_number",None)
             email = validated_data.pop("email",None)
             new_customer = CustomerUser.objects.create(**validated_data)
-            if avatar_id and int(avatar_id) != 0:
+            if avatar_id :
                 main_file = MainFile.objects.get(id=avatar_id)
                 main_file.its_blong =True
                 main_file.save()

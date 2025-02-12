@@ -177,7 +177,7 @@ class CustomerUser(models.Model):
         ("حقیقی","حقیقی"),
         ("حقوقی","حقوقی")
     )
-    avatar = models.ForeignKey(MainFile,on_delete=models.SET_NULL,null=True)
+    avatar = models.ForeignKey(MainFile,on_delete=models.SET_NULL,null=True,blank=True)
     personal_type = models.CharField(max_length=9, choices=PERSONAL_TYPE,null=True)
     conection_type = models.CharField(max_length=30,choices=CONECTION_TYPE,default="phone")
 
