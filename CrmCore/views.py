@@ -858,6 +858,24 @@ def exist_member_in_crm(request,group_id):
 
 class CustomerUserView(APIView):
     permission_classes  = [IsAuthenticated]
+    def get(self,request,customer_id=None):
+        if customer_id:
+            custommer_obj= get_object_or_404(CustomerUser,id=customer_id)
+            serializer_data = CustomerSmallSerializer(custommer_obj)
+            return Response(status=status.HTTP_200_OK,data={
+                "status":True,
+                "data":"success",
+                "data":serializer_data.data
+            })
+        group_crm_id = request.GET.get("group_crm_id",None)
+        custommer_objs = CustomerUser.objects.filter(group_crm_id=group_crm_id)
+        serializer_data = CustomerSmallSerializer(custommer_objs,many=True)
+        return Response(status=status.HTTP_200_OK, data={
+            "status": True,
+            "data": "success",
+            "data": serializer_data.data
+        })
+
     def post(self,request):
         data= request.data
         data['workspace_id'] =request.user.current_workspace_id
