@@ -905,7 +905,7 @@ class ProjectDepartmentManager(APIView):
             })
     def post(self,request):
         request.data['workspace_id'] = request.user.current_workspace_id 
-        request.data['manager_id'] = request.user.id
+
         serializer_data = ProjectDepartmentSerializer(data=request.data)
         data= request.data
  
@@ -930,7 +930,7 @@ class ProjectDepartmentManager(APIView):
     def put(self,request,department_id):
         department_obj = get_object_or_404(ProjectDepartment,id=department_id)
         request.data['workspace_id'] = department_obj.workspace.id
-        request.data['manager_id'] = department_obj.manager.id
+
         serializer_data = ProjectDepartmentSerializer(data=request.data,instance=department_obj)
         if serializer_data.is_valid():
             serializer_data.save()
