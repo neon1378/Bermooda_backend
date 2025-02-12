@@ -904,47 +904,60 @@ class ProjectDepartmentManager(APIView):
                 "data":serializer_data.data
             })
     def post(self,request):
-        request.data['workspace_id'] = request.user.current_workspace_id 
+        workspace_obj = WorkSpace.objects.get(id=request.user.current_workspace_id)
+        if workspace_obj.owner == request.user:
+            request.data['workspace_id'] = request.user.current_workspace_id
 
-        serializer_data = ProjectDepartmentSerializer(data=request.data)
-        data= request.data
- 
-       
+            serializer_data = ProjectDepartmentSerializer(data=request.data)
+            data= request.data
 
 
 
-        if serializer_data.is_valid():
-            serializer_data.save()
 
-            return Response(status=status.HTTP_201_CREATED,data={
-                "status":True,
-                "message":"success",
-                "data":serializer_data.data
+
+            if serializer_data.is_valid():
+                serializer_data.save()
+
+                return Response(status=status.HTTP_201_CREATED,data={
+                    "status":True,
+                    "message":"success",
+                    "data":serializer_data.data
+                })
+
+            return Response(status=status.HTTP_400_BAD_REQUEST,data={
+                "status":False,
+                "message":"validation error",
+                "data": serializer_data.errors
             })
-        
-        return Response(status=status.HTTP_400_BAD_REQUEST,data={
+        return Response(status=status.HTTP_403_FORBIDDEN,data={
             "status":False,
-            "message":"validation error",
-            "data": serializer_data.errors
+            "message":"عدم دسترسی",
+            "data":{}
         })
     def put(self,request,department_id):
-        department_obj = get_object_or_404(ProjectDepartment,id=department_id)
-        request.data['workspace_id'] = department_obj.workspace.id
+        workspace_obj = WorkSpace.objects.get(id=request.user.current_workspace_id)
+        if workspace_obj.owner == request.user:
+            department_obj = get_object_or_404(ProjectDepartment,id=department_id)
+            request.data['workspace_id'] = department_obj.workspace.id
 
-        serializer_data = ProjectDepartmentSerializer(data=request.data,instance=department_obj)
-        if serializer_data.is_valid():
-            serializer_data.save()
-            return Response(status=status.HTTP_202_ACCEPTED,data={
-                "status":True,
-                "message":"success",
-                "data":serializer_data.data
+            serializer_data = ProjectDepartmentSerializer(data=request.data,instance=department_obj)
+            if serializer_data.is_valid():
+                serializer_data.save()
+                return Response(status=status.HTTP_202_ACCEPTED,data={
+                    "status":True,
+                    "message":"success",
+                    "data":serializer_data.data
+                })
+            return Response(status=status.HTTP_400_BAD_REQUEST,data={
+                "status":False,
+                "message":"validation error",
+                "data":serializer_data.errors
             })
-        return Response(status=status.HTTP_400_BAD_REQUEST,data={
+        return Response(status=status.HTTP_403_FORBIDDEN,data={
             "status":False,
-            "message":"validation error",
-            "data":serializer_data.errors
+            "message":"عدم دسترسی",
+            "data":{}
         })
-
     def delete(self,request,department_id):
         department_obj = get_object_or_404(ProjectDepartment,id=department_id)
         department_obj.delete()
