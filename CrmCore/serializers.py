@@ -158,7 +158,7 @@ class CustomerSmallSerializer(serializers.ModelSerializer):
         ]
         def create(self,validated_data):
             workspace_id = validated_data.pop("workspace_id")
-            avatar_id = validated_data.pop("avatar_id",None)
+            avatar_id = validated_data.pop("avatar_id",0)
             agent_status = validated_data.pop("agent_status",False)
             agent_name = validated_data.pop("agent_name",None)
             agent_phone_number = validated_data.pop("agent_phone_number",None)
@@ -166,7 +166,7 @@ class CustomerSmallSerializer(serializers.ModelSerializer):
             phone_number = validated_data.pop("phone_number",None)
             email = validated_data.pop("email",None)
             new_customer = CustomerUser.objects.create(**validated_data)
-            if avatar_id:
+            if avatar_id and avatar_id != 0:
                 main_file = MainFile.objects.get(id=avatar_id)
                 main_file.its_blong =True
                 main_file.save()
