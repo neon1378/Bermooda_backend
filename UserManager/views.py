@@ -865,8 +865,7 @@ def create_workspace(request):
 
         new_wallet = Wallet(workspace=new_workspace_obj,balance=100000)
     else:
-        new_workspace_obj.is_active = False
-        new_workspace_obj.save()
+
         new_wallet = Wallet(workspace=new_workspace_obj,balance=0)
 
     new_wallet.save()

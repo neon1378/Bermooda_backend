@@ -164,6 +164,9 @@ class WorkspaceManager(APIView):
             # print(response.json())
             print(serializer_data.data)
             serializer_data.data['avatar_url'] = workspace_obj.avatar_url()
+            if workspace_obj.wallet.balance <= 0 :
+                workspace_obj.is_active =False
+                workspace_obj.save()
             return Response(status=status.HTTP_202_ACCEPTED,data={
                  "status":True,
                  "message":"success",

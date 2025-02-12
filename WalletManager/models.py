@@ -6,7 +6,7 @@ from datetime import datetime
 # Create your models here.
 class Wallet (models.Model):
     balance = models.DecimalField(max_digits=20, decimal_places=0, help_text="Price in Tomans")
-    workspace = models.OneToOneField(WorkSpace,on_delete=models.CASCADE,null=True)
+    workspace = models.OneToOneField(WorkSpace,on_delete=models.CASCADE,null=True,related_name="wallet")
     created = models.DateTimeField(auto_now_add=True)
 
 
