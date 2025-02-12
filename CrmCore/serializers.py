@@ -158,7 +158,7 @@ class CustomerSmallSerializer(serializers.ModelSerializer):
         ]
         def create(self,validated_data):
             workspace_id = validated_data.pop("workspace_id")
-            avatar_id = validated_data.pop("avatar_id",0)
+            avatar_id = validated_data.pop("avatar_id",None)
             agent_status = validated_data.pop("agent_status",False)
             agent_name = validated_data.pop("agent_name",None)
             agent_phone_number = validated_data.pop("agent_phone_number",None)
