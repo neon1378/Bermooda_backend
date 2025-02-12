@@ -129,6 +129,7 @@ class CustomerSerializer(serializers.ModelSerializer):
 
 class CustomerSmallSerializer(serializers.ModelSerializer):
     label_id = serializers.IntegerField(write_only=True,required=True)
+    user_account_id =serializers.IntegerField(write_only=True,required=True)
     group_crm_id = serializers.IntegerField(write_only=True,required=True)
     workspace_id = serializers.IntegerField(write_only=True,required=True)
     label = LabelSerializer(read_only=True)
@@ -136,6 +137,7 @@ class CustomerSmallSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomerUser
         fields = [
+            "user_account_id",
             "avatar_id",
             "group_crm_id",
             "avatar_url",

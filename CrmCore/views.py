@@ -861,6 +861,8 @@ class CustomerUserView(APIView):
     def post(self,request):
         data= request.data
         data['workspace_id'] =request.user.current_workspace_id
+        data['user_account_id'] =request.user.id
+
         serializer_data = CustomerSmallSerializer(data=request.data)
         if serializer_data.is_valid():
             serializer_data.save()
