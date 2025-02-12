@@ -169,12 +169,17 @@ class GroupCrm (models.Model):
 
 
 class CustomerUser(models.Model):
-
+    CONECTION_TYPE = (
+        ("phone","PHONE"),
+        ("email","EMAIL"),
+    )
     PERSONAL_TYPE = (
         ("حقیقی","حقیقی"),
         ("حقوقی","حقوقی")
     )
     personal_type = models.CharField(max_length=9, choices=PERSONAL_TYPE,null=True)
+    conection_type = models.CharField(max_length=30,choices=CONECTION_TYPE,default="phone")
+
 
     group_crm = models.ForeignKey(GroupCrm,on_delete=models.CASCADE,null=True,related_name="customer_group")
     workspace = models.ForeignKey(WorkSpace,null=True,on_delete=models.CASCADE,related_name="customer")
