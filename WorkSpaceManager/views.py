@@ -539,6 +539,13 @@ def get_manager_users(request):
         manager_users = [
 
         ]
+        manager_users.append(
+            {
+                "id": workspace_obj.owner.id,
+                "fullname": workspace_obj.owner.fullname,
+                "avatar_url": workspace_obj.owner.avatar_url()
+            }
+        )
         for user in workspace_obj.workspace_member.all():
             for permission in user.permissions.all():
                 if permission == "project board":
@@ -551,9 +558,9 @@ def get_manager_users(request):
                                 "avatar_url": user.user_account.avatar_url()
                             }
                         )
-                        break
-                    else:
-                        break
+
+
+
         return Response(status=status.HTTP_200_OK, data={
             "status": True,
             "message": "success",
