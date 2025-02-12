@@ -257,7 +257,7 @@ def test_file (request):
     # State.objects.all().delete()
     # City.objects.all().delete()
     url = "https://server.jadoo.app/api/v1/states"
-    token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOi8vc2VydmVyLmphZG9vLmFwcC9hcGkvdjEvdXNlci9hdXRoL2NyZWF0ZUJ1c2luZXNzVXNlciIsImlhdCI6MTczOTI2MjA0NSwiZXhwIjoxNzQwNDcxNjQ1LCJuYmYiOjE3MzkyNjIwNDUsImp0aSI6InRkVjlVTGdYQkpSME1pdE4iLCJzdWIiOiIxMCIsInBydiI6IjIzYmQ1Yzg5NDlmNjAwYWRiMzllNzAxYzQwMDg3MmRiN2E1OTc2ZjcifQ.-SwicCjsRm46c-yuEsX9ioKwx2GYRP5zuV_3SaiakZo"
+    token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOi8vc2VydmVyLmphZG9vLmFwcC9hcGkvdjEvdXNlci9hdXRoL2NyZWF0ZUJ1c2luZXNzVXNlciIsImlhdCI6MTczOTM1NDkzNCwiZXhwIjoxNzQwNTY0NTM0LCJuYmYiOjE3MzkzNTQ5MzQsImp0aSI6InliMWp5YWNOWWRBMkxwejMiLCJzdWIiOiI1MiIsInBydiI6IjIzYmQ1Yzg5NDlmNjAwYWRiMzllNzAxYzQwMDg3MmRiN2E1OTc2ZjcifQ.5Sbt2iZhax9pvd4bx8-BBgHn7C2UU1PljKhdYq4rpME"
     headers = {
         "contnet-type":"application/json",
         "Authorization" :f"Bearer {token}"

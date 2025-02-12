@@ -866,12 +866,12 @@ class CustomerUserView(APIView):
             serializer_data.save()
             return Response(status=status.HTTP_201_CREATED,data={
                 "status":True,
-                "message":"مشتری با موفقیت حذف شد",
+                "message":"مشتری با موفقیت ثبت شد",
                 "data":serializer_data.data
             })
         return Response(status=status.HTTP_400_BAD_REQUEST,data={
             "status":False,
-            "message":"اطلاعات به درستی ثبت نشده است ",
+            "message":"اطلاعات به درستی ارسال نشده است ",
             "data":serializer_data.errors
         })
 

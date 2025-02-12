@@ -242,7 +242,7 @@ def update_workspace_personal_information(request,workspace_id):
 @permission_classes([AllowAny])
 def create_category (request):
     jadoo_base_url = os.getenv("JADOO_BASE_URL")
-    token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOi8vc2VydmVyLmphZG9vLmFwcC9hcGkvdjEvdXNlci9hdXRoL2NyZWF0ZUJ1c2luZXNzVXNlciIsImlhdCI6MTczOTI2MjA0NSwiZXhwIjoxNzQwNDcxNjQ1LCJuYmYiOjE3MzkyNjIwNDUsImp0aSI6InRkVjlVTGdYQkpSME1pdE4iLCJzdWIiOiIxMCIsInBydiI6IjIzYmQ1Yzg5NDlmNjAwYWRiMzllNzAxYzQwMDg3MmRiN2E1OTc2ZjcifQ.-SwicCjsRm46c-yuEsX9ioKwx2GYRP5zuV_3SaiakZo"
+    token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOi8vc2VydmVyLmphZG9vLmFwcC9hcGkvdjEvdXNlci9hdXRoL2NyZWF0ZUJ1c2luZXNzVXNlciIsImlhdCI6MTczOTM1NDkzNCwiZXhwIjoxNzQwNTY0NTM0LCJuYmYiOjE3MzkzNTQ5MzQsImp0aSI6InliMWp5YWNOWWRBMkxwejMiLCJzdWIiOiI1MiIsInBydiI6IjIzYmQ1Yzg5NDlmNjAwYWRiMzllNzAxYzQwMDg3MmRiN2E1OTc2ZjcifQ.5Sbt2iZhax9pvd4bx8-BBgHn7C2UU1PljKhdYq4rpME"
     main_cat__url = f"{jadoo_base_url}/maincategory/getCategories"
     headers = {
                 "Authorization":f"Bearer {token}" 

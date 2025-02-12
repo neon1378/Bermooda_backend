@@ -142,7 +142,7 @@ class CustomerSmallSerializer(serializers.ModelSerializer):
             "workspace_id",
             "id",
             "label",
-            "label_id"
+            "label_id",
             "personal_type",
             "fullname_or_company_name",
             "conection_type",
