@@ -8,10 +8,12 @@ from MailManager.serializers import MemberSerializer
 class ProjectDepartmentSerializer(ModelSerializer):
     workspace_id = serializers.IntegerField(write_only=True,required=True)
     manager_id = serializers.IntegerField(write_only=True,required=True)
+    manager = MemberSerializer(read_only=True)
     class Meta:
         model= ProjectDepartment
         fields=[
             "id",
+            "manager",
             "title",
             "workspace_id",
             "manager_id",
