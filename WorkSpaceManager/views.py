@@ -457,7 +457,7 @@ def create_permission_for_member (member_id):
 
    
                 member = WorkspaceMember.objects.get(id=member_id)
-     
+
                 for side_permission in data:
                     try:
                         member_permission =MemberPermission.objects.get(member=member,permission_name=side_permission['permission_name'])
@@ -466,7 +466,7 @@ def create_permission_for_member (member_id):
                                 view_name = ViewName.objects.get(
                                     permission = member_permission,
                                     view_name=item['view_name']
-                                
+
                                 )
                                 for method in side_permission['methods']:
                                     try:
@@ -548,7 +548,7 @@ def get_manager_users(request):
         )
         for user in workspace_obj.workspace_member.all():
             for permission in user.permissions.all():
-                if permission == "project board":
+                if permission.permission_name == "project board":
                     if permission.permission_type == "manager":
                         manager_users.append(
 
