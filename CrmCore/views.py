@@ -953,6 +953,7 @@ class CampaignManager(APIView):
         })
 
     def post(self,request):
+        request.data['creator_id'] = request.user.id
         serializer_data= CampaignSerializer(data=request.data)
         if serializer_data.is_valid():
             serializer_data.save()
