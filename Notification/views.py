@@ -68,11 +68,11 @@ def notif_data (notification_obj,workspace_obj=None,side_type=None,user=None):
                 dic['data_type'] = "project_task"
                 dic['side_type'] =notification_obj.side_type
                 try:
-                    dic['department_id'] = task_obj.project.department.id
+                    dic['department_id'] = str(task_obj.project.department.id)
                 except:
                     dic['department_id']=None
                 dic['task_id'] = str(task_obj.id)
-                dic['category_id'] = task_obj.category_task.id
+                dic['category_id'] = str(task_obj.category_task.id)
                 dic['project_id'] = str(task_obj.project.id)
 
                 dic['workspace_id'] = str(workspace_obj.id)
