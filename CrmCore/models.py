@@ -4,7 +4,7 @@ from core.models import MainFile
 from UserManager.models import UserAccount
 import jdatetime
 from WorkSpaceManager.models import WorkSpace
-
+import uuid
 import os 
 from dotenv import load_dotenv
 load_dotenv()
@@ -66,9 +66,8 @@ class Report(models.Model):
     
     def jtime (self):
         jalali_datetime = jdatetime.datetime.fromgregorian(datetime=self.created)
-        print(jalali_datetime.strftime("%Y/%m/%d %H:%M:%S") )
-#         jalali_date = jdatetime.datetime.fromgregorian(datetime=created_at)
-# print(jalali_date.strftime("%Y/%m/%d")) 
+
+
         return jalali_datetime.strftime("%Y/%m/%d %H:%M:%S") 
 
     def text_type (self):
@@ -236,3 +235,51 @@ class CustomerUser(models.Model):
         if self.state:  # Check if the state exists
             return self.state.name
         return None
+
+
+
+class Campaign(models.Model):
+    image = models.ForeignKey(MainFile,on_delete=models.SET_NULL,null=True)
+    group_crm = models.ForeignKey(GroupCrm,on_delete=models.CASCADE,null=True,related_name="campaigns")
+    creator = models.ForeignKey(UserAccount,on_delete=models.CASCADE,null=True)
+    title = models.CharField(max_length=300,null=True)
+    description = models.TextField(null=True)
+    fields_accepted =models.ManyToManyField("CampaignField")
+    uuid = models.UUIDField(unique=True, default=uuid.uuid4, editable=False)
+    created = models.DateTimeField(auto_now_add=True,null=True)
+    def field_list(self):
+        try:
+            field_item_list = []
+            for field in self.fields_accepted.all():
+                field_item_list.append(field.field_type)
+            return field_item_list
+        except:
+            return []
+
+    def image_url(self):
+        try:
+            return {
+                "id":self.image.id,
+                "url":self.image.file.url
+            }
+        except:
+            return {}
+
+    def jtime(self):
+        jalali_datetime = jdatetime.datetime.fromgregorian(datetime=self.created)
+
+        return jalali_datetime.strftime("%Y/%m/%d %H:%M:%S")
+class CampaignForm(models.Model):
+    campaign = models.ForeignKey(Campaign,on_delete=models.CASCADE,null=True,related_name="campaign_forms")
+class CampaignField(models.Model):
+    TYPE = (
+        ("fullname","FULLNAME"),
+        ("phone_number","PHONE_NUMBER"),
+        ("email","EMAIL"),
+        ("telegram_id","TELEGRAM_id"),
+        ("instagram_id","INSTAGRAM_ID"),
+        ("website","WEBSITE")
+    )
+    text = models.TextField(null=True)
+    field_type = models.CharField(max_length=60,choices=TYPE,null=True)
+    campaign_form = models.ForeignKey(CampaignForm,on_delete=models.CASCADE,related_name="campaign_fields")

@@ -931,3 +931,39 @@ class CustomerUserView(APIView):
         })
 
 
+
+class CampaignManager(APIView):
+    permission_classes=[IsAuthenticated]
+    def get(self,request,uuid=None):
+        if uuid:
+            campaign_obj = get_object_or_404(Campaign,uuid=uuid)
+            serializer_data = CampaignSerializer(campaign_obj)
+            return Response(status=status.HTTP_200_OK,data={
+                "status":True,
+                "message":"success",
+                "data":serializer_data.data
+            })
+        group_crm_id = request.GET.get("group_crm_id")
+        campaign_objs= Campaign.objects.filter(group_crm_id=group_crm_id,creator=request.user)
+        serializer_data = CampaignSerializer(campaign_objs,many=True)
+        return Response(status=status.HTTP_200_OK, data={
+            "status": True,
+            "message": "success",
+            "data": serializer_data.data
+        })
+
+    def post(self,request):
+        serializer_data= CampaignSerializer(data=request.data)
+        if serializer_data.is_valid():
+            serializer_data.save()
+            return Response(status=status.HTTP_202_ACCEPTED,data={
+                "stauts":True,
+                "message":"با موفقیت ثبت شد",
+                "data":serializer_data.data
+            })
+        return Response(status=status.HTTP_400_BAD_REQUEST,data={
+            "status":False,
+            "message":"validation error",
+            "data":serializer_data.errors
+        })
+

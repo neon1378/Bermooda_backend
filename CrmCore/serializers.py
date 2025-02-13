@@ -189,3 +189,40 @@ class CustomerSmallSerializer(serializers.ModelSerializer):
 
             new_customer.save()
             return new_customer
+
+
+class CampaignSerializer(serializers.ModelSerializer):
+    image_id = serializers.IntegerField(write_only=True,required=False)
+    group_crm_id = serializers.IntegerField(write_only=True,required=True)
+    creator_id = serializers.IntegerField(write_only=True,required=True)
+    fields_accepted_list = serializers.ListField(write_only=True,required=True)
+
+    class Meta:
+        model= Campaign
+        fields = [
+            "uuid",
+            "image_id",
+            "image_url",
+            "group_crm_id",
+            "creator_id",
+            "title",
+            "description",
+            "fields_accepted_list",
+            "field_list",
+            "jtime",
+        ]
+    def create(self, validated_data):
+        fields_accepted_list= validated_data.pop("fields_accepted_list",[])
+        image_id = validated_data.pop("image_id",None)
+        new_campaign= Campaign.objects.create(**validated_data)
+        if image_id:
+            main_file= MainFile.objects.get(id=image_id)
+            main_file.its_blong=True
+            main_file.save()
+            new_campaign.image= main_file
+        for field in fields_accepted_list:
+            new_field = CampaignField(field_type=field)
+            new_field.save()
+            new_campaign.fields_accepted.add(new_field)
+
+        return new_campaign
