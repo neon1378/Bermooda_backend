@@ -302,4 +302,4 @@ class CampaignField(models.Model):
     )
     text = models.TextField(null=True)
     field_type = models.CharField(max_length=60,choices=TYPE,null=True)
-    campaign_form = models.ForeignKey(CampaignForm,on_delete=models.CASCADE,related_name="campaign_fields")
+    campaign_form = models.ForeignKey(CampaignForm,on_delete=models.CASCADE,related_name="campaign_fields",null=True)
