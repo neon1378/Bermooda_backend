@@ -79,8 +79,23 @@ class CategoryProjectManager(APIView):
         
     def delete(self,request,category_id):
         category_obj = get_object_or_404(CategoryProject,id=category_id)
-        category_obj.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        if not Task.objects.filter(category_task=category_obj).exsit():
+            category_obj.delete()
+
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        else:
+            if CategoryProject.objects.filter(project=category_obj.project).count() == 1:
+                return Response(status=status.HTTP_400_BAD_REQUEST,data={
+                    "status":False,
+                    "message":"امکان حذف وجود ندارد",
+                    "data":{}
+                })
+            else:
+                return Response(status=status.HTTP_400_BAD_REQUEST,data={
+                    "status":False,
+                    "message":"ابتدا ستون را خالی کنید",
+                    "data":{}
+                })
 
 
 class ProjectManager(APIView):
