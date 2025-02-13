@@ -690,7 +690,7 @@ class UserAccountManager(APIView):
                     "message":"کاربر مورد نظر درحال حاضر در میز کار شما وجود دارد"
                 })
             user_acc.phone_number=data['phone_number'] 
-            new_workspace_member = WorkspaceMember(is_accepted=False,workspace=workspace_obj,user_account=user_acc,fullname=f"{data['first_name']} {data['last_name']}")
+            new_workspace_member = WorkspaceMember(is_accepted=True,workspace=workspace_obj,user_account=user_acc,fullname=f"{data['first_name']} {data['last_name']}")
             new_workspace_member.save()
             response_data =UserAccountSerializerShow(user_acc)
             response_data.data['fullname']= new_workspace_member.fullname
@@ -702,7 +702,7 @@ class UserAccountManager(APIView):
             create_permission_for_member(member_id=new_workspace_member.id)
             sub_title =f"شما به میز کار {workspace_obj.title} توسط {workspace_obj.owner.fullname} دوعوت شده اید"
             title = "دعوت به میزکار"
-            create_notification(related_instance=new_workspace_member,workspace=None,user=new_workspace_member.user_account,title=title,sub_title=sub_title,side_type="invitation")
+            # create_notification(related_instance=new_workspace_member,workspace=None,user=new_workspace_member.user_account,title=title,sub_title=sub_title,side_type="invitation")
             
             return Response(status=status.HTTP_201_CREATED,data={
                     "status":True,   
@@ -721,7 +721,7 @@ class UserAccountManager(APIView):
                 new_user_acc = serializers_data.save()
 
         
-                new_workspace_member= WorkspaceMember(is_accepted=False,workspace=workspace_obj,user_account=new_user_acc,fullname=main_data['fullname'])
+                new_workspace_member= WorkspaceMember(is_accepted=True,workspace=workspace_obj,user_account=new_user_acc,fullname=main_data['fullname'])
                 new_workspace_member.save()
                 create_permission_for_member(member_id=new_workspace_member.id)
                 response_data =UserAccountSerializerShow(new_user_acc)
@@ -733,7 +733,7 @@ class UserAccountManager(APIView):
                 send_invite_link(new_user_acc.phone_number,workspace_owner,workspace_obj.title)
                 sub_title =f"شما به میز کار {workspace_obj.title} توسط {workspace_obj.owner.fullname} دوعوت شده اید"
                 title = "دعوت به میزکار"
-                create_notification(related_instance=new_workspace_member,workspace=None,user=new_workspace_member.user_account,title=title,sub_title=sub_title,side_type="invitation")
+                # create_notification(related_instance=new_workspace_member,workspace=None,user=new_workspace_member.user_account,title=title,sub_title=sub_title,side_type="invitation")
                 return Response(status=status.HTTP_201_CREATED,data={
                     "status":True,
                     "message":"موفق",
