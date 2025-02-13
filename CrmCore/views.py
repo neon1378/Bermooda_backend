@@ -934,9 +934,9 @@ class CustomerUserView(APIView):
 
 class CampaignManager(APIView):
     permission_classes=[IsAuthenticated]
-    def get(self,request,uuid=None):
-        if uuid:
-            campaign_obj = get_object_or_404(Campaign,uuid=uuid)
+    def get(self,request,campaign_id=None):
+        if campaign_id:
+            campaign_obj = get_object_or_404(Campaign,id=campaign_id)
             serializer_data = CampaignSerializer(campaign_obj)
             return Response(status=status.HTTP_200_OK,data={
                 "status":True,
@@ -956,7 +956,7 @@ class CampaignManager(APIView):
         serializer_data= CampaignSerializer(data=request.data)
         if serializer_data.is_valid():
             serializer_data.save()
-            return Response(status=status.HTTP_202_ACCEPTED,data={
+            return Response(status=status.HTTP_201_CREATED,data={
                 "stauts":True,
                 "message":"با موفقیت ثبت شد",
                 "data":serializer_data.data
@@ -967,3 +967,20 @@ class CampaignManager(APIView):
             "data":serializer_data.errors
         })
 
+    def put (self,request,campaign_id):
+        campaign_obj = get_object_or_404(Campaign,id=campaign_id)
+        request.data['creator_id'] =request.user.id
+        request.data['group_crm_id'] = campaign_obj.group_crm.id
+        serializer_data = CampaignSerializer(instance=campaign_obj,data=request.data)
+        if serializer_data.is_valid():
+            serializer_data.save()
+            return Response(status=status.HTTP_202_ACCEPTED,data={
+                "status":True,
+                "message":"با موفقیت بروزرسانی شد",
+                "data":serializer_data.data
+            })
+        return Response(status=status.HTTP_202_ACCEPTED, data={
+            "status": False,
+            "message": "validation error",
+            "data": serializer_data.errors
+        })

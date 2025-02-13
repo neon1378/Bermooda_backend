@@ -249,10 +249,30 @@ class Campaign(models.Model):
     created = models.DateTimeField(auto_now_add=True,null=True)
     def field_list(self):
         try:
-            field_item_list = []
-            for field in self.fields_accepted.all():
-                field_item_list.append(field.field_type)
-            return field_item_list
+
+
+            field_item_list =["fullname",
+             "phone_number",
+             "email",
+             "telegram_id",
+             "instagram_id",
+             "website",]
+            data=[]
+            for field in field_item_list:
+                not_exist = True
+                for exist_field in self.fields_accepted.all():
+                    if exist_field.field_type == exist_field:
+                        not_exist=False
+                        data.append({
+                            "field_name":exist_field.field_type,
+                            "selected":True,
+                        })
+                if not_exist:
+                    data.append({
+                        "field_name": field,
+                        "selected": True,
+                    })
+            return data
         except:
             return []
 
