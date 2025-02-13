@@ -30,9 +30,8 @@ urlpatterns = [
     path("ExistMemberCrm/<int:group_id>",views.exist_member_in_crm),
     path("CustomerUserView", views.CustomerUserView.as_view()),
     path("CampaignManager", views.CampaignManager.as_view()),
+    path("CampaignManager/<int:id>", views.CampaignManager.as_view()),
 
-
-    
 ]
 
 
