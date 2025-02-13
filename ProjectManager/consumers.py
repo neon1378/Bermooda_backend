@@ -356,7 +356,7 @@ class ProjectTask(WebsocketConsumer):
             json.dumps(
                 
                 {
-                    "data_type":"change_task_status",
+                    "data_type":"task_list",
                     "data":serializer_data.data
 
                 }
