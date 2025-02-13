@@ -79,7 +79,7 @@ class CategoryProjectManager(APIView):
         
     def delete(self,request,category_id):
         category_obj = get_object_or_404(CategoryProject,id=category_id)
-        if not Task.objects.filter(category_task=category_obj).exsit():
+        if not Task.objects.filter(category_task=category_obj).exists():
             category_obj.delete()
 
             return Response(status=status.HTTP_204_NO_CONTENT)
