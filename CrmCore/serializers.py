@@ -200,6 +200,7 @@ class CampaignSerializer(serializers.ModelSerializer):
     class Meta:
         model= Campaign
         fields = [
+            "id",
             "uuid",
             "image_id",
             "image_url",

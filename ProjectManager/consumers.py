@@ -282,7 +282,7 @@ class ProjectTask(WebsocketConsumer):
             
  
             event = {
-                "type": "category_change",
+                "type": "send_data",
                 "category_id":data['category_id'],
                 "task_id":data['task_id'],
             
@@ -306,7 +306,7 @@ class ProjectTask(WebsocketConsumer):
                 sub_task_obj.status=status
                 sub_task_obj.save()
                 event = {
-                    "type": "change_sub_task_status",
+                    "type": "send_data",
                     "sub_task_id":data['sub_task_id'],
                     "task_id":task_id,
                 
@@ -332,8 +332,8 @@ class ProjectTask(WebsocketConsumer):
                 task_obj.done_status=done_status
                 task_obj.save()
                 event = {
-                    "type": "change_task_status",
-                    
+                    "type": "send_data",
+
                     "task_id":task_id,
                 
                     "done_status":data['done_status'],
@@ -349,7 +349,7 @@ class ProjectTask(WebsocketConsumer):
                     "message":"access denaid",
                     "data":{}
                 })) 
-    def change_task_status(self,event):
+    def send_data(self,event):
         task_objs = Task.objects.filter(project=self.project_obj)
         serializer_data = TaskSerializer(task_objs,many=True) 
         self.send(
@@ -362,33 +362,7 @@ class ProjectTask(WebsocketConsumer):
                 }
             )
         )
-    def change_sub_task_status (self,event):
-        task_objs = Task.objects.filter(project=self.project_obj)
-        serializer_data = TaskSerializer(task_objs,many=True) 
-        self.send(
-            json.dumps(
-                {
-                "data_type":"task_list",
-                "data": serializer_data.data
 
-                }
-              
-            )
-        )
-    
-    def category_change (self,event):
-     
-
-        task_objs = Task.objects.filter(project=self.project_obj)
-        serializer_data = TaskSerializer(task_objs,many=True) 
-        self.send(json.dumps(
-
-            {   
-                "data_type":"task_list",
-                "data":serializer_data.data
-
-            }
-        ))
 
     def disconnect(self,code=None):
         
