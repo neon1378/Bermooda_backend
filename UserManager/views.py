@@ -577,10 +577,10 @@ def create_username_pass(request):
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def login_user(request):
-        data= request.data
-        username = data['username']
-        password = data['password']
-    # try :
+    data= request.data
+    username = data['username']
+    password = data['password']
+    try :
         try:
             user_acc = UserAccount.objects.get(username = username)
         except:
@@ -599,7 +599,7 @@ def login_user(request):
                 user_acc.save()
             except:
                 pass
-            workspaces = WorkSpace.objects.filter(owner=user_acc).afirst()
+            workspaces = WorkSpace.objects.filter(owner=user_acc).first()
             if user_acc.current_workspace_id == 0 or  not WorkSpace.objects.filter(id=user_acc.current_workspace_id).exists():
                 user_acc.current_workspace_id = workspaces.id
                 user_acc.save()
@@ -639,12 +639,12 @@ def login_user(request):
             "message":"نام کاربری یا رمز عبور اشتباه میباشد",
             "data":{}
         })
-    # except:
-    #     return Response(status=status.HTTP_401_UNAUTHORIZED,data={
-    #         "status":False,
-    #         "message":"نام کاربری یا رمز عبور اشتباه میباشد",
-    #         "data":{}
-    #     })
+    except:
+        return Response(status=status.HTTP_401_UNAUTHORIZED,data={
+            "status":False,
+            "message":"نام کاربری یا رمز عبور اشتباه میباشد",
+            "data":{}
+        })
 
 #User Login End 
 
