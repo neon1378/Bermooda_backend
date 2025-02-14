@@ -162,7 +162,7 @@ class ProjectChatMainWs(WebsocketConsumer):
         self.project_id = self.scope['url_route']['kwargs']['project_id']
         self.project_obj = Project.objects.get(id=self.project_id)
         async_to_sync(self.channel_layer.group_add)(
-            f"{self.project_id}_chat",self.channel_name
+            f"{self.project_id}_main",self.channel_name
         )
 
     def receive(self, text_data=None, bytes_data=None):
@@ -193,7 +193,7 @@ class ProjectChatMainWs(WebsocketConsumer):
                     
                 }
                 async_to_sync(self.channel_layer.group_send)(
-                    f"{self.project_id}_chat",
+                    f"{self.project_id}_main",
                     event
                 )
             else:
@@ -226,7 +226,7 @@ class ProjectChatMainWs(WebsocketConsumer):
     def disconnect(self,code=None):
         
         async_to_sync(self.channel_layer.group_discard)(
-            f"{self.project_id}_chat",
+            f"{self.project_id}_main",
             self.channel_name
         )
         self.close(code=0)
