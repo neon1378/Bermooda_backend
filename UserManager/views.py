@@ -869,8 +869,9 @@ def create_workspace(request):
         new_wallet = Wallet(workspace=new_workspace_obj,balance=0)
 
     new_wallet.save()
-
-
+    if request.user.current_workspace_id == 0  or not WorkSpace.objects.filter(id=request.user.current_workspace_id).exsist():
+        request.user.current_workspace_id = new_workspace_obj.id
+        request.user.save()
 
 
     default_statuses = [
