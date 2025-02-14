@@ -977,11 +977,11 @@ def get_user_data (request):
     })
 
 
-@api_view(['GET'])
+@api_view(['PUT'])
 @permission_classes([IsAuthenticated])
 def change_current_worksapce (request):
     data = request.data
-    request.user.current_workspace_id= request.GET.get("workspace_id")
+    request.user.current_workspace_id= data.get("workspace_id")
     request.user.save()
     return Response(status=status.HTTP_202_ACCEPTED)
 
