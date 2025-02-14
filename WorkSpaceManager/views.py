@@ -43,6 +43,16 @@ class WorkspaceManager(APIView):
 
     def delete(self,request,workspace_id):
         workspace_obj =get_object_or_404(WorkSpace,id=workspace_id)
+        if request.user.current_workspace_id == workspace_obj.id:
+            workspace_member= WorkspaceMember.objects.filter(user_account =request.user).afirst()
+            workspace_owner = WorkSpace.objects.filter(owner= request.user).afirst()
+            if workspace_owner:
+                request.user.current_workspace_id=workspace_owner.id
+            elif workspace_member:
+
+                request.user.current_workspace_id = workspace_member.workspace.id
+            request.user.save()
+
         workspace_obj.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
