@@ -600,13 +600,13 @@ def login_user(request):
             except:
                 pass
             workspaces = WorkSpace.objects.filter(owner=user_acc).afirst()
-            if user_acc.current_workspace_id == 0 or  user_acc.current_workspace_id == None:
+            if user_acc.current_workspace_id == 0 or  not WorkSpace.objects.filter(id=request.user.current_workspace_id).exists():
                 user_acc.current_workspace_id = workspaces.id
                 user_acc.save()
             workspace_member = WorkspaceMember.objects.filter(user_account=user_acc)
-        
+
             for member in workspace_member:
-                if user_acc.current_workspace_id == 0 or  user_acc.current_workspace_id == None:
+                if user_acc.current_workspace_id == 0 or not WorkSpace.objects.filter(id=request.user.current_workspace_id).exists():
                     if member.is_accepted:
                         user_acc.current_workspace_id=member.workspace.id
 
