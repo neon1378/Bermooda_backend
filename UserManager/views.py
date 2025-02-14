@@ -671,7 +671,7 @@ class UserAccountManager(APIView):
             serializers_data['jtime'] = workspace_member.jtime()
             serializers_data['member_id'] = workspace_member.id
             serializers_data['fullname'] = workspace_member.fullname
-            serializers_data['is_accepted'] = workspace_member.is_accepted
+            serializers_data['is_accepted'] = workspace_member.user_account.is_register
             response_data.append(serializers_data)
         return Response(status=status.HTTP_200_OK,data={
                 "status":True,

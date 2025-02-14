@@ -392,7 +392,7 @@ class PermissionManager(APIView):
                     "id":permission.id,
                     "permission_name":permission.permission_name,
                     "permission_type":permission.permission_type
-                } for permission in workspace_member_obj.permissions.all()
+                } for permission in workspace_member_obj.permissions.all() if permission.permission_name == "project board"
             ]
             return Response(status=status.HTTP_200_OK,data={
                 "status":True,
