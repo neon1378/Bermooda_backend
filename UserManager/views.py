@@ -601,7 +601,7 @@ def login_user(request):
                 pass
             workspaces = WorkSpace.objects.filter(owner=user_acc).afirst()
             if user_acc.current_workspace_id == 0 or  user_acc.current_workspace_id == None:
-                user_acc.current_workspace_id
+                user_acc.current_workspace_id = workspaces.id
                 user_acc.save()
             workspace_member = WorkspaceMember.objects.filter(user_account=user_acc)
         
