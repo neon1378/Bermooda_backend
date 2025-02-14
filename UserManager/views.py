@@ -577,10 +577,10 @@ def create_username_pass(request):
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def login_user(request):
-        data= request.data
-        username = data['username']
-        password = data['password']
-    # try :
+    data= request.data
+    username = data['username']
+    password = data['password']
+    try :
         try:
             user_acc = UserAccount.objects.get(username = username)
         except:
@@ -600,13 +600,13 @@ def login_user(request):
             except:
                 pass
             workspaces = WorkSpace.objects.filter(owner=user_acc).afirst()
-            if user_acc.current_workspace_id == 0 or  not WorkSpace.objects.filter(id=request.user.current_workspace_id).exists():
+            if user_acc.current_workspace_id == 0 or  not WorkSpace.objects.filter(id=user_acc.current_workspace_id).exists():
                 user_acc.current_workspace_id = workspaces.id
                 user_acc.save()
             workspace_member = WorkspaceMember.objects.filter(user_account=user_acc)
 
             for member in workspace_member:
-                if user_acc.current_workspace_id == 0 or not WorkSpace.objects.filter(id=request.user.current_workspace_id).exists():
+                if user_acc.current_workspace_id == 0 or not WorkSpace.objects.filter(id=user_acc.current_workspace_id).exists():
                     if member.is_accepted:
                         user_acc.current_workspace_id=member.workspace.id
 
@@ -639,12 +639,12 @@ def login_user(request):
             "message":"نام کاربری یا رمز عبور اشتباه میباشد",
             "data":{}
         })
-    # except:
-    #     return Response(status=status.HTTP_401_UNAUTHORIZED,data={
-    #         "status":False,
-    #         "message":"نام کاربری یا رمز عبور اشتباه میباشد",
-    #         "data":{}
-    #     })
+    except:
+        return Response(status=status.HTTP_401_UNAUTHORIZED,data={
+            "status":False,
+            "message":"نام کاربری یا رمز عبور اشتباه میباشد",
+            "data":{}
+        })
     
 #User Login End 
 
