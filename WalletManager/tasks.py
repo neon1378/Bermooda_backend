@@ -25,6 +25,7 @@ load_dotenv()
 @shared_task
 def decrease_wallet():
     print("fuck yes")
+    send_sms_core("امین اله قلی", "09388148998")
     # Fetch all wallets and required environment variables
     wallets = Wallet.objects.all()
     price_per_mb = int(os.getenv("PRICE_FOR_ANY_MB", 0))  # Default to 0 if not set
