@@ -655,23 +655,32 @@ class UserAccountManager(APIView):
     def get (self,request,user_id=None):
         if user_id:
             user_obj =get_object_or_404(UserAccount,id=user_id)
-            serializers_data =UserAccountSerializerShow(user_obj)
+            serializers_data =UserAccountSerializerShow(user_obj).data
+
             return Response(status=status.HTTP_200_OK,data={
                 "status":True,
                 "message":"موفق",
-                "data":serializers_data.data
+                "data":serializers_data
             })
         workspace_id = request.GET.get("workspace_id")
         workspae_obj = get_object_or_404(WorkSpace,id=workspace_id)
         response_data = []
+        base_url = os.getenv("BASE_URL")
         for workspace_member in WorkspaceMember.objects.filter(workspace=workspae_obj):
-            
+
             
             serializers_data =UserAccountSerializerShow(workspace_member.user_account).data
             serializers_data['jtime'] = workspace_member.jtime()
             serializers_data['member_id'] = workspace_member.id
             serializers_data['fullname'] = workspace_member.fullname
             serializers_data['is_accepted'] = workspace_member.user_account.is_register
+            try:
+                response_data['avatar_url'] = {
+                    "id": workspace_member.avatar.id,
+                    "url": f"{base_url}{workspace_member.avatar.url}"
+                }
+            except:
+                response_data['avatar_url'] = {}
             response_data.append(serializers_data)
         return Response(status=status.HTTP_200_OK,data={
                 "status":True,
@@ -680,9 +689,12 @@ class UserAccountManager(APIView):
             })
     def post(self,request):
         data =request.data
+        base_url = os.getenv("BASE_URL")
         workspace_obj =get_object_or_404(WorkSpace,id=data['workspace_id'])
    
         phone_number = data['phone_number']
+        avatar_id = data.get("avatar_id",None)
+
         try :
             user_acc = UserAccount.objects.get(phone_number=phone_number)
             if WorkspaceMember.objects.filter(workspace=workspace_obj,user_account=user_acc).exists():
@@ -692,11 +704,25 @@ class UserAccountManager(APIView):
                 })
             user_acc.phone_number=data['phone_number'] 
             new_workspace_member = WorkspaceMember(is_accepted=True,workspace=workspace_obj,user_account=user_acc,fullname=f"{data['first_name']} {data['last_name']}")
+            if avatar_id:
+                main_file =MainFile.objects.get(id=avatar_id)
+                main_file.its_blong =True
+                main_file.save()
+
+                new_workspace_member.avatar =main_file
             new_workspace_member.save()
             response_data =UserAccountSerializerShow(user_acc)
             response_data.data['fullname']= new_workspace_member.fullname
             response_data.data['jtime'] = new_workspace_member.jtime()
             response_data.data['member_id'] = new_workspace_member.id
+
+            try:
+                response_data.data['avatar_url'] = {
+                    "id":new_workspace_member.avatar.id,
+                    "url": f"{base_url}{new_workspace_member.avatar.url}"
+                }
+            except:
+                response_data.data['avatar_url'] ={}
             workspace_owner = workspace_obj.owner.fullname
 
             send_invite_link(user_acc.phone_number,workspace_owner,workspace_obj.title)
@@ -704,7 +730,7 @@ class UserAccountManager(APIView):
             sub_title =f"شما به میز کار {workspace_obj.title} توسط {workspace_obj.owner.fullname} دوعوت شده اید"
             title = "دعوت به میزکار"
             # create_notification(related_instance=new_workspace_member,workspace=None,user=new_workspace_member.user_account,title=title,sub_title=sub_title,side_type="invitation")
-            
+
             return Response(status=status.HTTP_201_CREATED,data={
                     "status":True,   
                     "message":"موفق",
@@ -723,13 +749,34 @@ class UserAccountManager(APIView):
 
         
                 new_workspace_member= WorkspaceMember(is_accepted=True,workspace=workspace_obj,user_account=new_user_acc,fullname=main_data['fullname'])
+                if avatar_id:
+                    main_file = MainFile.objects.get(id=avatar_id)
+                    main_file.its_blong = True
+                    main_file.save()
+
+                    new_workspace_member.avatar = main_file
                 new_workspace_member.save()
+
                 create_permission_for_member(member_id=new_workspace_member.id)
                 response_data =UserAccountSerializerShow(new_user_acc)
                 response_data.data['fullname']= new_workspace_member.fullname
                 response_data.data['jtime'] = new_workspace_member.jtime()
                 response_data.data['member_id'] = new_workspace_member.id
                 response_data.data['fullname'] = new_workspace_member.user_account.fullname
+                try:
+                    response_data.data['avatar_url'] = {
+                        "id": new_workspace_member.avatar.id,
+                        "url": f"{base_url}{new_workspace_member.avatar.url}"
+                    }
+                except:
+                    response_data.data['avatar_url'] = {}
+                try:
+                    response_data.data['avatar_url'] = {
+                        "id": new_workspace_member.avatar.id,
+                        "url": f"{base_url}{new_workspace_member.avatar.url}"
+                    }
+                except:
+                    response_data.data['avatar_url'] = {}
                 workspace_owner = workspace_obj.owner.fullname
                 send_invite_link(new_user_acc.phone_number,workspace_owner,workspace_obj.title)
                 sub_title =f"شما به میز کار {workspace_obj.title} توسط {workspace_obj.owner.fullname} دوعوت شده اید"

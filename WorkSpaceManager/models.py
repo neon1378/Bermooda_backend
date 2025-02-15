@@ -97,11 +97,17 @@ class WorkspaceMember(models.Model):
     fullname=models.CharField(max_length=200,null=True)
     created = models.DateField(auto_now_add=True,null=True)
     is_accepted = models.BooleanField(default=True)
+    avatar = models.ForeignKey(MainFile,on_delete=models.SET_NULL,null=True)
+
     def jtime (self):
         return costum_date(self.created)
     
-
-
+    def avatar_url (self):
+        try:
+            base_url = os.getenv("BASE_URL")
+            return f"{base_url}{self.avatar.file.url}"
+        except:
+            return ""
 
 
 class MemberPermission (models.Model):

@@ -187,9 +187,9 @@ class WorkspaceManager(APIView):
 
 
 
+
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
-
 def update_workspace_personal_information(request,workspace_id):
     workspace_obj = get_object_or_404(WorkSpace,id=workspace_id)
     data= request.data
@@ -546,7 +546,7 @@ def accept_workspace_invitation (request,notification_id=None):
 @api_view(['GET'])
 def get_expert_users(request):
     workspace_obj = WorkSpace.objects.get(id=request.user.current_workspace_id)
-    manager_users = [
+    expert_user = [
         {
             "id": user.user_account.id,
             "fullname": user.user_account.fullname,
@@ -563,7 +563,7 @@ def get_expert_users(request):
     return Response(status=status.HTTP_200_OK, data={
         "status": True,
         "message": "success",
-        "data": manager_users
+        "data": expert_user
     })
 
 @api_view(['GET'])

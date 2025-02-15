@@ -10,13 +10,15 @@ urlpatterns = [
     path("CreateWorkSpaceAvatar/<int:workspace_id>",views.create_workspace_image),    
     path("DeleteWorkSpace/Member/<int:member_id>",views.delete_workspace_member),    
     path("create_permissions",views.create_permissions),    
-    
-    path("PermissionManager",views.PermissionManager.as_view()),    
-    path("PermissionManager/<int:permission_id>",views.PermissionManager.as_view()),    
+    path("PermissionManager",views.PermissionManager.as_view()),
+    path("PermissionManager/<int:permission_id>",views.PermissionManager.as_view()),
     path("AcceptWorkspaceInvitation/<int:notification_id>",views.accept_workspace_invitation),
     path("AcceptWorkspaceInvitation/<int:notification_id>", views.accept_workspace_invitation),
     path("GetManagerUser", views.get_manager_users),
+    path("GetExpertUser", views.get_expert_users),
 
 
-    
 ]
+
+
+
