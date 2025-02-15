@@ -1052,10 +1052,16 @@ def change_username(request):
 
             request.user.fullname = fullname
             if avatar_id:
-                if avatar_id != request.user.avatar.id:
-                    request.user.avatar.delete()
+                if request.user.avatar:
+                    if avatar_id != request.user.avatar.id:
+                        request.user.avatar.delete()
+                        main_file = MainFile.objects.get(id=avatar_id)
+                        main_file.its_blong=True
+                        main_file.save()
+                        request.user.avatar = main_file
+                else:
                     main_file = MainFile.objects.get(id=avatar_id)
-                    main_file.its_blong=True
+                    main_file.its_blong = True
                     main_file.save()
                     request.user.avatar = main_file
             request.user.save()
@@ -1076,8 +1082,14 @@ def change_username(request):
     request.user.username= username
     request.user.fullname = fullname
     if avatar_id:
-        if avatar_id != request.user.avatar.id:
-            request.user.avatar.delete()
+        if request.user.avatar:
+            if avatar_id != request.user.avatar.id:
+                request.user.avatar.delete()
+                main_file = MainFile.objects.get(id=avatar_id)
+                main_file.its_blong = True
+                main_file.save()
+                request.user.avatar = main_file
+        else:
             main_file = MainFile.objects.get(id=avatar_id)
             main_file.its_blong = True
             main_file.save()
