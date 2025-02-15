@@ -242,10 +242,23 @@ class ProjectTask(WebsocketConsumer):
             self.close(code=1)
         self.project_id = self.scope['url_route']['kwargs']['project_id']
         self.project_obj = Project.objects.get(id=self.project_id)
+        for permission in self.scope['permissions']:
+            if permission['permission_name'] == "project board":
+                self.permission = permission['permission_type']
         async_to_sync(self.channel_layer.group_add)(
             f"{self.project_id}_amin",self.channel_name
         )
-        task_objs = Task.objects.filter(project=self.project_obj,done_status=False)
+        if self.permission == "manager":
+            task_objs = Task.objects.filter(project=self.project_obj,done_status=False)
+        else:
+            task_list = Task.objects.filter(project=self.project_obj, done_status=False)
+            task_objs = [
+                task
+                for task in task_list
+                if any(check_list.responsible_for_doing == self.user for check_list in task.check_list.all())
+            ]
+
+
         serializer_data= TaskSerializer(task_objs,many=True)
         self.send(json.dumps(
             {
@@ -258,7 +271,15 @@ class ProjectTask(WebsocketConsumer):
         command = data['command']
 
         if command == "get_task_list":
-            task_objs = Task.objects.filter(project=self.project_obj,done_status=False)
+            if self.permission == "manager":
+                task_objs = Task.objects.filter(project=self.project_obj, done_status=False)
+            else:
+                task_list = Task.objects.filter(project=self.project_obj, done_status=False)
+                task_objs = [
+                    task
+                    for task in task_list
+                    if any(check_list.responsible_for_doing == self.user for check_list in task.check_list.all())
+                ]
             serializer_data= TaskSerializer(task_objs,many=True)
             self.send(json.dumps(
                 {
@@ -350,7 +371,15 @@ class ProjectTask(WebsocketConsumer):
                     "data":{}
                 })) 
     def send_data(self,event):
-        task_objs = Task.objects.filter(project=self.project_obj,done_status=False)
+        if self.permission == "manager":
+            task_objs = Task.objects.filter(project=self.project_obj, done_status=False)
+        else:
+            task_list = Task.objects.filter(project=self.project_obj, done_status=False)
+            task_objs = [
+                task
+                for task in task_list
+                if any(check_list.responsible_for_doing == self.user for check_list in task.check_list.all())
+            ]
         serializer_data = TaskSerializer(task_objs,many=True) 
         self.send(
             json.dumps(

@@ -748,7 +748,8 @@ class UserAccountManager(APIView):
         
                 new_user_acc = serializers_data.save()
 
-        
+                new_user_acc.current_workspace_id = workspace_obj.id
+                new_user_acc.save()
                 new_workspace_member= WorkspaceMember(is_accepted=True,workspace=workspace_obj,user_account=new_user_acc,fullname=main_data['fullname'])
                 if avatar_id:
                     main_file = MainFile.objects.get(id=avatar_id)
@@ -800,6 +801,7 @@ class UserAccountManager(APIView):
             }
 
             # Update for "حقیقی" (Natural Person)
+
             if personal_type == "حقیقی":
                 user.fullname = data.get("fullname")
                 for field, value in shared_fields.items():

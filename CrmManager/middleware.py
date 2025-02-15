@@ -8,6 +8,7 @@ from django.contrib.auth.models import AnonymousUser
 from UserManager.models import UserAccount
 from jwt import decode as jwt_decode
 from django.conf import settings
+from WorkSpaceManager.models import  WorkSpace,WorkspaceMember
 from jwt import decode as jwt_decode, InvalidTokenError
 @database_sync_to_async
 def get_user(token_key):
@@ -56,9 +57,11 @@ class JWTAuthMiddleware:
                 # Decode JWT token
                 decoded_data = jwt_decode(token, settings.SECRET_KEY, algorithms=["HS256"])
                 user_id = decoded_data.get('user_id')
-
+                user_detail = await  self.get_user(user_id)['user']
                 # Fetch user object from the database
-                scope['user'] = await self.get_user(user_id)
+                scope['user'] = user_detail.get('user')
+                scope['permissions'] = user_detail.get('permissions', [])  # Default to an empty list if not present
+
             except (InvalidTokenError, UserAccount.DoesNotExist):
                 # Invalid token or user not found, keep user as AnonymousUser
                 pass
@@ -67,5 +70,22 @@ class JWTAuthMiddleware:
 
     @database_sync_to_async
     def get_user(self, user_id):
+        user_account =UserAccount.objects.get(id=user_id)
+        workspace_obj=  WorkSpace.objects.get(id=user_account.current_workspace_id)
+        workspace_member = WorkspaceMember.objects.get(user_account=user_account,workspace=workspace_obj)
+        permissions = [
+
+        ]
+        for permission in workspace_member.permissions.all():
+            permissions.append(
+                {
+                    "id":permission.id,
+                    "permission_name":permission.permission_name,
+                    "permission_type":permission.permission_type,
+                }
+            )
         """Fetch the user object asynchronously."""
-        return UserAccount.objects.get(id=user_id)
+        return {
+            "user":user_account,
+            "permissions":permissions
+        }
