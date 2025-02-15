@@ -503,6 +503,7 @@ def create_username_pass(request):
     data= request.data
     username=data['username']
     password = data['password']
+    avatar_id = data.get("avatar_id",None)
     confirm_password = data['confirm_password']
     fullname = data['fullname']
     try : 
@@ -533,6 +534,11 @@ def create_username_pass(request):
         user_acc.set_password(password)
         user_acc.is_register= True
         user_acc.fullname=fullname
+        if avatar_id:
+            main_file = MainFile.objects.get(id=avatar_id)
+            main_file.its_blong=True
+            user_acc.avatar =main_file
+
         user_acc.save()
         jadoo_base_url = os.getenv("JADOO_BASE_URL")
         #send user to jadoo 
