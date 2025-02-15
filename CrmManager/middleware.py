@@ -57,7 +57,7 @@ class JWTAuthMiddleware:
                 # Decode JWT token
                 decoded_data = jwt_decode(token, settings.SECRET_KEY, algorithms=["HS256"])
                 user_id = decoded_data.get('user_id')
-                user_detail = await  self.get_user(user_id)['user']
+                user_detail = await  self.get_user(user_id)
                 # Fetch user object from the database
                 scope['user'] = user_detail.get('user')
                 scope['permissions'] = user_detail.get('permissions', [])  # Default to an empty list if not present
