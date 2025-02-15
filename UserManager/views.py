@@ -982,8 +982,8 @@ def get_user_data (request):
         "is_profile":request.user.is_profile,
         "email":request.user.email,
         "avatar_url":request.user.avatar_url(),
-        "is_auth":request.user.is_auth
-
+        "is_auth":request.user.is_auth,
+        "jtime":request.user.jtime()
        
        
     }
