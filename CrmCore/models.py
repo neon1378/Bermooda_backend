@@ -270,7 +270,7 @@ class Campaign(models.Model):
                 if not_exist:
                     data.append({
                         "field_name": field,
-                        "selected": True,
+                        "selected": False,
                     })
             return data
         except:

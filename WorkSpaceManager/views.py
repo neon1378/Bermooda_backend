@@ -262,6 +262,7 @@ def create_category (request):
         }
     response =requests.get(url=main_cat__url,headers=headers)
     for main_cat in response.json()['data']:
+
         new_min_cat =MainCategory(
             reference_id = main_cat['id'],
             title = main_cat['title'],

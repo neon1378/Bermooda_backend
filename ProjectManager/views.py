@@ -114,7 +114,8 @@ class ProjectManager(APIView):
                     "category_project":[{"title":category.title,"id":category.id,"color_code":category.color_code,"order":category.order} for category in project.category_project.all()],
                     "users": [{"fullname" : user.fullname,"id":user.id,"avatar_url":user.avatar_url(),"progress_percentage":self._get_member_progress(project=project,user=user)  } for user in project.members.all()  ] ,
                     "avatar_url": f"{base_url}{project.avatar.file.url}" if project.avatar else "",
-                    "project_status":project.project_status()
+                    "project_status":project.project_status(),
+                    "department":ProjectDepartmentSerializer(project.department).data,
                 
                 }
                 main_user_list = []
@@ -134,7 +135,8 @@ class ProjectManager(APIView):
                     "title": projects.title,
                     "category_project":[{"title":category.title,"id":category.id,"color_code":category.color_code,"order":category.order} for category in projects.category_project.all()],
                     "users": [{"fullname" : user.fullname,"id":user.id,"avatar_url":user.avatar_url(),"progress_percentage":self._get_member_progress(project=projects,user=user) } for user in projects.members.all()],
-                    "project_status":projects.project_status()
+                    "project_status":projects.project_status(),
+                    "department": ProjectDepartmentSerializer(projects.department).data
                     
                 
                 }
