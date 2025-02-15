@@ -245,7 +245,7 @@ class ProjectTask(WebsocketConsumer):
         async_to_sync(self.channel_layer.group_add)(
             f"{self.project_id}_amin",self.channel_name
         )
-        task_objs = Task.objects.filter(project=self.project_obj)
+        task_objs = Task.objects.filter(project=self.project_obj,done_status=False)
         serializer_data= TaskSerializer(task_objs,many=True)
         self.send(json.dumps(
             {
@@ -258,7 +258,7 @@ class ProjectTask(WebsocketConsumer):
         command = data['command']
 
         if command == "get_task_list":
-            task_objs = Task.objects.filter(project=self.project_obj)
+            task_objs = Task.objects.filter(project=self.project_obj,done_status=False)
             serializer_data= TaskSerializer(task_objs,many=True)
             self.send(json.dumps(
                 {
@@ -350,7 +350,7 @@ class ProjectTask(WebsocketConsumer):
                     "data":{}
                 })) 
     def send_data(self,event):
-        task_objs = Task.objects.filter(project=self.project_obj)
+        task_objs = Task.objects.filter(project=self.project_obj,done_status=False)
         serializer_data = TaskSerializer(task_objs,many=True) 
         self.send(
             json.dumps(

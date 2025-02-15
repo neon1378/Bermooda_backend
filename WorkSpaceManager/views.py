@@ -542,21 +542,44 @@ def accept_workspace_invitation (request,notification_id=None):
     })
 
 
+@permission_classes([IsAuthenticated])
+@api_view(['GET'])
+def get_expert_users(request):
+    workspace_obj = WorkSpace.objects.get(id=request.user.current_workspace_id)
+    manager_users = [
+        {
+            "id": user.user_account.id,
+            "fullname": user.user_account.fullname,
+            "avatar_url": user.user_account.avatar_url(),
+        }
+        for user in workspace_obj.workspace_member.all()
+        if any(
+            permission.permission_name == "project board"
+            and permission.permission_type in {"expert", "no access"}
+            for permission in user.permissions.all()
+        )
+    ]
+
+    return Response(status=status.HTTP_200_OK, data={
+        "status": True,
+        "message": "success",
+        "data": manager_users
+    })
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_manager_users(request):
-    workspace_obj = WorkSpace.objects.get(id=request.user.current_workspace_id)
-    if request.user == workspace_obj.owner:
+        workspace_obj = WorkSpace.objects.get(id=request.user.current_workspace_id)
+    # if request.user == workspace_obj.owner:
         manager_users = [
-
-        ]
-        manager_users.append(
             {
                 "id": workspace_obj.owner.id,
                 "fullname": workspace_obj.owner.fullname,
-                "avatar_url": workspace_obj.owner.avatar_url()
+                "avatar_url": workspace_obj.owner.avatar_url(),
+                "self": request.user == workspace_obj.owner
             }
-        )
+        ]
+
         for user in workspace_obj.workspace_member.all():
             for permission in user.permissions.all():
                 if permission.permission_name == "project board":
@@ -566,7 +589,8 @@ def get_manager_users(request):
                             {
                                 "id": user.user_account.id,
                                 "fullname": user.user_account.fullname,
-                                "avatar_url": user.user_account.avatar_url()
+                                "avatar_url": user.user_account.avatar_url(),
+                                "self":user.user_account == request.user
                             }
                         )
 
@@ -577,8 +601,8 @@ def get_manager_users(request):
             "message": "success",
             "data": manager_users
         })
-    return Response(status=status.HTTP_400_BAD_REQUEST, data={
-        "status": False,
-        "message": "عدم دسترسی",
-        "data": {}
-    })
+    # return Response(status=status.HTTP_400_BAD_REQUEST, data={
+    #     "status": False,
+    #     "message": "عدم دسترسی",
+    #     "data": {}
+    # })
