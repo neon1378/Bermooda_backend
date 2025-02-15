@@ -1045,10 +1045,19 @@ def change_username(request):
     data= request.data
     username = data['username']
     fullname = data['fullname']
+    avatar_id = data.get("avatar_id",None)
 
     if UserAccount.objects.filter(username=username).exists():
         if username == request.user.username:
+
             request.user.fullname = fullname
+            if avatar_id:
+                if avatar_id != request.user.avatar.id:
+                    request.user.avatar.delete()
+                    main_file = MainFile.objects.get(id=avatar_id)
+                    main_file.its_blong=True
+                    main_file.save()
+                    request.user.avatar = main_file
             request.user.save()
             return Response(status=status.HTTP_200_OK,data={
                 "status":True,
@@ -1066,6 +1075,12 @@ def change_username(request):
         })
     request.user.username= username
     request.user.fullname = fullname
+    if avatar_id != request.user.avatar.id:
+        request.user.avatar.delete()
+        main_file = MainFile.objects.get(id=avatar_id)
+        main_file.its_blong = True
+        main_file.save()
+        request.user.avatar = main_file
     request.user.save()
     return Response(status=status.HTTP_200_OK,data={
             "status":True,
