@@ -533,20 +533,23 @@ def create_username_pass(request):
 
     user_acc.save()
     jadoo_base_url = os.getenv("JADOO_BASE_URL")
-        #send user to jadoo 
-    url = f"{jadoo_base_url}/user/auth/createBusinessUser"
-    payload = {
-            "mobile":user_acc.phone_number,
-            "username":user_acc.username,
-            "password":password,
-            
-        }
-    response_data = requests.post(url=url,data=payload)
-    recive_data =response_data.json()
-        
-    user_acc.refrence_id= int(recive_data['data']['id'])
-        
-    user_acc.refrence_token= recive_data['data']['token']
+        #send user to jadoo
+    try:
+        url = f"{jadoo_base_url}/user/auth/createBusinessUser"
+        payload = {
+                "mobile":user_acc.phone_number,
+                "username":user_acc.username,
+                "password":password,
+
+            }
+        response_data = requests.post(url=url,data=payload)
+        recive_data =response_data.json()
+        user_acc.refrence_id= int(recive_data['data']['id'])
+        user_acc.refrence_token= recive_data['data']['token']
+    except:
+        pass
+
+
     user_acc.save()
     return Response(status=status.HTTP_201_CREATED,data={
             "status":True,
