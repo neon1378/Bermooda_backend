@@ -501,62 +501,54 @@ def create_username_pass(request):
     user_acc =request.user
 
     data= request.data
-    username=data['username']
+    # username=data['username']
     password = data['password']
     avatar_id = data.get("avatar_id",None)
     confirm_password = data['confirm_password']
     fullname = data['fullname']
-    try : 
-        UserAccount.objects.get(username=username)
-        return Response(status=status.HTTP_400_BAD_REQUEST,data={
-            "status":False,
-            "message":"نام کاربری انتخاب شده در حال حاضر وجود دارد",
-            "data":{}
-        })
-    except:
-        if password != confirm_password:
+
+    if password != confirm_password:
             
-            return Response(status=status.HTTP_400_BAD_REQUEST,data={
+        return Response(status=status.HTTP_400_BAD_REQUEST,data={
                 "status":False,
                 "message":"رمز عبور ها با هم شباهت ندارند",
                 "data":{}
             })
-        if WorkspaceMember.objects.filter(user_account=user_acc).exists():
-            current_workspaces =WorkspaceMember.objects.filter(user_account=user_acc)
-            for item in current_workspaces:
-                user_acc.current_workspace_id=item.workspace.id
-                break
+    if WorkspaceMember.objects.filter(user_account=user_acc).exists():
+        current_workspace=WorkspaceMember.objects.filter(user_account=user_acc).first()
+        user_acc.current_workspace_id=current_workspace.worksace
+        user_acc.save()
             
-        refresh = RefreshToken.for_user(user_acc)
+    refresh = RefreshToken.for_user(user_acc)
 
         
-        user_acc.username = username
-        user_acc.set_password(password)
-        user_acc.is_register= True
-        user_acc.fullname=fullname
-        if avatar_id:
-            main_file = MainFile.objects.get(id=avatar_id)
-            main_file.its_blong=True
-            user_acc.avatar =main_file
 
-        user_acc.save()
-        jadoo_base_url = os.getenv("JADOO_BASE_URL")
+    user_acc.set_password(password)
+    user_acc.is_register= True
+    user_acc.fullname=fullname
+    if avatar_id:
+        main_file = MainFile.objects.get(id=avatar_id)
+        main_file.its_blong=True
+        user_acc.avatar =main_file
+
+    user_acc.save()
+    jadoo_base_url = os.getenv("JADOO_BASE_URL")
         #send user to jadoo 
-        url = f"{jadoo_base_url}/user/auth/createBusinessUser"
-        payload = {
+    url = f"{jadoo_base_url}/user/auth/createBusinessUser"
+    payload = {
             "mobile":user_acc.phone_number,
             "username":user_acc.username,
             "password":password,
             
         }
-        response_data = requests.post(url=url,data=payload)
-        recive_data =response_data.json()
+    response_data = requests.post(url=url,data=payload)
+    recive_data =response_data.json()
         
-        user_acc.refrence_id= int(recive_data['data']['id'])
+    user_acc.refrence_id= int(recive_data['data']['id'])
         
-        user_acc.refrence_token= recive_data['data']['token']
-        user_acc.save()
-        return Response(status=status.HTTP_201_CREATED,data={
+    user_acc.refrence_token= recive_data['data']['token']
+    user_acc.save()
+    return Response(status=status.HTTP_201_CREATED,data={
             "status":True,
             "message":"با موفقیت  انجام شد",
             "data":{
@@ -1043,50 +1035,21 @@ def change_current_worksapce (request):
 @permission_classes([IsAuthenticated])
 def change_username(request):
     data= request.data
-    username = data['username']
+
     fullname = data['fullname']
+
     avatar_id = data.get("avatar_id",None)
 
-    if UserAccount.objects.filter(username=username).exists():
-        if username == request.user.username:
 
-            request.user.fullname = fullname
-            if avatar_id:
-                if request.user.avatar:
-                    if avatar_id != request.user.avatar.id:
-                        request.user.avatar.delete()
-                        main_file = MainFile.objects.get(id=avatar_id)
-                        main_file.its_blong=True
-                        main_file.save()
-                        request.user.avatar = main_file
-                else:
-                    main_file = MainFile.objects.get(id=avatar_id)
-                    main_file.its_blong = True
-                    main_file.save()
-                    request.user.avatar = main_file
-            request.user.save()
-            return Response(status=status.HTTP_200_OK,data={
-                "status":True,
-                "message":"success",
-                "data":{
-                    "username":username
-                }
-            })
-        return Response(status=status.HTTP_400_BAD_REQUEST,data={
-            "status":False,
-            "message":"نام کاربری انتخاب شده در حال حاضر وجود دارد",
-            "data":{
-                "username":username
-            }
-        })
-    request.user.username= username
+
+
     request.user.fullname = fullname
     if avatar_id:
         if request.user.avatar:
             if avatar_id != request.user.avatar.id:
                 request.user.avatar.delete()
                 main_file = MainFile.objects.get(id=avatar_id)
-                main_file.its_blong = True
+                main_file.its_blong=True
                 main_file.save()
                 request.user.avatar = main_file
         else:
@@ -1096,12 +1059,14 @@ def change_username(request):
             request.user.avatar = main_file
     request.user.save()
     return Response(status=status.HTTP_200_OK,data={
-            "status":True,
-            "message":"success",
-            "data":{
-                "username":username
-            }
-        })
+        "status":True,
+        "message":"success",
+        "data":{
+            "username":username
+        }
+    })
+
+
 
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
