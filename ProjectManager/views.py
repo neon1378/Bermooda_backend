@@ -264,7 +264,7 @@ class ProjectManager(APIView):
         category_objs = [CategoryProject(title=category['title'],order=category['order'],project=new_project) for category in categories]
         CategoryProject.objects.bulk_create(category_objs)
 
-        new_project.creator=data.get("manager_id")
+        new_project.creator_id=data.get("manager_id")
         if department_id:
             new_project.department_id=department_id
         new_project.save()
@@ -314,7 +314,7 @@ class ProjectManager(APIView):
                 members = UserAccount.objects.filter(id__in=users)
                 project_obj.members.add(*members)
 
-        project_obj.creator = data.get("manager_id")
+        project_obj.creator_id = data.get("manager_id")
         # Save the project and return success response
         
         project_obj.save()
