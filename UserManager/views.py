@@ -1044,10 +1044,12 @@ def change_current_worksapce (request):
 def change_username(request):
     data= request.data
     username = data['username']
+    fullname = data['fullname']
 
     if UserAccount.objects.filter(username=username).exists():
         if username == request.user.username:
-       
+            request.user.fullname = fullname
+            request.user.save()
             return Response(status=status.HTTP_200_OK,data={
                 "status":True,
                 "message":"success",
@@ -1057,12 +1059,13 @@ def change_username(request):
             })
         return Response(status=status.HTTP_400_BAD_REQUEST,data={
             "status":False,
-            "message":"usernme its allready exists",
+            "message":"نام کاربری انتخاب شده در حال حاضر وجود دارد",
             "data":{
                 "username":username
             }
         })
     request.user.username= username
+    request.user.fullname = fullname
     request.user.save()
     return Response(status=status.HTTP_200_OK,data={
             "status":True,
