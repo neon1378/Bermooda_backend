@@ -133,6 +133,7 @@ class ProjectManager(APIView):
             dic_data = {
                     "id": projects.id,
                     "title": projects.title,
+                    "manager": MemberSerializer(projects.creator).data if projects.creator else {},
                     "category_project":[{"title":category.title,"id":category.id,"color_code":category.color_code,"order":category.order} for category in projects.category_project.all()],
                     "users": [{"fullname" : user.fullname,"id":user.id,"avatar_url":user.avatar_url(),"progress_percentage":self._get_member_progress(project=projects,user=user) } for user in projects.members.all()],
                     "project_status":projects.project_status(),
@@ -166,7 +167,10 @@ class ProjectManager(APIView):
             project_obj = get_object_or_404(Project,id=project_id)
             project_data ={
                 "id": project_obj.id,
+
                 "title": project_obj.title,
+                "manager": MemberSerializer(project_obj.creator).data if project_obj.creator else {},
+                "department": ProjectDepartmentSerializer(project_obj.department).data,
                 "category_project":[{"title":category.title,"id":category.id,"color_code":category.color_code} for category in project_obj.category_project.all()],
                 "users": [{"fullname" : user.fullname,"id":user.id } for user in project_obj.members.all()]
                 
@@ -198,7 +202,7 @@ class ProjectManager(APIView):
         
     def post(self, request):
         data = request.data
-        department_id = data.get("department_id",None)
+
         users  = data.get('users', [])
         avatar_id = data.get("avatar_id",None)
         title = data.get("title")
@@ -260,7 +264,7 @@ class ProjectManager(APIView):
         category_objs = [CategoryProject(title=category['title'],order=category['order'],project=new_project) for category in categories]
         CategoryProject.objects.bulk_create(category_objs)
 
-        new_project.creator=request.user
+        new_project.creator=data.get("manager_id")
         if department_id:
             new_project.department_id=department_id
         new_project.save()
@@ -310,7 +314,7 @@ class ProjectManager(APIView):
                 members = UserAccount.objects.filter(id__in=users)
                 project_obj.members.add(*members)
 
-        
+        project_obj.creator = data.get("manager_id")
         # Save the project and return success response
         
         project_obj.save()

@@ -675,12 +675,12 @@ class UserAccountManager(APIView):
             serializers_data['fullname'] = workspace_member.fullname
             serializers_data['is_accepted'] = workspace_member.user_account.is_register
             try:
-                response_data['avatar_url'] = {
+                serializers_data['avatar_url'] = {
                     "id": workspace_member.avatar.id,
                     "url": f"{base_url}{workspace_member.avatar.url}"
                 }
             except:
-                response_data['avatar_url'] = {}
+                serializers_data['avatar_url'] = {}
             response_data.append(serializers_data)
         return Response(status=status.HTTP_200_OK,data={
                 "status":True,
@@ -770,13 +770,7 @@ class UserAccountManager(APIView):
                     }
                 except:
                     response_data.data['avatar_url'] = {}
-                try:
-                    response_data.data['avatar_url'] = {
-                        "id": new_workspace_member.avatar.id,
-                        "url": f"{base_url}{new_workspace_member.avatar.url}"
-                    }
-                except:
-                    response_data.data['avatar_url'] = {}
+
                 workspace_owner = workspace_obj.owner.fullname
                 send_invite_link(new_user_acc.phone_number,workspace_owner,workspace_obj.title)
                 sub_title =f"شما به میز کار {workspace_obj.title} توسط {workspace_obj.owner.fullname} دوعوت شده اید"
