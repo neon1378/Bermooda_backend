@@ -242,13 +242,16 @@ class ProjectTask(WebsocketConsumer):
             self.close(code=1)
         self.project_id = self.scope['url_route']['kwargs']['project_id']
         self.project_obj = Project.objects.get(id=self.project_id)
-        for permission in self.scope['permissions']:
-            if permission['permission_name'] == "project board":
-                self.permission = permission['permission_type']
+        if self.scope['user_type']  == "member":
+            for permission in self.scope['permissions']:
+                if permission['permission_name'] == "project board":
+                    self.permission = permission['permission_type']
+        else:
+            self.permission = "owner"
         async_to_sync(self.channel_layer.group_add)(
             f"{self.project_id}_amin",self.channel_name
         )
-        if self.permission == "manager":
+        if self.permission == "manager" or self.permission == "owner":
             task_objs = Task.objects.filter(project=self.project_obj,done_status=False)
         else:
             task_list = Task.objects.filter(project=self.project_obj, done_status=False)
@@ -271,7 +274,7 @@ class ProjectTask(WebsocketConsumer):
         command = data['command']
 
         if command == "get_task_list":
-            if self.permission == "manager":
+            if self.permission == "manager" or self.permission == "owner":
                 task_objs = Task.objects.filter(project=self.project_obj, done_status=False)
             else:
                 task_list = Task.objects.filter(project=self.project_obj, done_status=False)
@@ -371,7 +374,7 @@ class ProjectTask(WebsocketConsumer):
                     "data":{}
                 })) 
     def send_data(self,event):
-        if self.permission == "manager":
+        if self.permission == "manager" or self.permission == "owner":
             task_objs = Task.objects.filter(project=self.project_obj, done_status=False)
         else:
             task_list = Task.objects.filter(project=self.project_obj, done_status=False)
