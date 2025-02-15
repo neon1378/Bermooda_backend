@@ -677,7 +677,7 @@ class UserAccountManager(APIView):
             try:
                 serializers_data['avatar_url'] = {
                     "id": workspace_member.avatar.id,
-                    "url": f"{base_url}{workspace_member.avatar.url}"
+                    "url": f"{base_url}{workspace_member.avatar.file.url}"
                 }
             except:
                 serializers_data['avatar_url'] = {}
@@ -710,6 +710,7 @@ class UserAccountManager(APIView):
                 main_file.save()
 
                 new_workspace_member.avatar =main_file
+
             new_workspace_member.save()
             response_data =UserAccountSerializerShow(user_acc)
             response_data.data['fullname']= new_workspace_member.fullname
@@ -719,7 +720,7 @@ class UserAccountManager(APIView):
             try:
                 response_data.data['avatar_url'] = {
                     "id":new_workspace_member.avatar.id,
-                    "url": f"{base_url}{new_workspace_member.avatar.url}"
+                    "url": f"{base_url}{new_workspace_member.avatar.file.url}"
                 }
             except:
                 response_data.data['avatar_url'] ={}
@@ -766,7 +767,7 @@ class UserAccountManager(APIView):
                 try:
                     response_data.data['avatar_url'] = {
                         "id": new_workspace_member.avatar.id,
-                        "url": f"{base_url}{new_workspace_member.avatar.url}"
+                        "url": f"{base_url}{new_workspace_member.avatar.file.url}"
                     }
                 except:
                     response_data.data['avatar_url'] = {}
