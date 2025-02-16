@@ -516,7 +516,7 @@ def create_username_pass(request):
             })
     if WorkspaceMember.objects.filter(user_account=user_acc).exists():
         current_workspace=WorkspaceMember.objects.filter(user_account=user_acc).first()
-        user_acc.current_workspace_id=current_workspace.worksace
+        user_acc.current_workspace_id=current_workspace.workspace
         user_acc.save()
             
     refresh = RefreshToken.for_user(user_acc)
