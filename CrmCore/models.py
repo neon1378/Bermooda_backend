@@ -261,7 +261,7 @@ class Campaign(models.Model):
             for field in field_item_list:
                 not_exist = True
                 for exist_field in self.fields_accepted.all():
-                    if exist_field.field_type == exist_field:
+                    if exist_field.field_type == field:
                         not_exist=False
                         data.append({
                             "field_name":exist_field.field_type,
