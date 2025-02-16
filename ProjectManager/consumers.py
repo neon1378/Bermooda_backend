@@ -131,7 +131,7 @@ class ProjectChatMainWs(WebsocketConsumer):
         
         
         # Set up custom pagination
-        paginator = Paginator(queryset, 20)  # Set items per page
+        paginator = Paginator(queryset.orderby("-id"), 20)  # Set items per page
 
         # Check if the requested page exists
         if page_number > paginator.num_pages:
