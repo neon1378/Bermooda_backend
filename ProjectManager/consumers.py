@@ -145,6 +145,8 @@ class ProjectChatMainWs(WebsocketConsumer):
         # Get the page
         page = paginator.get_page(page_number)
         serializer_data=ProjectChatSerializer(page.object_list,many=True)
+        for item in serializer_data.data:
+            item['creator']['self'] = item['creator']['id'] == self.user.id
         return {
             "count": paginator.count,
             "next": page.next_page_number() if page.has_next() else None,
@@ -216,12 +218,14 @@ class ProjectChatMainWs(WebsocketConsumer):
 
     def chat_handler(self,event):
         project_chat_obj = ProjectChat.objects.get(id=event['chat_id'])
+
         serializer_data= ProjectChatSerializer(project_chat_obj)
+        serializer_data.data['creator']['self'] = serializer_data.data['creator']['id'] == self.user.id
         self.send(json.dumps(
             {
                 "data_type":"create_message",
                 "data":serializer_data.data,
-                "creator": event['creator_id'] == self.user.id
+
 
             }
         ))

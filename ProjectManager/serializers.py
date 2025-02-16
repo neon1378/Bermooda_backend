@@ -185,6 +185,7 @@ class ProjectChatSerializer(ModelSerializer):
     voice_file_id = serializers.IntegerField(write_only=True,required=False)
     project_id = serializers.IntegerField(write_only=True,required=True)
     creator_id = serializers.IntegerField(write_only=True,required=True)
+    creator = MemberSerializer(read_only=True)
     class Meta:
         model = ProjectChat
         fields = [
@@ -194,7 +195,7 @@ class ProjectChatSerializer(ModelSerializer):
                 "creator_id",
                 "file_url",
                 "voice_url",
-                
+                "creator",
                 "jcreated",
                 "project_id",
                 "creator_detail",
