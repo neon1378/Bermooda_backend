@@ -24,8 +24,7 @@ load_dotenv()
 
 @shared_task
 def decrease_wallet():
-    print("fuck yes")
-    send_sms_core("امین اله قلی", "09388148998")
+
     # Fetch all wallets and required environment variables
     wallets = Wallet.objects.all()
     price_per_mb = int(os.getenv("PRICE_FOR_ANY_MB", 0))  # Default to 0 if not set
@@ -65,12 +64,12 @@ def decrease_wallet():
             )
 
         # Deactivate workspace if balance is negative
-        if wallet.balance < 0:
+        if wallet.balance <= 0:
             wallet.workspace.is_active = False
             wallet.workspace.save()
-
-        # Send SMS if balance will be low tomorrow
-        tomorrow_balance = wallet.balance - decrease_price
-        if tomorrow_balance <= 50000:
-            send_sms_core(wallet.workspace.owner.fullname, wallet.workspace.owner.phone_number)
+        else:
+            # Send SMS if balance will be low tomorrow
+            tomorrow_balance = wallet.balance - decrease_price
+            if tomorrow_balance <= 0:
+                send_sms_core(wallet.workspace.owner.fullname, wallet.workspace.owner.phone_number)
     return None

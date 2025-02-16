@@ -654,6 +654,7 @@ def login_user(request):
 class UserAccountManager(APIView):
     permission_classes=[IsAuthenticated]
     def get (self,request,user_id=None):
+        base_url = os.getenv("BASE_URL")
         if user_id:
             user_obj =get_object_or_404(UserAccount,id=user_id)
             serializers_data =UserAccountSerializerShow(user_obj).data
@@ -664,9 +665,23 @@ class UserAccountManager(APIView):
                 "data":serializers_data
             })
         workspace_id = request.GET.get("workspace_id")
-        workspae_obj = get_object_or_404(WorkSpace,id=workspace_id)
         response_data = []
-        base_url = os.getenv("BASE_URL")
+        workspae_obj = get_object_or_404(WorkSpace,id=workspace_id)
+        if workspae_obj.owner != request.user:
+            owner_serializer = UserAccountSerializerShow(workspae_obj.owner).data
+            owner_serializer['jtime'] = workspae_obj.owner.jtime()
+            owner_serializer['member_id'] = workspae_obj.owner.id
+            owner_serializer['fullname'] = workspae_obj.owner.fullname
+            owner_serializer['is_accepted'] = workspae_obj.owner.is_register
+            try:
+                owner_serializer['avatar_url'] = {
+                    "id": owner_serializer.avatar.id,
+                    "url": f"{base_url}{workspae_obj.owner.avatar.file.url}"
+                }
+            except:
+                owner_serializer['avatar_url'] = {}
+            response_data.append(owner_serializer)
+
         for workspace_member in WorkspaceMember.objects.filter(workspace=workspae_obj):
 
             
