@@ -225,7 +225,7 @@ class CampaignSerializer(serializers.ModelSerializer):
             new_field = CampaignField(field_type=field)
             new_field.save()
             new_campaign.fields_accepted.add(new_field)
-
+        new_campaign.save()
         return new_campaign
     def update(self, instance, validated_data):
         fields_accepted_list= validated_data.pop("fields_accepted_list",[])
