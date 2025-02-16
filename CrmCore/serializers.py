@@ -195,7 +195,7 @@ class CampaignSerializer(serializers.ModelSerializer):
     image_id = serializers.IntegerField(write_only=True,required=False)
     group_crm_id = serializers.IntegerField(write_only=True,required=True)
     creator_id = serializers.IntegerField(write_only=True,required=True)
-    fields_accepted_list = serializers.ListField(write_only=True,required=True)
+    field_list = serializers.ListField(write_only=True,required=True)
 
     class Meta:
         model= Campaign
@@ -208,12 +208,12 @@ class CampaignSerializer(serializers.ModelSerializer):
             "creator_id",
             "title",
             "description",
-            "fields_accepted_list",
             "field_list",
+
             "jtime",
         ]
     def create(self, validated_data):
-        fields_accepted_list= validated_data.pop("fields_accepted_list",[])
+        field_list= validated_data.pop("field_list",[])
         image_id = validated_data.pop("image_id",None)
         new_campaign= Campaign.objects.create(**validated_data)
         if image_id:
@@ -221,10 +221,14 @@ class CampaignSerializer(serializers.ModelSerializer):
             main_file.its_blong=True
             main_file.save()
             new_campaign.image= main_file
-        for field in fields_accepted_list:
-            new_field = CampaignField(field_type=field)
+        for field in field_list:
+            new_field = CampaignField(
+                field_type=field['field_type'],
+                title= field['title'],
+                campaign = new_campaign
+            )
             new_field.save()
-            new_campaign.fields_accepted.add(new_field)
+
         new_campaign.save()
         return new_campaign
     def update(self, instance, validated_data):

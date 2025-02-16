@@ -244,37 +244,13 @@ class Campaign(models.Model):
     creator = models.ForeignKey(UserAccount,on_delete=models.CASCADE,null=True)
     title = models.CharField(max_length=300,null=True)
     description = models.TextField(null=True)
-    fields_accepted =models.ManyToManyField("CampaignField")
+
     uuid = models.UUIDField(unique=True, default=uuid.uuid4, editable=False)
     created = models.DateTimeField(auto_now_add=True,null=True)
-    def field_list(self):
-        try:
 
 
-            field_item_list =["fullname",
-             "phone_number",
-             "email",
-             "telegram_id",
-             "instagram_id",
-             "website",]
-            data=[]
-            for field in field_item_list:
-                not_exist = True
-                for exist_field in self.fields_accepted.all():
-                    if exist_field.field_type == field:
-                        not_exist=False
-                        data.append({
-                            "field_name":exist_field.field_type,
-                            "selected":True,
-                        })
-                if not_exist:
-                    data.append({
-                        "field_name": field,
-                        "selected": False,
-                    })
-            return data
-        except:
-            return []
+
+
 
     def image_url(self):
         base_url =os.getenv("BASE_URL")
@@ -287,20 +263,36 @@ class Campaign(models.Model):
             return {}
 
     def jtime(self):
+
         jalali_datetime = jdatetime.datetime.fromgregorian(datetime=self.created)
 
         return jalali_datetime.strftime("%Y/%m/%d %H:%M:%S")
-class CampaignForm(models.Model):
-    campaign = models.ForeignKey(Campaign,on_delete=models.CASCADE,null=True,related_name="campaign_forms")
+
 class CampaignField(models.Model):
     TYPE = (
         ("fullname","FULLNAME"),
         ("phone_number","PHONE_NUMBER"),
+        ("text","TEXT"),
+        ("number","NUMBER"),
         ("email","EMAIL"),
-        ("telegram_id","TELEGRAM_id"),
-        ("instagram_id","INSTAGRAM_ID"),
-        ("website","WEBSITE")
+        ("link","LINK"),
+
+
+
+
     )
-    text = models.TextField(null=True)
+    title= models.CharField(max_length=70,null=True)
+
     field_type = models.CharField(max_length=60,choices=TYPE,null=True)
-    campaign_form = models.ForeignKey(CampaignForm,on_delete=models.CASCADE,related_name="campaign_fields",null=True)
+    campaign = models.ForeignKey(Campaign,on_delete=models.CASCADE,null=True,related_name="fields")
+
+class CampaignForm (models.Model):
+    campaign = models.ForeignKey(Campaign,on_delete=models.CASCADE,related_name="forms",null=True)
+
+
+
+class CampaignFormData(models.Model):
+    title = models.CharField(max_length=55,null=True)
+    text = models.TextField(null=True)
+
+    campaign_form =models.ForeignKey(CampaignForm,on_delete=models.CASCADE,null=True,related_name="form_data")

@@ -45,9 +45,9 @@ class CategoryProjectManager(APIView):
         new_category_project =CategoryProject(
             title = data['title'],
             color_code = data['color_code'],
-       
-
         )
+
+
         if project_obj.category_project.last().order != None:
             new_category_project.order = int(project_obj.category_project.last().order) +1 
         new_category_project.project=project_obj
