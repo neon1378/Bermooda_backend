@@ -1001,15 +1001,16 @@ def campaign_show (request,uuid):
 @permission_classes([AllowAny])
 def submit_form (request,uuid):
     data= request.data
+    field_list = data.get("field_list")
     campaign = get_object_or_404(Campaign, uuid=uuid)
-    new_campaign_field = CampaignField()
-    for field in campaign.fields_accepted.all():
-        new_campaign_field.field_type = field.field_type
-        new_campaign_field.text = data.get(field.field_type)
-    new_campaign_form = CampaignForm(campaign=campaign)
-    new_campaign_form.save()
-    new_campaign_field.campaign_form=new_campaign_form
-    new_campaign_field.save()
+    new_campaign_form =CampaignForm(campaign=campaign)
+    for field in field_list:
+        CampaignFormData.objects.create(
+            title = field['title'],
+            text = field['text'],
+            campaign_form = new_campaign_form
+        )
+
     return Response(status=status.HTTP_201_CREATED,data={
         "status":True,
         "message":"success",
