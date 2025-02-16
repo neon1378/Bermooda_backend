@@ -187,6 +187,7 @@ class ProjectChatMainWs(WebsocketConsumer):
                 event = {
                     "type":"chat_handler",
                     "chat_id":new_project_chat.id,
+                    "creator_id" :self.user.id
                    
                 
 
@@ -219,7 +220,9 @@ class ProjectChatMainWs(WebsocketConsumer):
         self.send(json.dumps(
             {
                 "data_type":"create_message",
-                "data":serializer_data.data
+                "data":serializer_data.data,
+                "creator": event['creator_id'] == self.user.id
+
             }
         ))
 
