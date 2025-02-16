@@ -1004,6 +1004,7 @@ def submit_form (request,uuid):
     field_list = data.get("field_list")
     campaign = get_object_or_404(Campaign, uuid=uuid)
     new_campaign_form =CampaignForm(campaign=campaign)
+    new_campaign_form.save()
     for field in field_list:
         CampaignFormData.objects.create(
             title = field['title'],
