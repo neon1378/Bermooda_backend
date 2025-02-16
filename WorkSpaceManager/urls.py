@@ -4,7 +4,7 @@ urlpatterns = [
     path("WorkSpaceManager/<int:workspace_id>",views.WorkspaceManager.as_view()),  
     path("WorkSpaceManager",views.WorkspaceManager.as_view()),    
 
-    path("GetSubCategory/<int:category_id>",views.get_sub_category),    
+
     path("WorkSpaceManager/PersonalInformation/<int:workspace_id>",views.update_workspace_personal_information),    
     path("create_category",views.create_category),    
     path("CreateWorkSpaceAvatar/<int:workspace_id>",views.create_workspace_image),    
@@ -16,6 +16,7 @@ urlpatterns = [
     path("AcceptWorkspaceInvitation/<int:notification_id>", views.accept_workspace_invitation),
     path("GetManagerUser", views.get_manager_users),
     path("GetExpertUser", views.get_expert_users),
+    path("GetIndustrialActivity",views.get_industrial_activity),
 
 
 ]

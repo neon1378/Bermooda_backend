@@ -10,23 +10,11 @@ from dotenv import load_dotenv
 load_dotenv()
 from core.models import City,State,MainFile
 from extensions.utils import costum_date
-class MainCategory(models.Model):
-    reference_id = models.CharField(max_length=400,null=True)
-    title =models.CharField(max_length=50)
-    icon = models.URLField(null=True)
-    status = models.IntegerField(null=True)
-    isDisable = models.BooleanField(default=False)
-    isMedia = models.BooleanField(default=False)
 
 
-class SubCategory (models.Model):
-    main_category = models.ForeignKey(MainCategory,on_delete=models.CASCADE,null=True,related_name="sub_category")
-    reference_id = models.CharField(max_length=400,null=True)
-    title=models.CharField(max_length=50)
-    icon= models.CharField(max_length=200,null=True)
-    isDisable =models.IntegerField(null=True)
-    isMedia =models.IntegerField(null=True)
-    status= models.IntegerField(null=True)
+class IndustrialActivity(models.Model):
+    title = models.CharField(max_length=150,null=True)
+    refrence_id = models.IntegerField(default=0)
 
 class WorkSpace (models.Model):
     title = models.CharField(max_length=100,null=True)
@@ -38,16 +26,14 @@ class WorkSpace (models.Model):
         ("کسب کار آفلاین","کسب کار آفلاین "),
         ("هر دو","هر دو")
     )
-    
-    main_category = models.ForeignKey(MainCategory,on_delete=models.SET_NULL ,null=True)
-    sub_category = models.ForeignKey(SubCategory,on_delete=models.SET_NULL ,null=True)
+
     jadoo_workspace_id = models.PositiveBigIntegerField(default=0)
     business_type=models.CharField(max_length=50, choices=BUSINESS_TYPE,null=True)
 
 
     reference_sub_category = models.PositiveBigIntegerField(default=0)
     reference_category = models.PositiveBigIntegerField(default=0)
-    
+    industrialactivity = models.ForeignKey(IndustrialActivity,on_delete=models.SET_NULL,null=True)
     jadoo_brand_name = models.CharField(max_length=100,null=True,unique=True)
     avatar = models.ForeignKey(MainFile,on_delete=models.SET_NULL,null=True)
 

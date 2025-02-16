@@ -10,7 +10,7 @@ from django.shortcuts import get_object_or_404
 import os 
 import json
 from Notification.models import Notification
-from .serializers import WorkSpaceSerializer
+from .serializers import WorkSpaceSerializer, IndustrialActivitySerializer
 import requests
 from dotenv import load_dotenv
 from core.permission import IsAccess,IsWorkSpaceUser
@@ -18,25 +18,18 @@ load_dotenv()
 from WalletManager.models import Wallet
 from rest_framework.parsers import MultiPartParser, FormParser
 # Create your views here.
-@permission_classes([IsAuthenticated])
 @api_view(['GET'])
-def get_sub_category(request,category_id):
-        main_category = get_object_or_404(MainCategory,id=category_id)
+@permission_classes([IsAuthenticated])
+def get_industrial_activity(request):
+    industrial_activity =IndustrialActivity.objects.all()
+    serializer_data = IndustrialActivitySerializer(industrial_activity,many=True)
+    return Response(status=status.HTTP_200_OK,data={
+        "status":True,
+        "message":"success",
+        "data":serializer_data.data
 
-        categorys =[
-                {
-                    "title":category.title,
-                    "id":category.id,
-                    "isDisable":category.isDisable,
-                    "icon":category.icon
-                }for category in main_category.sub_category.all()
-            ]
+    })
 
-        return Response(status=status.HTTP_200_OK,data={
-            "status":True,
-            "message":"success",
-            "data":categorys
-        })
 class WorkspaceManager(APIView):
     permission_classes = [IsAuthenticated]
     jadoo_base_url = os.getenv("JADOO_BASE_URL")
@@ -62,17 +55,8 @@ class WorkspaceManager(APIView):
             workspace_obj= get_object_or_404(WorkSpace,id=workspace_id)
             if workspace_obj.owner == request.user:
 
-                categorys =[
-                    {
-                        "title":category.title,
-                        "id":category.id,
-                        "isDisable":category.isDisable,
-                        "icon":category.icon,
-                        "selected": category == workspace_obj.main_category
-                    }for category in MainCategory.objects.all()
-                ]
                 serializer_data =WorkSpaceSerializer(workspace_obj).data
-                serializer_data['category'] = categorys
+
                 serializer_data['title'] = workspace_obj.title
                 serializer_data['is_authenticated'] = workspace_obj.is_authenticated
                 serializer_data['avatar_url']=workspace_obj.avatar_url()
@@ -93,38 +77,14 @@ class WorkspaceManager(APIView):
             data['title'] = workspace_obj.title
             data['is_authenticated'] = workspace_obj.is_authenticated
             data['avatar_url']=workspace_obj.avatar_url()
-            categorys =[
-                    {
-                        
-                        "title":category.title,
-                        "id":category.id,
-                        "isDisable":category.isDisable,
-                        "icon":category.icon,
-                        "sub_category":[],
-                        "selected": category == workspace_obj.main_category
-                    }for category in MainCategory.objects.all()
-                ]
-            
-            for category in categorys:
-                main_category = MainCategory.objects.get(id=category['id'])
-                for sub_category in main_category.sub_category.all():
-                    category['sub_category'].append(
-                        {
-                            "title":sub_category.title,
-                            "id":sub_category.id,
-                            "isDisable":sub_category.id,
-                            "icon":sub_category.id,
-                            "selected" : sub_category == workspace_obj.sub_category
-                        }
-                    )
 
-            data['category'] = categorys
+
+
         return Response(status=status.HTTP_200_OK,data=serializer_data)
     def put(self,request,workspace_id):
         workspace_obj = get_object_or_404(WorkSpace,id=workspace_id)
         data=request.data
-        reference_sub_category = data.get("reference_sub_category")
-        reference_category = data.get("reference_category")
+
         avatar_id = data.get("avatar_id",None)
 
 
@@ -133,8 +93,7 @@ class WorkspaceManager(APIView):
             serializer_data.save()
             
             workspace_obj.is_authenticated=True
-            workspace_obj.main_category_id =reference_category
-            workspace_obj.sub_category_id =reference_sub_category
+
             if avatar_id:
                 avatar_obj = MainFile.objects.get(id=avatar_id)
                 avatar_obj.its_blong=True
@@ -155,8 +114,7 @@ class WorkspaceManager(APIView):
                         "Authorization":f"Bearer {request.user.refrence_token}"
                     }
                     payload = {
-                        "mainCategoryId":workspace_obj.main_category.reference_id,
-                        "subCategoryId":workspace_obj.sub_category.reference_id,
+
                         "cityId":workspace_obj.state.refrence_id,
                         "stateId":workspace_obj.city.refrence_id,
                         "name":workspace_obj.title,
@@ -227,6 +185,7 @@ def update_workspace_personal_information(request,workspace_id):
         request.user.phone_number = phone_number
         request.user.brand_name = brand_name
         request.user.economic_code = economic_code
+
         request.user.is_auth=True
         request.user.save()
                 
@@ -255,40 +214,24 @@ def update_workspace_personal_information(request,workspace_id):
 @permission_classes([AllowAny])
 def create_category (request):
     jadoo_base_url = os.getenv("JADOO_BASE_URL")
-    token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOi8vc2VydmVyLmphZG9vLmFwcC9hcGkvdjEvdXNlci9hdXRoL2NyZWF0ZUJ1c2luZXNzVXNlciIsImlhdCI6MTczOTM1NDkzNCwiZXhwIjoxNzQwNTY0NTM0LCJuYmYiOjE3MzkzNTQ5MzQsImp0aSI6InliMWp5YWNOWWRBMkxwejMiLCJzdWIiOiI1MiIsInBydiI6IjIzYmQ1Yzg5NDlmNjAwYWRiMzllNzAxYzQwMDg3MmRiN2E1OTc2ZjcifQ.5Sbt2iZhax9pvd4bx8-BBgHn7C2UU1PljKhdYq4rpME"
-    main_cat__url = f"{jadoo_base_url}/maincategory/getCategories"
+    token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOi8vc2VydmVyLmphZG9vLmFwcC9hcGkvdjEvdXNlci9hdXRoL2NyZWF0ZUJ1c2luZXNzVXNlciIsImlhdCI6MTczOTcxNDQ4MywiZXhwIjoxNzQwOTI0MDgzLCJuYmYiOjE3Mzk3MTQ0ODMsImp0aSI6Ik1uS1ZUbXBZMGFXVDkyVEgiLCJzdWIiOiI2NSIsInBydiI6IjIzYmQ1Yzg5NDlmNjAwYWRiMzllNzAxYzQwMDg3MmRiN2E1OTc2ZjcifQ.oKNvh7AZ2jxIclWGdIk3qbDXoF88pz87NWv6yGoi0oU"
+    main_cat__url = f"{jadoo_base_url}/industrialActivity/getIndustrialActivity"
     headers = {
                 "Authorization":f"Bearer {token}" 
         }
     response =requests.get(url=main_cat__url,headers=headers)
-    for main_cat in response.json()['data']:
-
-        new_min_cat =MainCategory(
-            reference_id = main_cat['id'],
-            title = main_cat['title'],
-            icon = main_cat['icon'],
-            status = main_cat['status'],
-            isDisable = False,
-            isMedia = main_cat['isMedia']
-        )
-        new_min_cat.save()
-
-        url_sub_cat = f"{jadoo_base_url}/maincategory/getAllSubCategory?parent_id={main_cat['id']}"
-        response_sub_cat =requests.get(url=url_sub_cat,headers=headers)
+    for item in response.json()['data']:
         try:
-            for sub_cat in response_sub_cat.json()['data']:
-                new_sub_cat = SubCategory(
-                    main_category = new_min_cat,
-                    reference_id =sub_cat['id'],
-                    title = sub_cat['title'],
-                    icon = sub_cat['icon'],
-                    isDisable= False,
-                    isMedia = sub_cat['isMedia'],
-                    status= sub_cat['status'],
-                )
-                new_sub_cat.save()
+            industrialactivity = IndustrialActivity.objctes.get(refrence_id=item['id'])
+            industrialactivity.title = item['title']
+            industrialactivity.save()
         except:
-            pass
+
+            new_industrialactivity= IndustrialActivity.objects.create(
+                title = item['title'],
+                refrence_id = item['id']
+            )
+
     return Response(status=status.HTTP_200_OK)
 
 @permission_classes([IsAuthenticated])

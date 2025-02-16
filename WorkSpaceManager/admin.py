@@ -3,9 +3,9 @@ from .models import *
 
 
 admin.site.register(WorkSpace)
+admin.site.register(IndustrialActivity)
 admin.site.register(WorkspaceMember)
-admin.site.register(MainCategory)
-admin.site.register(SubCategory)
+
 
 admin.site.register(MemberPermission)
 admin.site.register(ViewName)

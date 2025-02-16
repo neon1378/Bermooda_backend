@@ -1,12 +1,24 @@
 from rest_framework.serializers import ModelSerializer
 from rest_framework import serializers
-from .models import WorkSpace
+from .models import *
+
+
+
+class IndustrialActivitySerializer(ModelSerializer):
+    class Meta:
+        model =IndustrialActivity
+        fields = [
+            "id",
+            "title"
+        ]
 
 class WorkSpaceSerializer(ModelSerializer):
+    industrialactivity_id = serializers.IntegerField(write_only=True,required=True)
     class Meta:
         model =WorkSpace
         fields =[
             "id",
+            "industrialactivity_id",
 
             "business_type",
 
