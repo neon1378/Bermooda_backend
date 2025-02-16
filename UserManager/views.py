@@ -673,6 +673,7 @@ class UserAccountManager(APIView):
             owner_serializer['member_id'] = workspae_obj.owner.id
             owner_serializer['fullname'] = workspae_obj.owner.fullname
             owner_serializer['is_accepted'] = workspae_obj.owner.is_register
+            owner_serializer['type'] ="owner"
             try:
                 owner_serializer['avatar_url'] = {
                     "id": owner_serializer.avatar.id,
@@ -690,6 +691,7 @@ class UserAccountManager(APIView):
             serializers_data['member_id'] = workspace_member.id
             serializers_data['fullname'] = workspace_member.fullname
             serializers_data['is_accepted'] = workspace_member.user_account.is_register
+            serializers_data['type'] = "member"
             try:
                 serializers_data['avatar_url'] = {
                     "id": workspace_member.avatar.id,
