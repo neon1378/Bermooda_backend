@@ -251,7 +251,6 @@ class Campaign(models.Model):
 
 
 
-
     def image_url(self):
         base_url =os.getenv("BASE_URL")
         try:
@@ -270,7 +269,7 @@ class Campaign(models.Model):
 
 class CampaignField(models.Model):
     TYPE = (
-        ("fullname","FULLNAME"),
+
         ("phone_number","PHONE_NUMBER"),
         ("text","TEXT"),
         ("number","NUMBER"),

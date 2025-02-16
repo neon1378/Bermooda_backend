@@ -191,17 +191,27 @@ class CustomerSmallSerializer(serializers.ModelSerializer):
             return new_customer
 
 
+
+class CampaignFieldSerializer(serializers.ModelSerializer):
+    class Meta:
+        model= CampaignField
+        fields = [
+            "id",
+            "title",
+            "field_type",
+        ]
 class CampaignSerializer(serializers.ModelSerializer):
     image_id = serializers.IntegerField(write_only=True,required=False)
     group_crm_id = serializers.IntegerField(write_only=True,required=True)
     creator_id = serializers.IntegerField(write_only=True,required=True)
-    field_list = serializers.ListField(write_only=True,required=True)
-
+    field_list = serializers.ListField(write_only=True,required=False)
+    fields = CampaignFieldSerializer(read_only=True,many=True)
     class Meta:
         model= Campaign
         fields = [
             "id",
             "uuid",
+            "fields",
             "image_id",
             "image_url",
             "group_crm_id",
@@ -232,7 +242,7 @@ class CampaignSerializer(serializers.ModelSerializer):
         new_campaign.save()
         return new_campaign
     def update(self, instance, validated_data):
-        fields_accepted_list= validated_data.pop("fields_accepted_list",[])
+
         image_id = validated_data.pop("image_id",None)
         group_crm_id = validated_data.pop("group_crm_id")
         creator_id = validated_data.pop("creator_id")
@@ -246,11 +256,6 @@ class CampaignSerializer(serializers.ModelSerializer):
                 main_file.its_blong=True
                 main_file.save()
                 instance.image = main_file
-        instance.fields_accepted.all().delete()
-        for field in fields_accepted_list:
-            new_field = CampaignField(field_type=field)
-            new_field.save()
-            instance.fields_accepted.add(new_field)
 
         instance.save()
         return instance
