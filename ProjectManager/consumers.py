@@ -242,14 +242,16 @@ class ProjectChatMainWs(WebsocketConsumer):
 class ProjectTask(WebsocketConsumer):
     def connect(self):
         self.user = self.scope['user']
-
+        self.user_type = self.scope['user_type']
         if self.user.is_authenticated:
             self.accept()
         else:
             self.close(code=1)
         self.project_id = self.scope['url_route']['kwargs']['project_id']
+
         self.project_obj = Project.objects.get(id=self.project_id)
-        if self.scope['user_type']  == "member":
+
+        if self.user_type  == "member":
             for permission in self.scope['permissions']:
                 if permission['permission_name'] == "project board":
                     self.permission = permission['permission_type']
