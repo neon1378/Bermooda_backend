@@ -32,6 +32,7 @@ urlpatterns = [
     path("CampaignManager", views.CampaignManager.as_view()),
     path("CampaignManager/<int:campaign_id>", views.CampaignManager.as_view()),
     path("CampaignShow/<uuid:uuid>", views.campaign_show),
+    path("CampaignForm/<uuid:uuid>", views.submit_form),
 
 
 ]

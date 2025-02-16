@@ -995,3 +995,25 @@ def campaign_show (request,uuid):
         "message":"success",
         "data":serializer_data.data
     })
+
+
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def submit_form (request,uuid):
+    data= request.data
+    campaign = get_object_or_404(Campaign, uuid=uuid)
+    new_campaign_field = CampaignField()
+    for field in campaign.fields_accepted.all():
+        new_campaign_field.field_type = field.field_type
+        new_campaign_field.text = data.get(field.field_type)
+    new_campaign_form = CampaignForm(campaign=campaign)
+    new_campaign_form.save()
+    new_campaign_field.campaign_form=new_campaign_form
+    new_campaign_field.save()
+    return Response(status=status.HTTP_201_CREATED,data={
+        "status":True,
+        "message":"success",
+        "data":{}
+    })
+
+
