@@ -149,7 +149,7 @@ class ProjectChatMainWs(WebsocketConsumer):
             "count": paginator.count,
             "next": page.next_page_number() if page.has_next() else None,
             "previous": page.previous_page_number() if page.has_previous() else None,
-            "data": serializer_data.data
+            "list": serializer_data.data
         }
 
     def connect(self):
