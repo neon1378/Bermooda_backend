@@ -553,13 +553,15 @@ def get_expert_users(request):
             "avatar_url": user.user_account.avatar_url(),
         }
         for user in workspace_obj.workspace_member.all()
-        if any(
-            permission.permission_name == "project board"
-            and permission.permission_type in {"expert", "no access"}
-            for permission in user.permissions.all()
-        )
-    ]
 
+    ]
+    expert_user.append(
+        {
+            "id": workspace_obj.owner.id,
+            "fullname": workspace_obj.owner.fullname,
+            "avatar_url": workspace_obj.owner.avatar_url(),
+        }
+    )
     return Response(status=status.HTTP_200_OK, data={
         "status": True,
         "message": "success",
