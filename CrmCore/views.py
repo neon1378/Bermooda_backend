@@ -985,3 +985,13 @@ class CampaignManager(APIView):
             "message": "validation error",
             "data": serializer_data.errors
         })
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def campaign_show (request,uuid):
+    campaign = get_object_or_404(Campaign,uuid=uuid)
+    serializer_data =CampaignSerializer(campaign)
+    return Response(status=status.HTTP_200_OK,data={
+        "status":True,
+        "message":"success",
+        "data":serializer_data.data
+    })

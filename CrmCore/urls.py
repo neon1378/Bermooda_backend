@@ -31,6 +31,8 @@ urlpatterns = [
     path("CustomerUserView", views.CustomerUserView.as_view()),
     path("CampaignManager", views.CampaignManager.as_view()),
     path("CampaignManager/<int:campaign_id>", views.CampaignManager.as_view()),
+    path("CampaignShow/<uuid:uuid>", views.campaign_show),
+
 
 ]
 
