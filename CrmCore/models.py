@@ -277,10 +277,11 @@ class Campaign(models.Model):
             return []
 
     def image_url(self):
+        base_url =os.getenv("BASE_URL")
         try:
             return {
                 "id":self.image.id,
-                "url":self.image.file.url
+                "url":f'{base_url}{self.image.file.url}'
             }
         except:
             return {}
