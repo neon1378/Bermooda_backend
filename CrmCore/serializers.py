@@ -274,6 +274,7 @@ class CampaignFormSerializer(serializers.ModelSerializer):
     class Meta:
         model = CampaignForm
         fields = [
+            "field_type",
             "id",
             "form_data",
             "fullname",
