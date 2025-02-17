@@ -989,6 +989,19 @@ class CampaignManager(APIView):
 @permission_classes([AllowAny])
 def campaign_show (request,uuid):
     campaign = get_object_or_404(Campaign,uuid=uuid)
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0]  # First IP in the list
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+    if IpExist.objects.filter(ip=ip,campaign=campaign).exists():
+        return Response(status=status.HTTP_400_BAD_REQUEST,data={
+            "status":False,
+            "message":"ای پی وارد شده وجود دارد",
+            "data":{}
+
+        })
+
     serializer_data =CampaignSerializer(campaign)
     return Response(status=status.HTTP_200_OK,data={
         "status":True,
@@ -1003,9 +1016,21 @@ def submit_form (request,uuid):
     data= request.data
     field_list = data.get("field_list")
     fullname= data.get("fullname",None)
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0]  # First IP in the list
+    else:
+        ip = request.META.get('REMOTE_ADDR')
     campaign = get_object_or_404(Campaign, uuid=uuid)
     new_campaign_form =CampaignForm(campaign=campaign,fullname=fullname)
+    if IpExist.objects.filter(ip=ip,campaign=campaign).exists():
+        return Response(status=status.HTTP_400_BAD_REQUEST,data={
+            "status":False,
+            "message":"ای پی وارد شده وجود دارد",
+            "data":{}
 
+        })
+    IpExist.objects.create(ip=ip,campaign=campaign)
     new_campaign_form.save()
     for field in field_list:
         CampaignFormData.objects.create(
@@ -1014,6 +1039,7 @@ def submit_form (request,uuid):
             text = field['text'],
             campaign_form = new_campaign_form
         )
+
 
     return Response(status=status.HTTP_201_CREATED,data={
         "status":True,
@@ -1025,6 +1051,7 @@ def submit_form (request,uuid):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_campaign_form(request,campaign_form_id=None):
+
     if campaign_form_id:
         campaign_form = get_object_or_404(CampaignForm,id=campaign_form_id)
         serializer_data =CampaignFormSerializer(campaign_form)
@@ -1033,6 +1060,7 @@ def get_campaign_form(request,campaign_form_id=None):
             "message":"success",
             "data":serializer_data.data
         })
+
     campaign_id = request.GET.get("campaign_id")
     campaign_obj =get_object_or_404(Campaign,id=campaign_id)
     campaign_form_objs = CampaignForm.objects.filter(campaign=campaign_obj)

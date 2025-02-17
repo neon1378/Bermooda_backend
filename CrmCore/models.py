@@ -309,3 +309,9 @@ class CampaignFormData(models.Model):
     text = models.TextField(null=True)
 
     campaign_form =models.ForeignKey(CampaignForm,on_delete=models.CASCADE,null=True,related_name="form_data")
+
+
+class IpExist(models.Model):
+
+    ip = models.GenericIPAddressField(null=True)
+    campaign =  models.ForeignKey(Campaign,on_delete=models.CASCADE,null=True)
