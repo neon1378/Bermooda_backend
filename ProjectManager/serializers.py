@@ -234,6 +234,7 @@ class ProjectSerializer(serializers.ModelSerializer):
             "project_status",
             "avatar_id",
             "department_id",
+            "department",
             "workspace_id",
             "users",
         ]
