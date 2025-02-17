@@ -70,7 +70,7 @@ class Project(models.Model):
     department = models.ForeignKey(ProjectDepartment,on_delete=models.CASCADE,null=True,related_name="project_department")
     chat = models.ManyToManyField(ProjectChat,blank=True,related_name="projects_chats")
 
-    def avatar_url (self,request):
+    def avatar_url (self):
         base_url = os.getenv("BASE_URL")
         try:
             return {
