@@ -561,42 +561,24 @@ def get_project_users(request,project_id):
 
     project_obj = Project.objects.get(id=project_id)
     user_list = [
-    
+        {
+
+            "fullname": workspace_obj.owner.fullname,
+            "id": workspace_obj.owner.id,
+            "avatar_url": workspace_obj.owner.avatar_url(),
+            "self": request.user == workspace_obj.owner
+        }
     ]
-    if project_obj.creator:
-        user_list.append({  "type":"manager",
-                            "fullname":project_obj.creator.fullname  ,
-                            "id":project_obj.creator.id,
-                            "avatar_url":project_obj.creator.avatar_url(),
-                            "self":request.user == project_obj.creator
-                        })
-    for member in project_obj.members.all() :
-        
-        try:
-            if project_obj.creator:
-                if project_obj.creator != workspace_obj.owner:
-                    if workspace_obj.owner == member:
-                        user_list.append({
-                            "type":"manager",
-                            "fullname":member.fullname  ,
-                            "id":member.id,
-                            "avatar_url":member.avatar_url(),
-                            "self":request.user == member
-                        })
-                workspace_member= WorkspaceMember.objects.get(workspace=workspace_obj,user_account=member)
-             
-                if member != project_obj.creator and member != workspace_obj.owner: 
-                    if workspace_member.is_accepted:
-                        
-                        user_list.append(    {
-                            "type":"expert",
-                            "fullname":member.fullname ,
-                            "id":member.id,
-                            "avatar_url":member.avatar_url(),
-                            "self":request.user == member
-                        }  )
-        except:
-            pass
+    for member in project_obj.members.all():
+        if member != workspace_obj.owner :
+            user_list.append({
+
+                "fullname": member.fullname,
+                "id": member.id,
+                "avatar_url": member.avatar_url(),
+                "self": request.user == member
+            }
+            )
     return Response(status=status.HTTP_200_OK,data={
         "status":True,
         "message":"موفق",
