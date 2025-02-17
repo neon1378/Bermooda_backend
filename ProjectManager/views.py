@@ -148,10 +148,11 @@ class ProjectManager(APIView):
                 project_obj=Project.objects.get(id=data['id'])
                 user_account = UserAccount.objects.get(id=user['id'])
                 user["progress_percentage"] = self._get_member_progress(project=project_obj, user=user_account)
+        print(serializer_data.data)
         return Response(status=status.HTTP_200_OK, data={
             "status":True,
             "message":"موفقیت",
-            "data":serializer_data.data
+            "data":[]
         })
     
 
@@ -165,11 +166,10 @@ class ProjectManager(APIView):
             for user in serializer_data.data['members']:
                 user_account = UserAccount.objects.get(id=user['id'])
                 user["progress_percentage"] =  self._get_member_progress(project=project_obj, user=user_account)
-            print(serializer_data.data)
             return Response(status=status.HTTP_201_CREATED, data={
                 "status":True,
                 "message":"پروژ ه جدید با موفقیت ثبت شد",
-                "data":{}
+                "data":serializer_data.data
             })
 
         return Response(status=status.HTTP_400_BAD_REQUEST, data={
