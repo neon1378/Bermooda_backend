@@ -204,12 +204,14 @@ class CampaignSerializer(serializers.ModelSerializer):
     image_id = serializers.IntegerField(write_only=True,required=False)
     group_crm_id = serializers.IntegerField(write_only=True,required=True)
     creator_id = serializers.IntegerField(write_only=True,required=True)
+    creator= MemberSerializer(read_only=True)
     field_list = serializers.ListField(write_only=True,required=False)
     fields = CampaignFieldSerializer(read_only=True,many=True)
     class Meta:
         model= Campaign
         fields = [
             "id",
+            "creator",
             "uuid",
             "fields",
             "image_id",
