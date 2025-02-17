@@ -9,3 +9,8 @@ admin.site.register(CustomerUser)
 admin.site.register(GroupCrm)
 admin.site.register(CrmDepartment)
 
+admin.site.register(Campaign)
+admin.site.register(CampaignField)
+admin.site.register(CampaignForm)
+admin.site.register(CampaignFormData)
+
