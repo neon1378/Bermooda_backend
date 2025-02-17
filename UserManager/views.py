@@ -214,17 +214,26 @@ def get_users_info(request):
     workspace_obj= get_object_or_404(WorkSpace,id=request.GET.get("workspace_id",None))
     user_acc_list = []
     for workspace_member in WorkspaceMember.objects.filter(workspace=workspace_obj):
-        if workspace_member.user_account.is_register:
-            if workspace_member.is_accepted:
-                dic = {
+
+
+            dic = {
                     "fullname":workspace_member.fullname,
                     "id":workspace_member.user_account.id,
                     "avatar_url":workspace_member.user_account.avatar_url(),
-                    "self":workspace_member.user_account == request.user
-                }
+                    "self":workspace_member.user_account == request.user,
+                    "type":"member",
+                    "permissions":[]
+
+            }
+
+            for permission in workspace_member.permissions.all():
+                dic['permissions'].append({
+                    "permission_name":permission.permission_name,
+                    "permission_type":permission.permission_type
+                })
 
 
-                user_acc_list.append(dic)
+            user_acc_list.append(dic)
 
 
     user_acc_list.append(
@@ -232,7 +241,9 @@ def get_users_info(request):
                 "fullname":workspace_obj.owner.fullname,
                 "id":workspace_obj.owner.id,
                 "avatar_url": workspace_obj.owner.avatar_url(),
-                "self": request.user == workspace_obj.owner  
+                "self": request.user == workspace_obj.owner,
+                "type":"owner",
+                "permissions":[]
 
             }
         )    
