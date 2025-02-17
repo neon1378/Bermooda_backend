@@ -129,7 +129,7 @@ class ProjectChatWs(WebsocketConsumer):
 class ProjectChatMainWs(WebsocketConsumer):
     def paginate_queryset(self,page_number,queryset):
         
-        
+
         # Set up custom pagination
         paginator = Paginator(queryset.order_by("-id"), 20)  # Set items per page
 
@@ -242,9 +242,10 @@ class ProjectChatMainWs(WebsocketConsumer):
 class ProjectTask(WebsocketConsumer):
     def connect(self):
         self.user = self.scope['user']
-        self.user_type = self.scope['user_type']
+
         if self.user.is_authenticated:
             self.accept()
+            self.user_type = self.scope['user_type']
         else:
             self.close(code=1)
         self.project_id = self.scope['url_route']['kwargs']['project_id']
