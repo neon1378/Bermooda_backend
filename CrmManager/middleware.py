@@ -60,8 +60,7 @@ class JWTAuthMiddleware:
                 user_detail = await  self.get_user(user_id)
                 # Fetch user object from the database
                 scope['user'] = user_detail.get('user')
-                scope['permissions'] = user_detail.get('permissions', [])  # Default to an empty list if not present
-                scope["user_type"] = user_detail.get("type")
+
             except (InvalidTokenError, UserAccount.DoesNotExist):
                 # Invalid token or user not found, keep user as AnonymousUser
                 pass
@@ -71,29 +70,10 @@ class JWTAuthMiddleware:
     @database_sync_to_async
     def get_user(self, user_id):
         user_account =UserAccount.objects.get(id=user_id)
-        permissions = [
 
-        ]
-        workspace_obj=  WorkSpace.objects.get(id=user_account.current_workspace_id)
-
-        if workspace_obj.owner == user_account:
-            type = "owner"
-        else:
-            type = "member"
-            workspace_member = WorkspaceMember.objects.get(user_account=user_account,workspace=workspace_obj)
-
-            for permission in workspace_member.permissions.all():
-                permissions.append(
-                    {
-                        "id":permission.id,
-                        "permission_name":permission.permission_name,
-                        "permission_type":permission.permission_type,
-                    }
-                )
 
         return {
             "user":user_account,
-            "permissions":permissions,
-            "type":type
+
 
         }

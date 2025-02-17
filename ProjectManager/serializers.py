@@ -3,6 +3,7 @@ from .models import *
 from rest_framework import serializers
 from django.shortcuts import get_object_or_404
 from core.models import MainFile
+
 from MailManager.serializers import MemberSerializer
 
 class ProjectDepartmentSerializer(ModelSerializer):
@@ -22,12 +23,15 @@ class ProjectDepartmentSerializer(ModelSerializer):
     
 
 
+
+
 class CategoryProjectSerializer(ModelSerializer):
     class Meta:
         model = CategoryProject
         fields= [
             "id",
-            "title"
+            "title",
+            "order"
 
          
         ]
@@ -207,3 +211,84 @@ class ProjectChatSerializer(ModelSerializer):
         project_chat_obj = ProjectChat.objects.create(**validated_data)
         project_chat_obj.save()
         return project_chat_obj
+
+
+
+class ProjectSerializer(serializers.ModelSerializer):
+    members = MemberSerializer(many=True, read_only=True)
+    category_project = CategoryProjectSerializer(many=True, read_only=True)
+    department = ProjectDepartmentSerializer(read_only=True)
+    avatar_id = serializers.IntegerField(write_only=True, required=False)
+    department_id = serializers.IntegerField(write_only=True, required=True)
+    workspace_id = serializers.IntegerField(write_only=True, required=True)
+    users = serializers.ListField(write_only=True, required=True)
+
+    class Meta:
+        model = Project
+        fields = [
+            "id",
+            "title",
+            "avatar_url",
+            "category_project",
+            "members",
+            "project_status",
+            "avatar_id",
+            "department_id",
+            "workspace_id",
+            "users",
+        ]
+
+    def create(self, validated_data):
+        users = validated_data.pop("users", [])
+        avatar_id = validated_data.pop("avatar_id", None)
+        project_obj = Project.objects.create(**validated_data)
+        for user in users:
+            user_acc = UserAccount.objects.get(id=user)
+            project_obj.members.add(user_acc)
+        if avatar_id:
+            main_file = MainFile.objects.get(id=avatar_id)
+            main_file.its_blong = True
+            main_file.save()
+            project_obj.avatar = main_file
+        categories = [
+            {"title": "برای انجام", "order": 1, "color_code": "#DB4646"},
+            {"title": "در حال انجام", "order": 2, "color_code": "#02C875"},
+            {"title": "انجام شده", "order": 3, "color_code": "#9C00E8"},
+            {"title": "تست", "order": 4, "color_code": "#E82BA3"},
+        ]
+        category_objs = [
+            CategoryProject(
+                title=category['title'],
+                color_code=category['color_code'],
+                order=category['order'],
+                project=project_obj
+            ) for category in categories
+        ]
+        CategoryProject.objects.bulk_create(category_objs)
+        project_obj.save()
+        return project_obj
+
+    def update(self, instance, validated_data):
+        users = validated_data.pop("users", None)
+        avatar_id = validated_data.pop("avatar_id", None)
+
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+
+        if users is not None:
+            instance.members.clear()
+            for user in users:
+                user_acc = UserAccount.objects.get(id=user)
+                instance.members.add(user_acc)
+
+        if avatar_id and avatar_id != getattr(instance.avatar, 'id', None):
+            if instance.avatar:
+                instance.avatar.delete()
+            instance.avatar_id = avatar_id
+            main_file_obj = MainFile.objects.get(id=avatar_id)
+            main_file_obj.its_blong=True
+            main_file_obj.save()
+
+        instance.save()
+        return instance
+

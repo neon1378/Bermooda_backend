@@ -101,52 +101,8 @@ class CategoryProjectManager(APIView):
 class ProjectManager(APIView):
     permission_classes = [IsAuthenticated,IsWorkSpaceMemberAccess]
     
-    def get_project_data(self, projects,data_type):
-        base_url = os.getenv("BASE_URL")        
-        if data_type:
-            data = []
-           
-            for project in projects:
-                dic ={
-                    "id": project.id,
-                    "title": project.title,
-                    "manager":MemberSerializer(project.creator).data if project.creator else {},
-                    "category_project":[{"title":category.title,"id":category.id,"color_code":category.color_code,"order":category.order} for category in project.category_project.all()],
-                    "users": [{"fullname" : user.fullname,"id":user.id,"avatar_url":user.avatar_url(),"progress_percentage":self._get_member_progress(project=project,user=user)  } for user in project.members.all()  ] ,
-                    "avatar_url": f"{base_url}{project.avatar.file.url}" if project.avatar else "",
-                    "project_status":project.project_status(),
-                    "department":ProjectDepartmentSerializer(project.department).data,
-                
-                }
-                main_user_list = []
-                for user in dic['users']:
-                    if project.creator:
-                        if user['id'] != project.creator:
-                            main_user_list.append(user)
-                    else:
-                        main_user_list.append(user)
-                dic['users'] = main_user_list
-                data.append(dic)
 
-            return data
-        else:
-            dic_data = {
-                    "id": projects.id,
-                    "title": projects.title,
-                    "manager": MemberSerializer(projects.creator).data if projects.creator else {},
-                    "category_project":[{"title":category.title,"id":category.id,"color_code":category.color_code,"order":category.order} for category in projects.category_project.all()],
-                    "users": [{"fullname" : user.fullname,"id":user.id,"avatar_url":user.avatar_url(),"progress_percentage":self._get_member_progress(project=projects,user=user) } for user in projects.members.all()],
-                    "project_status":projects.project_status(),
-                    "department": ProjectDepartmentSerializer(projects.department).data
-                    
-                
-                }
-            try:
-                dic_data["avatar_url"]= f"{base_url}{projects.avatar.file.url}" 
-            except:
-                dic_data['avatar_url']=""
-            return dic_data
-        
+
     def _get_member_progress(self,project,user):
 
         all_sub_task_completed= 0
@@ -165,123 +121,59 @@ class ProjectManager(APIView):
 
         if project_id:  
             project_obj = get_object_or_404(Project,id=project_id)
-            project_data ={
-                "id": project_obj.id,
-
-                "title": project_obj.title,
-                "manager": MemberSerializer(project_obj.creator).data if project_obj.creator else {},
-                "department": ProjectDepartmentSerializer(project_obj.department).data,
-                "category_project":[{"title":category.title,"id":category.id,"color_code":category.color_code} for category in project_obj.category_project.all()],
-                "users": [{"fullname" : user.fullname,"id":user.id } for user in project_obj.members.all()]
-                
-            
-            }
-            return Response(status=status.HTTP_200_OK,data=project_data)
-        department_id = request.GET.get("department_id",None) 
+            serializer_data = ProjectSerializer(project_obj)
+            for user in serializer_data.data['members']:
+                user_account = UserAccount.objects.get(id=user['id'])
+                user["progress_percentage"] =  self._get_member_progress(project=project_obj, user=user_account)
+            return Response(status=status.HTTP_200_OK,data=serializer_data.data)
+        department_id = request.GET.get("department_id",None)
         workspace_id  = request.GET.get('workspace_id')
         workspace_obj = get_object_or_404(WorkSpace,id=workspace_id)
         if request.user == workspace_obj.owner:
             projects =Project.objects.filter(workspace=workspace_obj,department_id=department_id)
         else:
-            if request.user_permission_type == "manager":
-                projects =Project.objects.filter(workspace=workspace_obj,department_id=department_id)
-            else:
 
-                project_workspace =Project.objects.filter(workspace=workspace_obj,department_id=department_id)
+
+            project_workspace =Project.objects.filter(workspace=workspace_obj,department_id=department_id)
                 
-                projects =[]
-                for pro in project_workspace:
-                    if request.user in pro.members.all():
-                        projects.append(pro)
-            
+            projects =[]
+            for pro in project_workspace:
+                if request.user in pro.members.all():
+                    projects.append(pro)
 
-        project_data = self.get_project_data(projects=projects,data_type=True)
-        return Response(status=status.HTTP_200_OK, data=project_data)
+
+        serializer_data = ProjectSerializer(projects,many=True)
+        for data in serializer_data.data:
+            for user in data['members']:
+                project_obj=Project.objects.get(id=data['id'])
+                user_account = UserAccount.objects.get(id=user['id'])
+                user["progress_percentage"] = self._get_member_progress(project=project_obj, user=user_account)
+        return Response(status=status.HTTP_200_OK, data={
+            "status":True,
+            "message":"موفقیت",
+            "data":serializer_data.data
+        })
     
 
         
     def post(self, request):
-        data = request.data
 
-        users  = data.get('users', [])
-        avatar_id = data.get("avatar_id",None)
-        title = data.get("title")
 
-        department_id = data.get("department_id",None)
-        workspace_obj = get_object_or_404(WorkSpace,id=data['workspace_id'])
-        new_project = Project(title=title)
-        new_project.save()
-       
-
-        
-        new_project.workspace=workspace_obj
-        for user in users:
-          
-            new_project.members.add(get_object_or_404(UserAccount,id=user))
-        
-        new_project.department_id=department_id
-        new_project.save()
-        categories = [
-            {"title":"بک لاگ","order":1},
-              {"title":"در حال انجام","order":2},
-                {"title":"انجام شده","order":3},
-                 {"title":"تست","order":4}
-        ]
-        task_label = [
-            {
-                "title":"در حال انجام",
-                "color_code":"#FFA04D",
-            },
-            {
-                "title":"مالی",
-                "color_code":"#5F4DFF",
-            },
-
-            {
-                "title":"انجام شده",
-                "color_code":"#FF1249",
-            },         
-            {
-                "title":"تست",
-                "color_code":"#5F4DFF",
-
-            },
-            
-            {
-                "title":"عادی",
-                "color_code":"#06B200",
-
-            },
-            
-        ]
-        for label in task_label:
-            new_label = TaskLabel(
-                project =new_project,
-                title=label['title'],
-                color_code = label['color_code']
-            )
-            new_label.save()
-        category_objs = [CategoryProject(title=category['title'],order=category['order'],project=new_project) for category in categories]
-        CategoryProject.objects.bulk_create(category_objs)
-
-        new_project.creator_id=data.get("manager_id")
-        if department_id:
-            new_project.department_id=department_id
-        new_project.save()
-     
-        try:
-            main_file_obj = MainFile.objects.get(id=avatar_id)
-            main_file_obj.its_blong = True
-            main_file_obj.save()
-            new_project.avatar=main_file_obj
-            new_project.save()
-        except:
-            pass
-
-        return Response(status=status.HTTP_201_CREATED, data={
-            "status":True,
-            "message":"succses",
-            "data":self.get_project_data(projects=new_project,data_type=False)
+        serializer_data =ProjectSerializer(data=request.data)
+        if serializer_data.is_valid():
+            project_obj = serializer_data.save()
+            for user in serializer_data.data['members']:
+                user_account = UserAccount.objects.get(id=user['id'])
+                user["progress_percentage"] =  self._get_member_progress(project=project_obj, user=user_account)
+            return Response(status=status.HTTP_201_CREATED, data={
+                "status":True,
+                "message":"پروژ ه جدید با موفقیت ثبت شد",
+                "data":serializer_data.data
+            })
+        return Response(status=status.HTTP_400_BAD_REQUEST, data={
+            "status": False,
+            "message": "لطفا اطلاعات رو به درستی وارد کنید",
+            "data": serializer_data.errors
         })
 
 
@@ -290,49 +182,35 @@ class ProjectManager(APIView):
 
         # Fetch the project or return a 404 response
         project_obj = get_object_or_404(Project, id=project_id)
-        data = request.data
-        department_id = data.get("department_id",None)
-        # Update project title
-        project_obj.title = data.get('title', project_obj.title)
-        if department_id:
-            project_obj.department_id=department_id
-        # Update avatar if provided and changed
-        avatar_id = data.get("avatar_id")
-        if avatar_id and avatar_id != getattr(project_obj.avatar, 'id', None):
-            if project_obj.avatar:
-                project_obj.avatar.delete()
-            project_obj.avatar_id = avatar_id
-            main_file_obj = MainFile.objects.get(id=avatar_id)
-            main_file_obj.its_blong=True
-            main_file_obj.save()
+        serializer_data = ProjectSerializer(instance=project_obj,data=request.data)
 
-        # Update project members atomically
-        users = data.get('users', [])
-        with transaction.atomic():
-            project_obj.members.clear()
-            if users:
-                members = UserAccount.objects.filter(id__in=users)
-                project_obj.members.add(*members)
+        if serializer_data.is_valid():
+            serializer_data.save()
+            for user in serializer_data.data['members']:
+                user_account = UserAccount.objects.get(id=user['id'])
+                user["progress_percentage"] =  self._get_member_progress(project=project_obj, user=user_account)
+            return Response(
+                status=status.HTTP_202_ACCEPTED,
+                data={
+                    "status": True,
+                    "message": "پروژه با موفقیت بروزرسانی شد",
+                    "data":serializer_data.data
+                }
+            )
 
-        project_obj.creator_id = data.get("manager_id")
-        # Save the project and return success response
-        
-        project_obj.save()
-        return Response(
-            status=status.HTTP_202_ACCEPTED,
-            data={
-                "status": True,
-                "message": "success",
-                "data": self.get_project_data(projects=project_obj,data_type=False)
-            }
-        )
+        return Response(status=status.HTTP_400_BAD_REQUEST, data={
+            "status": False,
+            "message": "لطفا اطلاعات رو به درستی وارد کنید",
+            "data": serializer_data.errors
+        })
+
             
     def delete(self,request,project_id):
         project_obj = get_object_or_404(Project,id=project_id)
         project_obj.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-            
+
 
 
 

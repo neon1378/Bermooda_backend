@@ -69,7 +69,17 @@ class Project(models.Model):
     members = models.ManyToManyField(UserAccount,related_name="project_members")
     department = models.ForeignKey(ProjectDepartment,on_delete=models.CASCADE,null=True,related_name="project_department")
     chat = models.ManyToManyField(ProjectChat,blank=True,related_name="projects_chats")
-   
+
+    def avatar_url (self,request):
+        base_url = os.getenv("BASE_URL")
+        try:
+            return {
+                "id":self.avatar.id,
+                "url":f"{base_url}{self.avatar.file.url}"
+            }
+        except:
+            return {}
+
 
     def project_status(self):
     
@@ -107,6 +117,9 @@ class Project(models.Model):
         except:
             data['progress_percentage']=0
         return data
+
+
+
 
 
 class CategoryProject(models.Model):

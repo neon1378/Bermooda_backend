@@ -9,7 +9,7 @@ from rest_framework.authtoken.models import Token
 from UserManager.models import UserAccount
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from dotenv import load_dotenv
-
+from WorkSpaceManager.models import  WorkspaceMember
 from .serializers import TaskSerializer,ProjectChatSerializer
 import os
 from core.models import MainFile
@@ -128,7 +128,7 @@ class ProjectChatWs(WebsocketConsumer):
 
 class ProjectChatMainWs(WebsocketConsumer):
     def paginate_queryset(self,page_number,queryset):
-        
+
 
         # Set up custom pagination
         paginator = Paginator(queryset.order_by("-id"), 20)  # Set items per page
@@ -245,49 +245,25 @@ class ProjectTask(WebsocketConsumer):
 
         if self.user.is_authenticated:
             self.accept()
-            self.user_type = self.scope['user_type']
+
         else:
             self.close(code=1)
         self.project_id = self.scope['url_route']['kwargs']['project_id']
 
         self.project_obj = Project.objects.get(id=self.project_id)
-        try:
-            if self.user_type  == "member":
-                for permission in self.scope['permissions']:
-                    if permission['permission_name'] == "project board":
-                        self.permission = permission['permission_type']
-            else:
-                self.permission = "owner"
-            async_to_sync(self.channel_layer.group_add)(
-                f"{self.project_id}_amin",self.channel_name
-            )
-            if self.permission == "manager" or self.permission == "owner":
-                task_objs = Task.objects.filter(project=self.project_obj,done_status=False)
-            else:
-                task_list = Task.objects.filter(project=self.project_obj, done_status=False)
-                task_objs = [
-                    task
-                    for task in task_list
-                    if any(check_list.responsible_for_doing == self.user for check_list in task.check_list.all())
-                ]
+        self.workspace_obj = self.project_obj.workspace
 
-
-            serializer_data= TaskSerializer(task_objs,many=True)
-            self.send(json.dumps(
-                {
-                    "data_type":"task_list",
-                    "data":serializer_data.data
-                }
-            ))
-        except :
-            self.close(code=1)
-
+    def get_permission_user(self):
+        workspace_member = WorkspaceMember.objects.get(user_account=self.user, workspace=self.workspace_obj)
+        for permission in workspace_member.permissions.all():
+            if permission.permission_name == "project board":
+                return permission.permission_type
     def receive(self, text_data=None, bytes_data=None):
         data= json.loads(text_data)
         command = data['command']
 
         if command == "get_task_list":
-            if self.permission == "manager" or self.permission == "owner":
+            if self.workspace_obj.owner == self.user or self.get_permission_user == "manager":
                 task_objs = Task.objects.filter(project=self.project_obj, done_status=False)
             else:
                 task_list = Task.objects.filter(project=self.project_obj, done_status=False)
@@ -387,7 +363,7 @@ class ProjectTask(WebsocketConsumer):
                     "data":{}
                 })) 
     def send_data(self,event):
-        if self.permission == "manager" or self.permission == "owner":
+        if self.workspace_obj.owner == self.user or self.get_permission_user == "manager":
             task_objs = Task.objects.filter(project=self.project_obj, done_status=False)
         else:
             task_list = Task.objects.filter(project=self.project_obj, done_status=False)
