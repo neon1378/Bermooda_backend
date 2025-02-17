@@ -262,7 +262,7 @@ class ProjectTask(WebsocketConsumer):
         data= json.loads(text_data)
         command = data['command']
 
-        if command == "get_task_list":
+        if command == "task_list":
             if self.workspace_obj.owner == self.user or self.get_permission_user == "manager":
                 task_objs = Task.objects.filter(project=self.project_obj, done_status=False)
             else:
@@ -361,7 +361,7 @@ class ProjectTask(WebsocketConsumer):
                     "data_type":"error",
                     "message":"access denaid",
                     "data":{}
-                })) 
+                }))
     def send_data(self,event):
         if self.workspace_obj.owner == self.user or self.get_permission_user == "manager":
             task_objs = Task.objects.filter(project=self.project_obj, done_status=False)
