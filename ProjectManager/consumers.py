@@ -251,34 +251,37 @@ class ProjectTask(WebsocketConsumer):
         self.project_id = self.scope['url_route']['kwargs']['project_id']
 
         self.project_obj = Project.objects.get(id=self.project_id)
+        try:
+            if self.user_type  == "member":
+                for permission in self.scope['permissions']:
+                    if permission['permission_name'] == "project board":
+                        self.permission = permission['permission_type']
+            else:
+                self.permission = "owner"
+            async_to_sync(self.channel_layer.group_add)(
+                f"{self.project_id}_amin",self.channel_name
+            )
+            if self.permission == "manager" or self.permission == "owner":
+                task_objs = Task.objects.filter(project=self.project_obj,done_status=False)
+            else:
+                task_list = Task.objects.filter(project=self.project_obj, done_status=False)
+                task_objs = [
+                    task
+                    for task in task_list
+                    if any(check_list.responsible_for_doing == self.user for check_list in task.check_list.all())
+                ]
 
-        if self.user_type  == "member":
-            for permission in self.scope['permissions']:
-                if permission['permission_name'] == "project board":
-                    self.permission = permission['permission_type']
-        else:
-            self.permission = "owner"
-        async_to_sync(self.channel_layer.group_add)(
-            f"{self.project_id}_amin",self.channel_name
-        )
-        if self.permission == "manager" or self.permission == "owner":
-            task_objs = Task.objects.filter(project=self.project_obj,done_status=False)
-        else:
-            task_list = Task.objects.filter(project=self.project_obj, done_status=False)
-            task_objs = [
-                task
-                for task in task_list
-                if any(check_list.responsible_for_doing == self.user for check_list in task.check_list.all())
-            ]
 
+            serializer_data= TaskSerializer(task_objs,many=True)
+            self.send(json.dumps(
+                {
+                    "data_type":"task_list",
+                    "data":serializer_data.data
+                }
+            ))
+        except :
+            self.close(code=1)
 
-        serializer_data= TaskSerializer(task_objs,many=True)
-        self.send(json.dumps(
-            {
-                "data_type":"task_list",
-                "data":serializer_data.data
-            }
-        ))
     def receive(self, text_data=None, bytes_data=None):
         data= json.loads(text_data)
         command = data['command']
