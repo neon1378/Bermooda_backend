@@ -259,3 +259,23 @@ class CampaignSerializer(serializers.ModelSerializer):
 
         instance.save()
         return instance
+
+
+class CampaignFormDataSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CampaignFormData
+        fields = [
+            "id",
+            "title",
+            "text",
+        ]
+class CampaignFormSerializer(serializers.ModelSerializer):
+    form_data= CampaignFormDataSerializer(read_only=True,many=True)
+    class Meta:
+        model = CampaignForm
+        fields = [
+            "id",
+            "form_data",
+            "fullname",
+        ]
+

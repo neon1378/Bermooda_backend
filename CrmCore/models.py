@@ -286,6 +286,7 @@ class CampaignField(models.Model):
     campaign = models.ForeignKey(Campaign,on_delete=models.CASCADE,null=True,related_name="fields")
 
 class CampaignForm (models.Model):
+    fullname =  models.CharField(max_length=100,null=True)
     campaign = models.ForeignKey(Campaign,on_delete=models.CASCADE,related_name="forms",null=True)
 
 

@@ -1002,8 +1002,10 @@ def campaign_show (request,uuid):
 def submit_form (request,uuid):
     data= request.data
     field_list = data.get("field_list")
+    fullname= data.get("fullname",None)
     campaign = get_object_or_404(Campaign, uuid=uuid)
-    new_campaign_form =CampaignForm(campaign=campaign)
+    new_campaign_form =CampaignForm(campaign=campaign,fullname=fullname)
+
     new_campaign_form.save()
     for field in field_list:
         CampaignFormData.objects.create(
@@ -1018,4 +1020,25 @@ def submit_form (request,uuid):
         "data":{}
     })
 
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_campaign_form(request,campaign_form_id=None):
+    if campaign_form_id:
+        campaign_form = get_object_or_404(CampaignForm,id=campaign_form_id)
+        serializer_data =CampaignFormSerializer(campaign_form)
+        return Response(status=status.HTTP_200_OK,data={
+            "status":True,
+            "message":"success",
+            "data":serializer_data.data
+        })
+    campaign_id = request.GET.get("campaign_id")
+    campaign_obj =get_object_or_404(Campaign,id=campaign_id)
+    campaign_form_objs = CampaignForm.objects.filter(campaign=campaign_obj)
+    serializer_data = CampaignFormSerializer(campaign_form_objs,many=True)
+    return Response(status=status.HTTP_200_OK,data={
+        "status":True,
+        "message":"success",
+        "data":serializer_data.data
+    })
 
