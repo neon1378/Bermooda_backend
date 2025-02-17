@@ -1071,3 +1071,35 @@ def get_campaign_form(request,campaign_form_id=None):
         "data":serializer_data.data
     })
 
+
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def referral_the_lead(request):
+    data =request.data
+    campaign_form_id_list = data.get("campaign_form_id_list",[])
+    group_crm_id = data.get("group_crm_id")
+    group_crm_obj = get_object_or_404(GroupCrm,id=group_crm_id)
+    member_id = data.get("member_id")
+    member_obj = get_object_or_404(UserAccount,id= member_id)
+    first_label = Label.objects.filter(group_crm = group_crm_obj).first()
+    for campaign_form_id in campaign_form_id_list:
+        campaign_form_obj = CampaignForm.objects.get(id=campaign_form_id)
+        new_customer_user = CustomerUser(
+            user_account= member_obj,
+            personal_type= "حقیقی",
+            label=first_label,
+            fullname_or_company_name = campaign_form_obj.fullname
+
+        )
+        new_customer_user.save()
+        campaign_form_obj.delete()
+    return Response(status=status.HTTP_200_OK,data={
+        "status":True,
+        "message":"با موفقیت ارجاع داده شد",
+        "data":{}
+    })
+
+
+
