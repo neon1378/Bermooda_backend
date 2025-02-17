@@ -1010,6 +1010,7 @@ def submit_form (request,uuid):
     for field in field_list:
         CampaignFormData.objects.create(
             title = field['title'],
+            field_type=field['field_type'],
             text = field['text'],
             campaign_form = new_campaign_form
         )

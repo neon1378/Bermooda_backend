@@ -292,6 +292,19 @@ class CampaignForm (models.Model):
 
 
 class CampaignFormData(models.Model):
+    TYPE = (
+
+        ("phone_number","PHONE_NUMBER"),
+        ("text","TEXT"),
+        ("number","NUMBER"),
+        ("email","EMAIL"),
+        ("link","LINK"),
+
+
+
+
+    )
+    field_type = models.CharField(max_length=60, choices=TYPE, null=True)
     title = models.CharField(max_length=55,null=True)
     text = models.TextField(null=True)
 
