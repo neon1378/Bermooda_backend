@@ -71,6 +71,8 @@ urlpatterns = [
     path('Change/UserProfilePassword', views.change_user_profile_password, name='change_user_profile_password'),
     
     path("Change/Username",views.change_username),
+    path("change_user",views.change_user),
+
     path("AddAvatarUser",views.add_user_avatar),
     path("Add/FcmToken",views.add_fcm_token),
     path("CreateAvatar",views.create_avatar),
