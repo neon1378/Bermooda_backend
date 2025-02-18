@@ -20,4 +20,5 @@ admin.site.register(Campaign)
 admin.site.register(CampaignField)
 admin.site.register(CampaignForm)
 admin.site.register(CampaignFormData)
+admin.site.register(IpAshol)
 

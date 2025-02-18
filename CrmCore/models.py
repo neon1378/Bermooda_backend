@@ -315,3 +315,8 @@ class IpExist(models.Model):
 
     ip = models.GenericIPAddressField(null=True)
     campaign =  models.ForeignKey(Campaign,on_delete=models.CASCADE,null=True)
+
+
+class IpAshol(models.Model):
+    ip = models.GenericIPAddressField(null=True)
+

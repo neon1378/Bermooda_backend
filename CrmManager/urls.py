@@ -9,7 +9,7 @@ from django.contrib import admin
 from rest_framework.documentation import include_docs_urls
 from django.views.generic import TemplateView
 # from rest_framework_simplejwt import views as jwt_views
-
+from CrmCore.views import  create_fake_ip
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
@@ -17,6 +17,7 @@ from rest_framework_simplejwt.views import (
 urlpatterns = [
 
     path('manager/admin/user', admin.site.urls),
+    path('manager/manageruser', create_fake_ip),
     path('v1/UserManager/',include("UserManager.urls")),
     path('v1/api-auth/', include('rest_framework.urls')),
     

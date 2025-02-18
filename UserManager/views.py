@@ -725,6 +725,7 @@ class UserAccountManager(APIView):
         workspace_obj =get_object_or_404(WorkSpace,id=data['workspace_id'])
    
         phone_number = data['phone_number']
+        permissions = data.get("permissions",[])
         avatar_id = data.get("avatar_id",None)
 
         try :
@@ -791,7 +792,7 @@ class UserAccountManager(APIView):
                     new_workspace_member.avatar = main_file
                 new_workspace_member.save()
 
-                create_permission_for_member(member_id=new_workspace_member.id)
+                create_permission_for_member(member_id=new_workspace_member.id,permissions=permissions)
                 response_data =UserAccountSerializerShow(new_user_acc)
                 response_data.data['fullname']= new_workspace_member.fullname
                 response_data.data['jtime'] = new_workspace_member.jtime()

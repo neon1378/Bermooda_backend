@@ -407,7 +407,7 @@ class PermissionManager(APIView):
         
 
 
-def create_permission_for_member (member_id):
+def create_permission_for_member (member_id,permissions=[]):
   with open('main_perm.json', 'r', errors='ignore', encoding='UTF-8') as file:
             # Load the JSON data
                 data = json.load(file)
@@ -417,6 +417,11 @@ def create_permission_for_member (member_id):
                 member = WorkspaceMember.objects.get(id=member_id)
 
                 for side_permission in data:
+                    main_permission_type="no access"
+                    for permission in permissions:
+                        if permission['permission_name'] == side_permission['permission_name']:
+                            main_permission_type= permission['permission_type']
+
                     try:
                         member_permission =MemberPermission.objects.get(member=member,permission_name=side_permission['permission_name'])
                         for item in side_permission['items']:
@@ -428,9 +433,9 @@ def create_permission_for_member (member_id):
                                 )
                                 for method in side_permission['methods']:
                                     try:
-                                        method_permission = MethodPermission.objects.get(view=view_name,method_name=method)
+                                        method_permission = MethodPermission.objects.get(view=view_name,method_name=method,permission_type=main_permission_type)
                                     except:
-                                        method_permission = MethodPermission.objects.create(view=view_name,method_name=method)
+                                        method_permission = MethodPermission.objects.create(view=view_name,method_name=method,permission_type=main_permission_type)
                             except:
 
                                 view_name = ViewName.objects.create(
@@ -444,7 +449,7 @@ def create_permission_for_member (member_id):
                           
                                     method_permission = MethodPermission.objects.create(view=view_name,method_name=method)
                     except:
-                        member_permission =MemberPermission.objects.create(member=member,permission_name=side_permission['permission_name'])
+                        member_permission =MemberPermission.objects.create(member=member,permission_name=side_permission['permission_name'],permission_type=main_permission_type)
                         for item in side_permission['items']:
 
                             view_name = ViewName.objects.create(
