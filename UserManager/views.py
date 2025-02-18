@@ -674,7 +674,7 @@ class UserAccountManager(APIView):
         base_url = os.getenv("BASE_URL")
         if user_id:
             user_obj =get_object_or_404(UserAccount,id=user_id)
-            workspace_member = WorkspaceMember.objects.get(user_account=user_obj,workpsace=workspae_obj)
+            workspace_member = WorkspaceMember.objects.get(user_account=user_obj,workspace=workspae_obj)
             serializers_data =UserAccountSerializerShow(user_obj).data
             if user_obj != workspae_obj.owner:
                 serializers_data['jtime'] = workspace_member.jtime()
