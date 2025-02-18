@@ -357,15 +357,21 @@ class PermissionManager(APIView):
     def put(self,request,permission_id):
         data= request.data
         workspace_id= data.get("workspace_id")
+        avatar_id =data.get("avatar_id",None)
         workspace_obj = get_object_or_404(WorkSpace,id=workspace_id)
-        print(workspace_obj.owner == request.user)
+
+        permission_member_obj = get_object_or_404(MemberPermission, id=permission_id)
+        if avatar_id:
+            main_file = MainFile.objects.get(id=avatar_id)
+            main_file.its_blong=True
+            permission_member_obj.member.avatar= main_file
+            permission_member_obj.member.save()
         if request.user == workspace_obj.owner:
 
             with open('main_perm.json', 'r', errors='ignore', encoding='UTF-8') as file:
                     permission_type = data.get("permission_type")
                 
-                    permission_member_obj = get_object_or_404(MemberPermission,id=permission_id)
-           
+
                     data = json.load(file)
                     for permission in data:
                         if permission['permission_name'] == permission_member_obj.permission_name:
@@ -413,7 +419,7 @@ def create_permission_for_member (member_id,permissions):
                 data = json.load(file)
 
 
-                print(permissions)
+
                 member = WorkspaceMember.objects.get(id=member_id)
 
                 for side_permission in data:
