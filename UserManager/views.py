@@ -682,9 +682,19 @@ class UserAccountManager(APIView):
                 serializers_data['fullname'] = workspace_member.fullname
                 serializers_data['is_accepted'] = workspace_member.user_account.is_register
                 serializers_data['type'] = "member"
+                try:
+                    serializers_data['avatar_url'] = {
+                        "id": workspace_member.avatar.id,
+                        "url": f"{base_url}{workspace_member.avatar.file.url}"
+                    }
+                except:
+                    serializers_data['avatar_url'] = {}
             else:
 
-
+                serializers_data['avatar_url'] = {
+                        "id": user_obj.avatar.id,
+                        "url": f"{base_url}{user_obj.avatar.file.url}"
+                    } if user_obj.avatar else {}
                 serializers_data['fullname'] = user_obj.fullname
 
                 serializers_data['type'] = "owner"
