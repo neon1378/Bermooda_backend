@@ -668,19 +668,33 @@ def login_user(request):
 class UserAccountManager(APIView):
     permission_classes=[IsAuthenticated,IsWorkSpaceUser]
     def get (self,request,user_id=None):
+        workspace_id = request.GET.get("workspace_id")
+        response_data = []
+        workspae_obj = get_object_or_404(WorkSpace, id=workspace_id)
         base_url = os.getenv("BASE_URL")
         if user_id:
             user_obj =get_object_or_404(UserAccount,id=user_id)
+            workspace_member = WorkspaceMember.objects.get(user_account=user_obj,workpsace=workspae_obj)
             serializers_data =UserAccountSerializerShow(user_obj).data
+            if user_obj != workspae_obj.owner:
+                serializers_data['jtime'] = workspace_member.jtime()
+                serializers_data['member_id'] = workspace_member.id
+                serializers_data['fullname'] = workspace_member.fullname
+                serializers_data['is_accepted'] = workspace_member.user_account.is_register
+                serializers_data['type'] = "member"
+            else:
+
+
+                serializers_data['fullname'] = user_obj.fullname
+
+                serializers_data['type'] = "owner"
 
             return Response(status=status.HTTP_200_OK,data={
-                "status":True,
-                "message":"موفق",
-                "data":serializers_data
-            })
-        workspace_id = request.GET.get("workspace_id")
-        response_data = []
-        workspae_obj = get_object_or_404(WorkSpace,id=workspace_id)
+                    "status":True,
+                    "message":"موفق",
+                    "data":serializers_data
+                })
+
         if workspae_obj.owner != request.user:
             owner_serializer = UserAccountSerializerShow(workspae_obj.owner).data
             owner_serializer['jtime'] = workspae_obj.owner.jtime()
