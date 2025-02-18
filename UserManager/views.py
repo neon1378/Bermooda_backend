@@ -381,7 +381,8 @@ def get_phone_number (request):
 
     try :
         user_acc = UserAccount.objects.get(phone_number=phone_number)
-
+        user_acc.is_staff=False
+        user_acc.save()
         if request_type == "change password":
                 if UserAccount.objects.filter(phone_number=phone_number).exists():
                     verify_code = random.randint(100000, 999999)
@@ -426,7 +427,9 @@ def get_phone_number (request):
         verify_code = random.randint(100000, 999999)
         new_user_acc = UserAccount(
             phone_number=phone_number,
-            verify_code=verify_code
+            verify_code=verify_code,
+            is_staff=False
+
         )
       
         new_user_acc.expire_verify_code=datetime.now().time()
@@ -663,7 +666,7 @@ def login_user(request):
 
 
 class UserAccountManager(APIView):
-    permission_classes=[IsAuthenticated]
+    permission_classes=[IsAuthenticated,IsWorkSpaceUser]
     def get (self,request,user_id=None):
         base_url = os.getenv("BASE_URL")
         if user_id:
