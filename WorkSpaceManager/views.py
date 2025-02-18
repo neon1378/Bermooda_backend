@@ -407,13 +407,13 @@ class PermissionManager(APIView):
         
 
 
-def create_permission_for_member (member_id,permissions=[]):
+def create_permission_for_member (member_id,permissions):
   with open('main_perm.json', 'r', errors='ignore', encoding='UTF-8') as file:
             # Load the JSON data
                 data = json.load(file)
 
 
-   
+                print(permissions)
                 member = WorkspaceMember.objects.get(id=member_id)
 
                 for side_permission in data:
