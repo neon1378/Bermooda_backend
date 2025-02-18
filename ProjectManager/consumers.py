@@ -205,7 +205,10 @@ class ProjectChatMainWs(WebsocketConsumer):
                 ))
          
         elif data['command'] == "message_list":
-            page = data.get("page",1)
+            try:
+                page = data['data']['page']
+            except:
+                page = 1
             project_chats = ProjectChat.objects.filter(project=self.project_obj).order_by("-id")
             data = self.paginate_queryset(page_number=page,queryset=project_chats)
 
