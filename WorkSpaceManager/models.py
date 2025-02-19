@@ -99,7 +99,17 @@ class WorkspaceMember(SoftDeleteModel):
         except:
             return ""
 
-
+    def permission_list(self):
+        data =[]
+        for permission in  self.permissions.all():
+            data.append(
+                {
+                    "id":permission.id,
+                    "permission_name":permission.permission_name,
+                    "permission_type":permission.permission_type,
+                }
+            )
+        return data
 class MemberPermission (SoftDeleteModel):
     PERMISSION_TYPE =(
         ("manager","MANAGER"),

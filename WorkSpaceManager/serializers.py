@@ -83,6 +83,7 @@ class WorkSpaceMemberSerializer(serializers.ModelSerializer):
         "last_name",
         "workspace_id",
         "jtime",
+        "permission_list",
         ]
 
     def create(self, validated_data):
