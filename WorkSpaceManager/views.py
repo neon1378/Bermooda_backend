@@ -612,7 +612,7 @@ class WorkSpaceMemberManger(APIView):
             new_member = serializer_data.save()
             create_permission_for_member(member_id=new_member.id, permissions=permissions)
 
-            return Response(status=status.HTTP_200_OK,data={
+            return Response(status=status.HTTP_201_CREATED,data={
                 "status":True,
                 "message":"کاربر با موفقیت اضافه شد",
                 "data":serializer_data.data
@@ -624,3 +624,56 @@ class WorkSpaceMemberManger(APIView):
         })
 
 
+    def put(self,request,member_id):
+        member_obj = get_object_or_404(WorkspaceMember,id=member_id)
+        data = request.data
+        permission_list= data.get("permission_list")
+
+        avatar_id =data.get("avatar_id",None)
+
+        for permission_item in permission_list:
+            permission_member_obj= MemberPermission.objects.get(id=permission_item['id'])
+            with open('main_perm.json', 'r', errors='ignore', encoding='UTF-8') as file:
+                permission_type = permission_item["permission_type"]
+
+                data = json.load(file)
+                for permission in data:
+                    if permission['permission_name'] == permission_member_obj.permission_name:
+                        for item in permission['items']:
+
+                            try:
+                                view_permission_obj = permission_member_obj.view_names.get(view_name=item['view_name'])
+
+                                for perm in item['permissions']:
+
+                                    if perm['type'] == permission_type:
+                                        for method in perm['methods']:
+                                            method_obj = view_permission_obj.methods.get(method_name=method['method'])
+
+                                            method_obj.is_permission = method['status']
+                                            method_obj.save()
+
+
+
+                            except:
+                                continue
+
+                permission_member_obj.permission_type = permission_type
+                permission_member_obj.save()
+        if avatar_id:
+            main_file = MainFile.objects.get(id=avatar_id)
+            main_file.its_blong=True
+            main_file.save()
+            member_obj.user_account.avatar=main_file
+            member_obj.user_account.save()
+        return Response(status=status.HTTP_202_ACCEPTED,data={
+            "status":True,
+            "message":"با موفقیت بروزرسانی شد",
+            "data":WorkSpaceMemberSerializer(member_obj).data
+        })
+
+
+    def delete(self,member_id):
+        workspace_member =get_object_or_404(WorkspaceMember,id=member_id)
+        workspace_member.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
