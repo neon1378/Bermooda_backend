@@ -89,7 +89,7 @@ class WorkSpaceMemberSerializer(serializers.ModelSerializer):
         ]
 
     def create(self, validated_data):
-        user_account = validated_data.pop("user_account")
+        user_account = validated_data.pop("user_account_data")
         permissions= validated_data.pop("permissions")
         new_workspace_member = WorkspaceMember.objects.create(**validated_data)
         try :
