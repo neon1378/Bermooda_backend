@@ -81,6 +81,9 @@ class WorkspaceMember(models.Model):
     workspace = models.ForeignKey(WorkSpace,on_delete=models.CASCADE,null=True,related_name="workspace_member")
     user_account = models.ForeignKey(UserAccount,on_delete=models.CASCADE,null=True,related_name="user_member")
     fullname=models.CharField(max_length=200,null=True)
+    first_name = models.CharField(max_length=70,null=True)
+    last_name = models.CharField(max_length=70,null=True)
+
     created = models.DateField(auto_now_add=True,null=True)
     is_accepted = models.BooleanField(default=True)
     avatar = models.ForeignKey(MainFile,on_delete=models.SET_NULL,null=True)

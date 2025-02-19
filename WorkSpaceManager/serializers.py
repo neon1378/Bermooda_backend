@@ -2,7 +2,7 @@ from rest_framework.serializers import ModelSerializer
 from rest_framework import serializers
 from .models import *
 
-
+from core.views import  send_invite_link
 
 class IndustrialActivitySerializer(ModelSerializer):
     class Meta:
@@ -51,3 +51,54 @@ class WorkSpaceSerializer(ModelSerializer):
         instance.save()
         return instance
     
+class UserSerializer(serializers.ModelSerializer):
+    avatar_id = serializers.IntegerField(write_only=True,required=False)
+
+    class Meta:
+        model = UserAccount
+        fields = [
+
+            "id"
+            "avatar_id"
+            "phone_number",
+            "avatar_url_main"
+            "is_register"
+
+
+
+
+        ]
+
+class WorkSpaceMemberSerializer(serializers.ModelSerializer):
+    user_account = UserSerializer(required=True)
+    workspace_id= serializers.IntegerField(required=True,write_only=True)
+    class Meta:
+        model = WorkspaceMember
+        fields = [
+        "user_account",
+        "first_name",
+        "last_name",
+        "workspace_id",
+        "jtime",
+        ]
+
+    def create(self, validated_data):
+        user_account = validated_data.pop("user_account")
+        permissions= validated_data.pop("permissions")
+        new_workspace_member = WorkspaceMember.objects.create(**validated_data)
+        try :
+            user_acc = UserAccount.objects.get(phone_number=user_account.get("phone_number"))
+
+
+        except:
+            user_acc = UserAccount(phone_number=user_account.get("phone_number"))
+            user_acc.is_register=False
+            user_acc.save()
+
+        new_workspace_member.user_account = user_acc
+        new_workspace_member.save()
+        send_invite_link(user_acc.phone_number, new_workspace_member.workspace.owner.fullname,
+                         new_workspace_member.workspace.title)
+
+
+        return new_workspace_member

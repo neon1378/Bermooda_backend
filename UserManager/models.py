@@ -131,9 +131,18 @@ class UserAccount(AbstractBaseUser,PermissionsMixin):
     def avatar_url (self):
         try:
             base_url = os.getenv("BASE_URL")
-            return f"{base_url}{self.avatar.file.url}"        
+            return f"{base_url}{self.avatar.file.url}"
         except:
             return ""
+    def avatar_url_main (self):
+        try:
+            base_url = os.getenv("BASE_URL")
+            return {
+                "id":self.avatar.id,
+                "url":f"{base_url}{self.avatar.file.url}"
+            }
+        except:
+            return {}
     def is_expired(self):
         from datetime import datetime
         now = datetime.now().time()

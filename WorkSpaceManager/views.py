@@ -10,7 +10,7 @@ from django.shortcuts import get_object_or_404
 import os 
 import json
 from Notification.models import Notification
-from .serializers import WorkSpaceSerializer, IndustrialActivitySerializer
+from .serializers import WorkSpaceSerializer, IndustrialActivitySerializer, WorkSpaceMemberSerializer, UserSerializer
 import requests
 from dotenv import load_dotenv
 from core.permission import IsAccess,IsWorkSpaceUser
@@ -566,3 +566,61 @@ def get_manager_users(request):
     #     "message": "عدم دسترسی",
     #     "data": {}
     # })
+
+
+
+
+class WorkSpaceMemberManger(APIView):
+    permission_classes= [IsAuthenticated]
+    def get(self,request,member_id=None):
+        if member_id:
+            member_workspace = get_object_or_404(WorkspaceMember,id=member_id)
+            serializer_data =WorkSpaceMemberSerializer(member_workspace)
+            return Response(status=status.HTTP_200_OK,data={
+                "status":True,
+                "message":"موفق",
+                "data":serializer_data.data
+            })
+        workspace_obj = WorkSpace.objects.get(id=request.user.current_workspace_id)
+        workspace_member = WorkspaceMember.objects.filter(workspace= workspace_obj)
+        member_data =[]
+        if workspace_obj.owner != request.user:
+            member_data.append(
+                {
+                    "user_account":UserSerializer(workspace_member.owner).data
+                }
+
+            )
+
+        else:
+            for member in workspace_member:
+                member_data.append(WorkSpaceMemberSerializer(member).data)
+
+
+        return Response(status=status.HTTP_200_OK,data={
+            "status":True,
+            "message":"موفق",
+            "data":member_data
+        })
+
+
+    def post(self,request):
+        request.data['workspace_id'] = request.user.current_workspace_id
+        permissions = request.data.get("permissions")
+        serializer_data = WorkSpaceMemberSerializer(data= request.data)
+        if serializer_data.is_valid():
+            new_member = serializer_data.save()
+            create_permission_for_member(member_id=new_member.id, permissions=permissions)
+
+            return Response(status=status.HTTP_200_OK,data={
+                "status":True,
+                "message":"کاربر با موفقیت اضافه شد",
+                "data":serializer_data.data
+            })
+        return Response(status=status.HTTP_400_BAD_REQUEST,data={
+            "status":False,
+            "message":"validation error",
+            "data":serializer_data.errors
+        })
+
+

@@ -759,7 +759,7 @@ class UserAccountManager(APIView):
                     "status":False,
                     "message":"کاربر مورد نظر درحال حاضر در میز کار شما وجود دارد"
                 })
-            user_acc.phone_number=data['phone_number'] 
+            user_acc.phone_number=data['phone_number']
             new_workspace_member = WorkspaceMember(is_accepted=True,workspace=workspace_obj,user_account=user_acc,fullname=f"{data['first_name']} {data['last_name']}")
             if avatar_id:
                 main_file =MainFile.objects.get(id=avatar_id)

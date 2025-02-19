@@ -64,6 +64,7 @@ class CustomerSerializer(serializers.ModelSerializer):
             "city_name",
             "state_name",
             "email",
+            "avatar_url",
             "phone_number",
             "phone_number_static",
             "website",

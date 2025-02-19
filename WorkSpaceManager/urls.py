@@ -17,6 +17,8 @@ urlpatterns = [
     path("GetManagerUser", views.get_manager_users),
     path("GetExpertUser", views.get_expert_users),
     path("GetIndustrialActivity",views.get_industrial_activity),
+    path("WorkSpaceMemberManger",views.WorkSpaceMemberManger.as_view()),
+    path("WorkSpaceMemberManger/<int:member_id>",views.WorkSpaceMemberManger.as_view()),
 
 
 ]

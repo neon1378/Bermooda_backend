@@ -222,9 +222,12 @@ class CustomerUser(models.Model):
     def avatar_url(self):
         try:
             base_url = os.getenv("BASE_URl")
-            return f"{base_url}{self.avatar.file.url}"
+            return {
+                "id":self.avatar.id,
+                "url":f"{base_url}{self.avatar.file.url}"
+            }
         except:
-            return ""
+            return {}
 
 
     def city_name(self):
