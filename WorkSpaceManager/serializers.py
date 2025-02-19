@@ -58,11 +58,11 @@ class UserSerializer(serializers.ModelSerializer):
         model = UserAccount
         fields = [
 
-            "id"
-            "avatar_id"
+            "id",
+            "avatar_id",
             "phone_number",
-            "avatar_url_main"
-            "is_register"
+            "avatar_url_main",
+            "is_register",
 
 
 
