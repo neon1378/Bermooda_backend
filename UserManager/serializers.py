@@ -91,7 +91,7 @@ class UserAccountSerializerShow(serializers.ModelSerializer):
             "personal_type",
  
             "phone_number",
-            "avatar_url",
+
             "email",
   
             "city_name",

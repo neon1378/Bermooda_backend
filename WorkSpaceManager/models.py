@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 load_dotenv()
 from core.models import City,State,MainFile
 from extensions.utils import costum_date
-
+from core.models import SoftDeleteQuerySet
 
 class IndustrialActivity(models.Model):
     title = models.CharField(max_length=150,null=True)

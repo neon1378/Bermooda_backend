@@ -8,6 +8,7 @@ import uuid
 import os 
 from dotenv import load_dotenv
 load_dotenv()
+from core.models import SoftDeleteModel
 from django.utils.formats import number_format
 class CrmDepartment(models.Model):
     title = models.CharField(max_length=200,null=True)
@@ -317,6 +318,6 @@ class IpExist(models.Model):
     campaign =  models.ForeignKey(Campaign,on_delete=models.CASCADE,null=True)
 
 
-class IpAshol(models.Model):
+class IpAshol(SoftDeleteModel):
     ip = models.GenericIPAddressField(null=True)
 
