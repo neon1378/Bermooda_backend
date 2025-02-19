@@ -41,6 +41,9 @@ class WorkSpace (SoftDeleteModel):
     city = models.ForeignKey(City,on_delete=models.SET_NULL,null=True)
     state = models.ForeignKey(State,on_delete=models.SET_NULL,null=True)
     is_active = models.BooleanField(default=True)
+    def delete(self, *args, **kwargs):
+        # Custom logic (if needed)
+        super().delete(*args, **kwargs)  # Call SoftDeleteModel.delete()
     def avatar_url (self):
         try:
             base_url = os.getenv("BASE_URL")
