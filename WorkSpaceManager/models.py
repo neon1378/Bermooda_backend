@@ -10,13 +10,13 @@ from dotenv import load_dotenv
 load_dotenv()
 from core.models import City,State,MainFile
 from extensions.utils import costum_date
-from core.models import SoftDeleteQuerySet
+from core.models import SoftDeleteModel
 
 class IndustrialActivity(models.Model):
     title = models.CharField(max_length=150,null=True)
     refrence_id = models.IntegerField(default=0)
 
-class WorkSpace (models.Model):
+class WorkSpace (SoftDeleteModel):
     title = models.CharField(max_length=100,null=True)
     owner = models.ForeignKey(UserAccount,on_delete=models.CASCADE,null=True,related_name="workspace_owner",blank=True)
     is_authenticated = models.BooleanField(default=False)

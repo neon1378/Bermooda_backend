@@ -106,8 +106,8 @@ class SoftDeleteModel(models.Model):
         blank=True,
         help_text=_('Date and time when this record was soft deleted')
     )
-    created_at = models.DateTimeField(_('Created At'), auto_now_add=True)
-    updated_at = models.DateTimeField(_('Updated At'), auto_now=True)
+    created_at = models.DateTimeField(_('Created At'), auto_now_add=True,null=True)
+    updated_at = models.DateTimeField(_('Updated At'), auto_now=True,null=True)
 
     # Custom managers
     objects = SoftDeleteManager()  # Default manager shows only non-deleted items

@@ -7,13 +7,14 @@ import jdatetime
 from datetime import datetime
 from dotenv import load_dotenv
 import os
+from core.models import  SoftDeleteModel
 load_dotenv()
 
 
         
 
 
-class ProjectDepartment(models.Model):
+class ProjectDepartment(SoftDeleteModel):
     title = models.CharField(max_length=200,null=True)
     workspace = models.ForeignKey(WorkSpace,on_delete=models.CASCADE,null=True,related_name="project_departments")
     manager= models.ForeignKey(UserAccount,on_delete=models.CASCADE,null=True)
@@ -27,7 +28,7 @@ class TaskLabel(models.Model):
     order = models.IntegerField(default=0)
     
     
-class ProjectChat(models.Model):
+class ProjectChat(SoftDeleteModel):
     body = models.TextField(null=True)
     main_file = models.ForeignKey(MainFile,on_delete=models.SET_NULL,null=True,related_name="project_chat_file")
 
@@ -61,7 +62,7 @@ class ProjectChat(models.Model):
         else:
             return ""
 
-class Project(models.Model):
+class Project(SoftDeleteModel):
     creator = models.ForeignKey(UserAccount,on_delete=models.CASCADE,null=True)
     workspace = models.ForeignKey(WorkSpace,on_delete=models.CASCADE,null=True,related_name="projects")
     title = models.CharField(max_length=50,null=True)
@@ -122,7 +123,7 @@ class Project(models.Model):
 
 
 
-class CategoryProject(models.Model):
+class CategoryProject(SoftDeleteModel):
     title = models.CharField(max_length=70,null=True)
     color_code = models.CharField(max_length=70,null=True)
     order = models.CharField(max_length=55,null=True)
@@ -133,7 +134,7 @@ class CategoryProject(models.Model):
 
 
 
-class Task (models.Model):
+class Task (SoftDeleteModel):
 
 
     title = models.TextField(null=True)
@@ -166,7 +167,7 @@ class Task (models.Model):
             return 0
 
 
-class CheckList (models.Model):
+class CheckList (SoftDeleteModel):
     title = models.TextField(null=True)
     status= models.BooleanField(default=False)
     responsible_for_doing = models.ForeignKey(UserAccount,on_delete=models.CASCADE,null=True)
@@ -201,7 +202,7 @@ class CheckList (models.Model):
         
 
 
-class TaskReport(models.Model):
+class TaskReport(SoftDeleteModel):
     body = models.TextField(null=True)
     task = models.ForeignKey(Task,on_delete=models.ForeignKey,null=True)
 
