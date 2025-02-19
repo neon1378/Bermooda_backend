@@ -31,7 +31,8 @@ class CategoryProjectSerializer(ModelSerializer):
         fields= [
             "id",
             "title",
-            "order"
+            "order",
+            "color_code",
 
          
         ]
