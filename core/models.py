@@ -4,8 +4,6 @@ from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from dotenv import load_dotenv
-from django.db import router
-from django.db.models.deletion import Collector
 load_dotenv()
 
 class MainFile(models.Model):
@@ -125,36 +123,12 @@ class SoftDeleteModel(models.Model):
 
     def delete(self, using=None, keep_parents=False):
         """
-        Soft delete this instance and all related objects.
+        Soft delete this instance by setting is_deleted and deleted_at
         """
-        using = using or router.db_for_write(self.__class__, instance=self)
         self.is_deleted = True
         self.deleted_at = timezone.now()
-        self.save(using=using, update_fields=['is_deleted', 'deleted_at'])
+        self.save(using=using, update_fields=['is_deleted', 'deleted_at', 'updated_at'])
 
-        # Soft delete related objects
-        collector = Collector(using=using)
-        collector.collect([self], keep_parents=keep_parents)
-
-        for model, instances in collector.data.items():
-            for instance in instances:
-                if isinstance(instance, SoftDeleteModel):
-                    instance.delete(using=using, keep_parents=keep_parents)
-
-
-    def restore(self):
-        """
-        Restore this instance and all related objects.
-        """
-        if self.is_deleted:
-            self.is_deleted = False
-            self.deleted_at = None
-            self.save(update_fields=['is_deleted', 'deleted_at'])
-
-            # Restore related objects
-            for related_object in self._get_related_objects():
-                if isinstance(related_object, SoftDeleteModel):
-                    related_object.restore()
     def hard_delete(self, using=None, keep_parents=False):
         """
         Permanently delete this instance from the database
@@ -183,12 +157,3 @@ class SoftDeleteModel(models.Model):
         Check if there are any soft-deleted instances
         """
         return cls.all_objects.filter(is_deleted=True).exists()
-    def _get_related_objects(self):
-        """
-        Get all related objects for this instance.
-        """
-        collector = Collector(using=self._state.db)
-
-
-
-
