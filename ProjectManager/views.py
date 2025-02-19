@@ -127,15 +127,16 @@ class ProjectManager(APIView):
                 user["progress_percentage"] =  self._get_member_progress(project=project_obj, user=user_account)
             return Response(status=status.HTTP_200_OK,data=serializer_data.data)
         department_id = request.GET.get("department_id",None)
+        department_obj = get_object_or_404(ProjectDepartment,id=department_id)
         workspace_id  = request.GET.get('workspace_id')
         workspace_obj = get_object_or_404(WorkSpace,id=workspace_id)
-        if request.user == workspace_obj.owner:
-            projects =Project.objects.filter(workspace=workspace_obj,department_id=department_id)
+        if request.user == workspace_obj.owner or department_obj.manager == request.user:
+            projects = Project.objects.filter(workspace=workspace_obj,department_id=department_id)
         else:
 
+            project_workspace = Project.objects.filter(workspace=workspace_obj,department_id=department_id)
 
-            project_workspace =Project.objects.filter(workspace=workspace_obj,department_id=department_id)
-                
+
             projects =[]
             for pro in project_workspace:
                 if request.user in pro.members.all():
@@ -145,8 +146,16 @@ class ProjectManager(APIView):
         serializer_data = ProjectSerializer(projects,many=True)
         for data in serializer_data.data:
             for user in data['members']:
+
                 project_obj=Project.objects.get(id=data['id'])
                 user_account = UserAccount.objects.get(id=user['id'])
+                if user_account == workspace_obj.owner:
+                    user['permission_type'] = "manager"
+                else:
+                    member_workspace = WorkspaceMember.objects.get(workspace=workspace_obj,user_account=user_account)
+                    for permission in member_workspace.permissions.all():
+                        if permission.permission_name == "project board":
+                            user['permission_type'] = permission.permission_type
                 user["progress_percentage"] = self._get_member_progress(project=project_obj, user=user_account)
         return Response(status=status.HTTP_200_OK, data={
             "status":True,
