@@ -20,7 +20,7 @@ class ProjectDepartment(SoftDeleteModel):
     manager= models.ForeignKey(UserAccount,on_delete=models.CASCADE,null=True)
     
 
-class TaskLabel(models.Model):
+class TaskLabel(SoftDeleteModel):
     project = models.ForeignKey('Project',on_delete=models.CASCADE,null=True)
     title = models.CharField(max_length=50,null=True)
     color_code = models.CharField(max_length=50,null=True)

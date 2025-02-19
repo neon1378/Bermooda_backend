@@ -12,7 +12,7 @@ from core.models import City,State,MainFile
 from extensions.utils import costum_date
 from core.models import SoftDeleteModel
 
-class IndustrialActivity(models.Model):
+class IndustrialActivity(SoftDeleteModel):
     title = models.CharField(max_length=150,null=True)
     refrence_id = models.IntegerField(default=0)
 
@@ -76,11 +76,11 @@ class WorkSpace (SoftDeleteModel):
             }
         except:
             return {}
-class Link(models.Model):
+class Link(SoftDeleteModel):
     workspace = models.ForeignKey(WorkSpace,on_delete=models.CASCADE,null=True,related_name="links")
 
     url = models.URLField(null=True)
-class WorkspaceMember(models.Model):
+class WorkspaceMember(SoftDeleteModel):
     workspace = models.ForeignKey(WorkSpace,on_delete=models.CASCADE,null=True,related_name="workspace_member")
     user_account = models.ForeignKey(UserAccount,on_delete=models.CASCADE,null=True,related_name="user_member")
     fullname=models.CharField(max_length=200,null=True)
@@ -102,7 +102,7 @@ class WorkspaceMember(models.Model):
             return ""
 
 
-class MemberPermission (models.Model):
+class MemberPermission (SoftDeleteModel):
     PERMISSION_TYPE =(
         ("manager","MANAGER"),
         ("expert","EXPERT"),
@@ -114,11 +114,11 @@ class MemberPermission (models.Model):
     member = models.ForeignKey(WorkspaceMember,on_delete=models.CASCADE,null=True,related_name="permissions")
     permission_type = models.CharField(max_length=60,choices=PERMISSION_TYPE,default="no access")
 
-class ViewName(models.Model):
+class ViewName(SoftDeleteModel):
     permission = models.ForeignKey(MemberPermission,on_delete=models.CASCADE,null=True,related_name="view_names")
     view_name = models.CharField(max_length=200,null=True)
     
-class MethodPermission(models.Model):
+class MethodPermission(SoftDeleteModel):
     METHOD_TYPE= (
         ("get","GET"),
         ("post","POST"),
