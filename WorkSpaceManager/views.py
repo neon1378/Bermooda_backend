@@ -673,7 +673,7 @@ class WorkSpaceMemberManger(APIView):
         })
 
 
-    def delete(self,member_id):
-        workspace_member =get_object_or_404(WorkspaceMember,id=member_id)
+    def delete(self,request,member_id):
+        workspace_member = get_object_or_404(WorkspaceMember,id=member_id)
         workspace_member.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
