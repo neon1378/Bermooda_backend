@@ -596,9 +596,9 @@ class WorkSpaceMemberManger(APIView):
 
             )
 
-        else:
-            for member in workspace_member:
-                member_data.append(WorkSpaceMemberSerializer(member).data)
+
+        for member in workspace_member:
+            member_data.append(WorkSpaceMemberSerializer(member).data)
 
 
         return Response(status=status.HTTP_200_OK,data={
