@@ -589,7 +589,8 @@ class WorkSpaceMemberManger(APIView):
             data['fullname'] = workspace_obj.owner.fullname
             member_data.append(
                 {
-                    "user_account":data
+                    "user_account":data,
+                    "type":"owner"
                 }
 
             )
