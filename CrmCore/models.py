@@ -10,25 +10,25 @@ from dotenv import load_dotenv
 load_dotenv()
 from core.models import SoftDeleteModel
 from django.utils.formats import number_format
-class CrmDepartment(models.Model):
+class CrmDepartment(SoftDeleteModel):
     title = models.CharField(max_length=200,null=True)
     workspace = models.ForeignKey(WorkSpace,on_delete=models.CASCADE,null=True,related_name="crm_departments")
     manager= models.ForeignKey(UserAccount,on_delete=models.CASCADE,null=True)
     
 # Create your models here.
-class Label (models.Model):
+class Label (SoftDeleteModel):
     # workspace = models.ForeignKey(WorkSpace,null=True,on_delete=models.CASCADE,related_name="label_customer")
     title =models.CharField(max_length=50,null=True)
     color= models.CharField(max_length=50,null=True)
     group_crm = models.ForeignKey("GroupCrm",on_delete=models.CASCADE,null=True,related_name="label_customer")
 
     created = models.DateField(auto_now_add=True)
-class Category (models.Model):
+class Category (SoftDeleteModel):
     workspace = models.ForeignKey(WorkSpace,null=True,on_delete=models.CASCADE,related_name="category_customer")
     title =models.CharField(max_length=50,null=True)
 
     created = models.DateField(auto_now_add=True)
-class ActionData(models.Model):
+class ActionData(SoftDeleteModel):
     CHOICE =(
         ("status","status"),
         ("invoice","invoice"),
@@ -43,7 +43,7 @@ class ActionData(models.Model):
     before_status =models.CharField(max_length=40,null=True)
     current_status = models.CharField(max_length=50,null=True)
 
-class Report(models.Model):
+class Report(SoftDeleteModel):
     description = models.TextField(null=True)
     date_to_remember = models.CharField(max_length=30,null=True)
     time_to_remember = models.CharField(max_length=30,null=True)
@@ -134,7 +134,7 @@ class Report(models.Model):
         return {}
     
 
-class GroupCrm (models.Model):
+class GroupCrm (SoftDeleteModel):
     workspace =models.ForeignKey(WorkSpace,on_delete=models.CASCADE,null=True,related_name="group_crm")
     manager= models.ForeignKey(UserAccount,on_delete=models.SET_NULL,null=True)
     title = models.CharField(max_length=200,null=True)
@@ -168,7 +168,7 @@ class GroupCrm (models.Model):
             return ""   
 
 
-class CustomerUser(models.Model):
+class CustomerUser(SoftDeleteModel):
     CONECTION_TYPE = (
         ("phone","PHONE"),
         ("email","EMAIL"),
@@ -242,7 +242,7 @@ class CustomerUser(models.Model):
 
 
 
-class Campaign(models.Model):
+class Campaign(SoftDeleteModel):
     image = models.ForeignKey(MainFile,on_delete=models.SET_NULL,null=True)
     group_crm = models.ForeignKey(GroupCrm,on_delete=models.CASCADE,null=True,related_name="campaigns")
     creator = models.ForeignKey(UserAccount,on_delete=models.CASCADE,null=True)
@@ -271,7 +271,7 @@ class Campaign(models.Model):
 
         return jalali_datetime.strftime("%Y/%m/%d %H:%M:%S")
 
-class CampaignField(models.Model):
+class CampaignField(SoftDeleteModel):
     TYPE = (
 
         ("phone_number","PHONE_NUMBER"),
@@ -289,13 +289,13 @@ class CampaignField(models.Model):
     field_type = models.CharField(max_length=60,choices=TYPE,null=True)
     campaign = models.ForeignKey(Campaign,on_delete=models.CASCADE,null=True,related_name="fields")
 
-class CampaignForm (models.Model):
+class CampaignForm (SoftDeleteModel):
     fullname =  models.CharField(max_length=100,null=True)
     campaign = models.ForeignKey(Campaign,on_delete=models.CASCADE,related_name="forms",null=True)
 
 
 
-class CampaignFormData(models.Model):
+class CampaignFormData(SoftDeleteModel):
     TYPE = (
 
         ("phone_number","PHONE_NUMBER"),
@@ -315,7 +315,7 @@ class CampaignFormData(models.Model):
     campaign_form =models.ForeignKey(CampaignForm,on_delete=models.CASCADE,null=True,related_name="form_data")
 
 
-class IpExist(models.Model):
+class IpExist(SoftDeleteModel):
 
     ip = models.GenericIPAddressField(null=True)
     campaign =  models.ForeignKey(Campaign,on_delete=models.CASCADE,null=True)

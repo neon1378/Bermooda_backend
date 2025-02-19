@@ -1,26 +1,177 @@
 from django.contrib import admin
 from .models import *
 from django.contrib import admin
-from django.contrib.admin.models import LogEntry
 
-@admin.register(LogEntry)
-class LogEntryAdmin(admin.ModelAdmin):
-    list_display = ("user", "action_time", "content_type", "object_repr", "action_flag")
-    list_filter = ("action_flag", "content_type", "user")
-# Register your models here.
-admin.site.register(Label)
-admin.site.register(Category)
-admin.site.register(ActionData)
-admin.site.register(Report)
-admin.site.register(CustomerUser)
-admin.site.register(GroupCrm)
-admin.site.register(CrmDepartment)
 
-admin.site.register(Campaign)
-admin.site.register(CampaignField)
-admin.site.register(CampaignForm)
-admin.site.register(CampaignFormData)
-# admin.site.register(IpAshol)
+@admin.register(Label)
+class LabelAdmin(admin.ModelAdmin):
+    list_display = ( 'is_deleted', 'deleted_at',"title")
+    list_filter = ('is_deleted',)
+    actions = ['restore_selected']
+
+    def get_queryset(self, request):
+        # Use the custom manager's queryset
+        return self.model.all_objects.get_queryset()
+
+    @admin.action(description='Restore selected items')
+    def restore_selected(self, request, queryset):
+        # Restore soft-deleted items
+        queryset.update(is_deleted=False, deleted_at=None)
+        self.message_user(request, f'{queryset.count()} items restored successfully.')
+
+@admin.register(Category)
+class CategoryAdmin(admin.ModelAdmin):
+    list_display = ( 'is_deleted', 'deleted_at',"title")
+    list_filter = ('is_deleted',)
+    actions = ['restore_selected']
+
+    def get_queryset(self, request):
+        # Use the custom manager's queryset
+        return self.model.all_objects.get_queryset()
+
+    @admin.action(description='Restore selected items')
+    def restore_selected(self, request, queryset):
+        # Restore soft-deleted items
+        queryset.update(is_deleted=False, deleted_at=None)
+        self.message_user(request, f'{queryset.count()} items restored successfully.')
+
+@admin.register(ActionData)
+class ActionDataAdmin(admin.ModelAdmin):
+    list_display = ( 'is_deleted', 'deleted_at')
+    list_filter = ('is_deleted',)
+    actions = ['restore_selected']
+
+    def get_queryset(self, request):
+        # Use the custom manager's queryset
+        return self.model.all_objects.get_queryset()
+
+    @admin.action(description='Restore selected items')
+    def restore_selected(self, request, queryset):
+        # Restore soft-deleted items
+        queryset.update(is_deleted=False, deleted_at=None)
+        self.message_user(request, f'{queryset.count()} items restored successfully.')
+@admin.register(Report)
+class ReportAdmin(admin.ModelAdmin):
+    list_display = ( 'is_deleted', 'deleted_at')
+    list_filter = ('is_deleted',)
+    actions = ['restore_selected']
+
+    def get_queryset(self, request):
+        # Use the custom manager's queryset
+        return self.model.all_objects.get_queryset()
+
+    @admin.action(description='Restore selected items')
+    def restore_selected(self, request, queryset):
+        # Restore soft-deleted items
+        queryset.update(is_deleted=False, deleted_at=None)
+        self.message_user(request, f'{queryset.count()} items restored successfully.')
+@admin.register(CustomerUser)
+class CustomerUserAdmin(admin.ModelAdmin):
+    list_display = ( 'is_deleted', 'deleted_at',"fullname_or_company_name")
+    list_filter = ('is_deleted',)
+    actions = ['restore_selected']
+
+    def get_queryset(self, request):
+        # Use the custom manager's queryset
+        return self.model.all_objects.get_queryset()
+
+    @admin.action(description='Restore selected items')
+    def restore_selected(self, request, queryset):
+        # Restore soft-deleted items
+        queryset.update(is_deleted=False, deleted_at=None)
+        self.message_user(request, f'{queryset.count()} items restored successfully.')
+@admin.register(GroupCrm)
+class CustomerUserAdmin(admin.ModelAdmin):
+    list_display = ( 'is_deleted', 'deleted_at',"title")
+    list_filter = ('is_deleted',)
+    actions = ['restore_selected']
+
+    def get_queryset(self, request):
+        # Use the custom manager's queryset
+        return self.model.all_objects.get_queryset()
+
+    @admin.action(description='Restore selected items')
+    def restore_selected(self, request, queryset):
+        # Restore soft-deleted items
+        queryset.update(is_deleted=False, deleted_at=None)
+        self.message_user(request, f'{queryset.count()} items restored successfully.')
+@admin.register(CrmDepartment)
+class CrmDepartmentAdmin(admin.ModelAdmin):
+    list_display = ( 'is_deleted', 'deleted_at',"title")
+    list_filter = ('is_deleted',)
+    actions = ['restore_selected']
+
+    def get_queryset(self, request):
+        # Use the custom manager's queryset
+        return self.model.all_objects.get_queryset()
+
+    @admin.action(description='Restore selected items')
+    def restore_selected(self, request, queryset):
+        # Restore soft-deleted items
+        queryset.update(is_deleted=False, deleted_at=None)
+        self.message_user(request, f'{queryset.count()} items restored successfully.')
+@admin.register(Campaign)
+class CampaignAdmin(admin.ModelAdmin):
+    list_display = ( 'is_deleted', 'deleted_at')
+    list_filter = ('is_deleted',)
+    actions = ['restore_selected']
+
+    def get_queryset(self, request):
+        # Use the custom manager's queryset
+        return self.model.all_objects.get_queryset()
+
+    @admin.action(description='Restore selected items')
+    def restore_selected(self, request, queryset):
+        # Restore soft-deleted items
+        queryset.update(is_deleted=False, deleted_at=None)
+        self.message_user(request, f'{queryset.count()} items restored successfully.')
+@admin.register(CampaignField)
+class CampaignFieldAdmin(admin.ModelAdmin):
+    list_display = ( 'is_deleted', 'deleted_at')
+    list_filter = ('is_deleted',)
+    actions = ['restore_selected']
+
+    def get_queryset(self, request):
+        # Use the custom manager's queryset
+        return self.model.all_objects.get_queryset()
+
+    @admin.action(description='Restore selected items')
+    def restore_selected(self, request, queryset):
+        # Restore soft-deleted items
+        queryset.update(is_deleted=False, deleted_at=None)
+        self.message_user(request, f'{queryset.count()} items restored successfully.')
+
+@admin.register(CampaignForm)
+class CampaignFormAdmin(admin.ModelAdmin):
+    list_display = ( 'is_deleted', 'deleted_at')
+    list_filter = ('is_deleted',)
+    actions = ['restore_selected']
+
+    def get_queryset(self, request):
+        # Use the custom manager's queryset
+        return self.model.all_objects.get_queryset()
+
+    @admin.action(description='Restore selected items')
+    def restore_selected(self, request, queryset):
+        # Restore soft-deleted items
+        queryset.update(is_deleted=False, deleted_at=None)
+        self.message_user(request, f'{queryset.count()} items restored successfully.')
+@admin.register(CampaignFormData)
+class CampaignFormDataAdmin(admin.ModelAdmin):
+    list_display = ( 'is_deleted', 'deleted_at')
+    list_filter = ('is_deleted',)
+    actions = ['restore_selected']
+
+    def get_queryset(self, request):
+        # Use the custom manager's queryset
+        return self.model.all_objects.get_queryset()
+
+    @admin.action(description='Restore selected items')
+    def restore_selected(self, request, queryset):
+        # Restore soft-deleted items
+        queryset.update(is_deleted=False, deleted_at=None)
+        self.message_user(request, f'{queryset.count()} items restored successfully.')
+
 
 @admin.register(IpAshol)
 class IpAsholAdmin(admin.ModelAdmin):
