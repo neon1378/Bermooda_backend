@@ -121,7 +121,7 @@ class SoftDeleteModel(models.Model):
             models.Index(fields=['deleted_at']),
         ]
 
-    def delete(self, using=None, keep_parents=False):
+    def soft_delete(self, using=None, keep_parents=False):
         """
         Soft delete this instance by setting is_deleted and deleted_at
         """

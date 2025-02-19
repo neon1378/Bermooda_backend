@@ -47,7 +47,7 @@ class WorkspaceManager(APIView):
                     request.user.current_workspace_id = workspace_member.workspace.id
                 request.user.save()
 
-            workspace_obj.delete()
+            workspace_obj.soft_delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         return  Response(status=status.HTTP_403_FORBIDDEN,data={
             "message":"you dont have permission dont try !!!!!!"
