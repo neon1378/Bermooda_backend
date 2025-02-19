@@ -585,9 +585,11 @@ class WorkSpaceMemberManger(APIView):
         workspace_member = WorkspaceMember.objects.filter(workspace= workspace_obj)
         member_data =[]
         if workspace_obj.owner != request.user:
+            data = UserSerializer(workspace_obj.owner).data
+            data['fullname'] = workspace_obj.owner.fullnamme
             member_data.append(
                 {
-                    "user_account":UserSerializer(workspace_obj.owner).data
+                    "user_account":data
                 }
 
             )
