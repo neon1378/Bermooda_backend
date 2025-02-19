@@ -76,6 +76,7 @@ class WorkSpaceMemberSerializer(serializers.ModelSerializer):
     class Meta:
         model = WorkspaceMember
         fields = [
+        "id",
         "user_account",
         "first_name",
         "permissions",
