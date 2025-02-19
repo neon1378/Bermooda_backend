@@ -587,7 +587,7 @@ class WorkSpaceMemberManger(APIView):
         if workspace_obj.owner != request.user:
             member_data.append(
                 {
-                    "user_account":UserSerializer(workspace_member.owner).data
+                    "user_account":UserSerializer(workspace_obj.owner).data
                 }
 
             )
