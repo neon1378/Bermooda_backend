@@ -70,7 +70,7 @@ class UserSerializer(serializers.ModelSerializer):
         ]
 
 class WorkSpaceMemberSerializer(serializers.ModelSerializer):
-    user_account = UserSerializer(required=True)
+    user_account = UserSerializer(required=False)
     workspace_id= serializers.IntegerField(required=True,write_only=True)
     permissions = serializers.ListField(write_only=True,required=True)
     class Meta:
