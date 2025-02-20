@@ -255,7 +255,9 @@ class ProjectTask(WebsocketConsumer):
 
         self.project_obj = Project.objects.get(id=self.project_id)
         self.workspace_obj = self.project_obj.workspace
-
+        async_to_sync(self.channel_layer.group_add)(
+            f"{self.project_id}_amin",self.channel_name
+        )
     def get_permission_user(self):
         workspace_member = WorkspaceMember.objects.get(user_account=self.user, workspace=self.workspace_obj)
         for permission in workspace_member.permissions.all():
