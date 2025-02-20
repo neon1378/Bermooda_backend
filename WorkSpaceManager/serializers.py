@@ -1,3 +1,5 @@
+from multiprocessing.util import is_exiting
+
 from rest_framework.serializers import ModelSerializer
 from rest_framework import serializers
 from .models import *
@@ -109,15 +111,15 @@ class WorkSpaceMemberSerializer(serializers.ModelSerializer):
             })
         # try:
         member_obj_deleted = WorkspaceMember.all_objects.filter(is_deleted=True)
+
         for item in member_obj_deleted:
             if item.workspace == workspace_obj and item.user_account == user_acc:
-                raise serializers.ValidationError({
-                    "status": False,
-                    "message": "کاربر مورد نظر حذف شده است ",
-                    "data": {}
-                })
 
-        # except:
+                item.is_deleted = False
+                return item
+
+
+
 
         new_workspace_member = WorkspaceMember.objects.create(**validated_data)
         new_workspace_member.user_account = user_acc
