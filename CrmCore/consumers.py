@@ -81,7 +81,13 @@ class CustomerTask(WebsocketConsumer):
                 customer_order = CustomerUser.objects.get(id=order['customer_id'])
                 customer_order.order =order['order']
                 customer_order.save()
+            event = {
+                "type":"send_data"
+            }
+            async_to_sync(self.channel_layer.group_send)(
+                self.group_crm_id,event
 
+            )
     def send_data(self,event):
         custommer_objs = CustomerUser.objects.filter(group_crm=self.group_crm_obj)
         data_list = []
