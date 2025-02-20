@@ -78,8 +78,8 @@ class IsWorkSpaceMemberAccess(BasePermission):
                                 print(method)
                                 permission_dic[method.method_name.upper()] = method.is_permission
                             request.user_permission_type = permission.permission_type
-                        
-                            
+
+        print(permission_dic)
         self.message = "شما به این قسمت دسترسی ندارید"
         return permission_dic[request.method]
 
