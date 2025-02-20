@@ -152,10 +152,13 @@ class ProjectManager(APIView):
                 if user_account == workspace_obj.owner:
                     user['permission_type'] = "manager"
                 else:
-                    member_workspace = WorkspaceMember.objects.get(workspace=workspace_obj,user_account=user_account)
-                    for permission in member_workspace.permissions.all():
-                        if permission.permission_name == "project board":
-                            user['permission_type'] = permission.permission_type
+                    try:
+                        member_workspace = WorkspaceMember.objects.get(workspace=workspace_obj,user_account=user_account)
+                        for permission in member_workspace.permissions.all():
+                            if permission.permission_name == "project board":
+                                user['permission_type'] = permission.permission_type
+                    except:
+                        user['permission_type'] = "no access"
                 user["progress_percentage"] = self._get_member_progress(project=project_obj, user=user_account)
         return Response(status=status.HTTP_200_OK, data={
             "status":True,
