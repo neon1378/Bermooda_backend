@@ -45,6 +45,7 @@ class CustomerTask(WebsocketConsumer):
                             "label_id": custommer_obj.label.id,
                             "color": custommer_obj.label.color,
                             "title": custommer_obj.label.title,
+                            "order":1,
                             "customer_list": [CustomerSmallSerializer(custommer_obj).data]
                         })
                 except:
@@ -59,6 +60,7 @@ class CustomerTask(WebsocketConsumer):
                         break
                 if not_exsit:
                     data_list.append({
+                        "order":1,
                         "label_id": label.id,
                         "color": label.color,
                         "title": label.title,
