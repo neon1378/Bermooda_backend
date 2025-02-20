@@ -108,8 +108,10 @@ class WorkSpaceMemberSerializer(serializers.ModelSerializer):
                 "data": {}
             })
         # try:
-        member_obj_deleted = WorkspaceMember.all_objects.get(workspace=workspace_obj,user_account = user_acc,is_deleted=True)
-
+        member_obj_deleted = WorkspaceMember.all_objects.filter(is_deleted=True)
+        for item in member_obj_deleted:
+            print(item.workspace,"@@@@")
+            print(item.user_account,"@@@@")
 
         # except:
 
