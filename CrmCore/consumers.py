@@ -32,6 +32,7 @@ class CustomerTask(WebsocketConsumer):
         custommer_objs = CustomerUser.objects.filter(group_crm=self.group_crm_obj)
         if command == "customer_list":
             data_list = []
+
             for custommer_obj in custommer_objs:
                 not_exsit = True
                 try:
@@ -45,13 +46,14 @@ class CustomerTask(WebsocketConsumer):
                             "label_id": custommer_obj.label.id,
                             "color": custommer_obj.label.color,
                             "title": custommer_obj.label.title,
-                            "order":1,
+
                             "customer_list": [CustomerSmallSerializer(custommer_obj).data]
                         })
+
                 except:
                     pass
 
-            label_objs = Label.objects.filter(group_crm_id=self.group_crm_id)
+            label_objs = Label.objects.filter(group_crm_id=self.group_crm_id).order_by("-id")
             for label in label_objs:
                 not_exsit = True
                 for data in data_list:
@@ -60,12 +62,13 @@ class CustomerTask(WebsocketConsumer):
                         break
                 if not_exsit:
                     data_list.append({
-                        "order":1,
+
                         "label_id": label.id,
                         "color": label.color,
                         "title": label.title,
                         "customer_list": []
                     })
+            print(data_list,"@@")
             self.send(json.dumps(
                 {
                     "data_type":"customer_list",
