@@ -108,7 +108,7 @@ class WorkSpaceMemberSerializer(serializers.ModelSerializer):
                 "data": {}
             })
         try:
-            member_obj_deleted = WorkspaceMember.all_objects.get(workspace=workspace_obj,user_account = user_acc)
+            member_obj_deleted = WorkspaceMember.all_objects.get(workspace=workspace_obj,user_account = user_acc,is_deleted=True)
 
             raise serializers.ValidationError({
                 "status": False,
