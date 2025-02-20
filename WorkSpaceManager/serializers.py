@@ -1,7 +1,7 @@
 from rest_framework.serializers import ModelSerializer
 from rest_framework import serializers
 from .models import *
-
+from django.shortcuts import get_object_or_404
 from core.views import  send_invite_link
 
 class IndustrialActivitySerializer(ModelSerializer):
@@ -89,9 +89,10 @@ class WorkSpaceMemberSerializer(serializers.ModelSerializer):
         ]
 
     def create(self, validated_data):
+        workspace_id = validated_data.get("workspace_id")
+        workspace_obj = get_object_or_404(WorkSpace,id=workspace_id)
         user_account = validated_data.pop("user_account_data")
         permissions= validated_data.pop("permissions")
-        new_workspace_member = WorkspaceMember.objects.create(**validated_data)
         try :
             user_acc = UserAccount.objects.get(phone_number=user_account.get("phone_number"))
 
@@ -100,11 +101,27 @@ class WorkSpaceMemberSerializer(serializers.ModelSerializer):
             user_acc = UserAccount(phone_number=user_account.get("phone_number"))
             user_acc.is_register=False
             user_acc.save()
+        if WorkspaceMember.objects.filter(workspace=workspace_obj,user_account=user_acc).exists() or workspace_obj.owner == user_acc:
+            raise serializers.ValidationError({
+                "status": False,
+                "message": "کاربر مورد نظر در حال حاظر در تیم شما وجود دارد",
+                "data": {}
+            })
+        try:
+            member_obj_deleted = WorkspaceMember.all_objects.get(workspace=workspace_obj,user_account = user_acc)
 
-        new_workspace_member.user_account = user_acc
-        new_workspace_member.save()
-        send_invite_link(user_acc.phone_number, new_workspace_member.workspace.owner.fullname,
-                         new_workspace_member.workspace.title)
+            raise serializers.ValidationError({
+                "status": False,
+                "message": "کاربر مورد نظر حذف شده است",
+                "data": {}
+            })
+        except:
+
+            new_workspace_member = WorkspaceMember.objects.create(**validated_data)
+            new_workspace_member.user_account = user_acc
+            new_workspace_member.save()
+            send_invite_link(user_acc.phone_number, new_workspace_member.workspace.owner.fullname,
+                             new_workspace_member.workspace.title)
 
 
         return new_workspace_member
