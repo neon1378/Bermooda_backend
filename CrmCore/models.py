@@ -217,7 +217,7 @@ class CustomerUser(SoftDeleteModel):
     agent_email_or_link = models.CharField(max_length=200,null=True,blank=True)
     agent_phone_number = models.CharField(max_length=15,null=True,blank=True)
      
-
+    order =models.IntegerField(default=0)
 
     def avatar_url(self):
         try:
