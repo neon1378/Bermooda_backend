@@ -107,21 +107,17 @@ class WorkSpaceMemberSerializer(serializers.ModelSerializer):
                 "message": "کاربر مورد نظر در حال حاظر در تیم شما وجود دارد",
                 "data": {}
             })
-        try:
-            member_obj_deleted = WorkspaceMember.all_objects.get(workspace=workspace_obj,user_account = user_acc,is_deleted=True)
+        # try:
+        member_obj_deleted = WorkspaceMember.all_objects.get(workspace=workspace_obj,user_account = user_acc,is_deleted=True)
 
-            raise serializers.ValidationError({
-                "status": False,
-                "message": "کاربر مورد نظر حذف شده است",
-                "data": {}
-            })
-        except:
 
-            new_workspace_member = WorkspaceMember.objects.create(**validated_data)
-            new_workspace_member.user_account = user_acc
-            new_workspace_member.save()
-            send_invite_link(user_acc.phone_number, new_workspace_member.workspace.owner.fullname,
-                             new_workspace_member.workspace.title)
+        # except:
+
+        new_workspace_member = WorkspaceMember.objects.create(**validated_data)
+        new_workspace_member.user_account = user_acc
+        new_workspace_member.save()
+        send_invite_link(user_acc.phone_number, new_workspace_member.workspace.owner.fullname,
+                            new_workspace_member.workspace.title)
 
 
         return new_workspace_member
