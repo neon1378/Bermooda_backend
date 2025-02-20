@@ -268,7 +268,7 @@ class ProjectTask(WebsocketConsumer):
         command = data['command']
 
         if command == "task_list":
-            print(self.get_permission_user )
+            print(self.get_permission_user,"@@@" )
             if self.workspace_obj.owner == self.user or self.get_permission_user == "manager":
                 task_objs = Task.objects.filter(project=self.project_obj, done_status=False)
             else:
