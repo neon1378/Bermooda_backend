@@ -79,15 +79,14 @@ class CustomerTask(WebsocketConsumer):
         elif command == "move_a_customer":
             main_data = data['data']
             customer_obj = CustomerUser.objects.get(id=main_data['customer_id'])
-            print(main_data['label_id'],"#####")
-            print(customer_obj.label.id,"!!!!")
+
             label_obj = Label.objects.get(id=main_data['label_id'])
             customer_obj.label= label_obj
-            print(customer_obj.label.id,"@@@@@")
+
             customer_obj.save()
-            for order in main_data['customer_orders']:
-                customer_order = CustomerUser.objects.get(id=order['customer_id'])
-                customer_order.order =order['order']
+            for order_data in main_data['customer_orders']:
+                customer_order = CustomerUser.objects.get(id=order_data['customer_id'])
+                customer_order.order =order_data['order']
                 customer_order.save()
             event = {
                 "type":"send_data"
