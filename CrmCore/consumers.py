@@ -68,11 +68,11 @@ class CustomerTask(WebsocketConsumer):
                         "title": label.title,
                         "customer_list": []
                     })
-            print(data_list,"@@")
+            data = sorted(data_list, key=lambda x: x["label_id"])
             self.send(json.dumps(
                 {
                     "data_type":"customer_list",
-                    "data":data_list
+                    "data":data
                 }
             ))
 
@@ -128,10 +128,11 @@ class CustomerTask(WebsocketConsumer):
                     "title": label.title,
                     "customer_list": []
                 })
+        data = sorted(data_list, key=lambda x: x["label_id"])
         self.send(json.dumps(
             {
                 "data_type": "customer_list",
-                "data": data_list
+                "data": data
             }
         ))
 
