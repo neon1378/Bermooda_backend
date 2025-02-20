@@ -645,7 +645,7 @@ class WorkSpaceMemberManger(APIView):
                     if permission['permission_name'] == permission_member_obj.permission_name:
                         for item in permission['items']:
 
-                            try:
+                            # try:
                                 view_permission_obj = permission_member_obj.view_names.get(view_name=item['view_name'])
 
                                 for perm in item['permissions']:
@@ -659,8 +659,8 @@ class WorkSpaceMemberManger(APIView):
 
 
 
-                            except:
-                                continue
+                            # except:
+                            #     continue
 
                 permission_member_obj.permission_type = permission_type
                 permission_member_obj.save()
