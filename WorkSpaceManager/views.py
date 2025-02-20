@@ -439,9 +439,18 @@ def create_permission_for_member (member_id,permissions):
                                 )
                                 for method in side_permission['methods']:
                                     try:
+
                                         method_permission = MethodPermission.objects.get(view=view_name,method_name=method,permission_type=main_permission_type)
+
                                     except:
                                         method_permission = MethodPermission.objects.create(view=view_name,method_name=method,permission_type=main_permission_type)
+                                    for permission in item['permissions']:
+                                        if permission['type'] == main_permission_type:
+                                            for method_type in permission['methods']:
+                                                if method_type['method'] == method_permission.method_name:
+                                                    method_permission.is_permission =method_type['status']
+                                                    method_permission.save()
+
                             except:
 
                                 view_name = ViewName.objects.create(
@@ -454,6 +463,12 @@ def create_permission_for_member (member_id,permissions):
                                 for method in side_permission['methods']:
                           
                                     method_permission = MethodPermission.objects.create(view=view_name,method_name=method)
+                                    for permission in item['permissions']:
+                                        if permission['type'] == main_permission_type:
+                                            for method_type in permission['methods']:
+                                                if method_type['method'] == method_permission.method_name:
+                                                    method_permission.is_permission = method_type['status']
+                                                    method_permission.save()
                     except:
                         member_permission =MemberPermission.objects.create(member=member,permission_name=side_permission['permission_name'],permission_type=main_permission_type)
                         for item in side_permission['items']:
@@ -466,7 +481,12 @@ def create_permission_for_member (member_id,permissions):
                             for method in side_permission['methods']:
                           
                                 method_permission = MethodPermission.objects.create(view=view_name,method_name=method)
-
+                                for permission in item['permissions']:
+                                    if permission['type'] == main_permission_type:
+                                        for method_type in permission['methods']:
+                                            if method_type['method'] == method_permission.method_name:
+                                                method_permission.is_permission = method_type['status']
+                                                method_permission.save()
 
 
 @api_view(['POST'])
