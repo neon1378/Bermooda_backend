@@ -110,8 +110,12 @@ class WorkSpaceMemberSerializer(serializers.ModelSerializer):
         # try:
         member_obj_deleted = WorkspaceMember.all_objects.filter(is_deleted=True)
         for item in member_obj_deleted:
-            print(item.workspace,"@@@@")
-            print(item.user_account,"@@@@")
+            if item.workspace == workspace_obj and item.user_account == user_acc:
+                raise serializers.ValidationError({
+                    "status": False,
+                    "message": "کاربر مورد نظر حذف شده است ",
+                    "data": {}
+                })
 
         # except:
 
