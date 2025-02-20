@@ -14,6 +14,7 @@ load_dotenv()
 
 class CustomerTask(WebsocketConsumer):
     def connect(self):
+        self.user = self.scope['user']
         if self.user.is_authenticated:
             self.accept()
         else:
