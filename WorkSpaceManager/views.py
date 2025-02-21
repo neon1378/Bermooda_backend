@@ -134,7 +134,7 @@ class WorkspaceManager(APIView):
                         "workspaceId":workspace_obj.id,
                         "bio":workspace_obj.business_detail,
                         "avatar":"",
-                        "industrialactivityId":workspace_obj.industrialactivity.refrence_id
+                        "industrialActivityId":workspace_obj.industrialactivity.refrence_id
 
             }
             if workspace_obj.avatar:
