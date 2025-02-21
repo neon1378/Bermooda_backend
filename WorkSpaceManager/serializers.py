@@ -122,6 +122,11 @@ class WorkSpaceMemberSerializer(serializers.ModelSerializer):
 
                 item.is_deleted = False
                 item.deleted_at =None
+                first_name = validated_data.get("first_name")
+                last_name =validated_data.get("last_name")
+                item.first_name = first_name
+                item.last_name = last_name
+                item.fullname = f"{first_name} {last_name}"
                 item.save()
                 return item
 
