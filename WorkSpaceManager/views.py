@@ -503,33 +503,44 @@ def create_permission_for_member (member_id,permissions):
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
-def accept_workspace_invitation (request,notification_id=None):
+def accept_workspace_invitation (request):
     data =request.data
-    if notification_id:
-        notification_obj = get_object_or_404(Notification,id=notification_id)
-        
-        member_obj =   notification_obj.related_object
-        if member_obj.user_account == request.user:
-            is_accepted = data.get("is_accepted")
-            if is_accepted:
-                member_obj.is_accepted= is_accepted
-                member_obj.save()
-                notification_obj.delete()
-                return Response(status=status.HTTP_200_OK)
 
-            member_obj.delete()
-            notification_obj.delete()
-            return Response(status=status.HTTP_200_OK)
-        return Response(status=status.HTTP_400_BAD_REQUEST,data={
-            "status":False,
-            "message":"access denaid",
-            "data":{}
+    workspace_obj = WorkSpace.objects.get(id=request.user.current_workspace_id)
+    member_obj =   WorkspaceMember.objects.get(user_account = request.user,workspace=workspace_obj)
+
+    is_accepted = data.get("is_accepted")
+    if is_accepted:
+        member_obj.is_accepted= is_accepted
+        member_obj.save()
+
+        return Response(status=status.HTTP_200_OK,data={
+            "status":True,
+            "message":"با موفقیت انجام شد",
+            "data":{
+                "is_accepted":is_accepted
+            }
         })
-    return Response(status=status.HTTP_400_BAD_REQUEST,data={
-        "status":False,
-        "message":"notification is required",
-        "data":{}
-    })
+
+    member_obj.delete()
+    if WorkSpace.objects.filter(owner=request.user).exists():
+        request.user.current_workspace_id = WorkSpace.objects.filter(owner=request.user).first().id
+
+    else:
+        if WorkspaceMember.objects.filter(user_account=request.user).exists():
+            request.user.current_workspace_id=WorkspaceMember.objects.filter(user_account=request.user).first().id
+        else:
+            request.user.current_workspace_id =0
+    request.user.save()
+    return Response(status=status.HTTP_200_OK,data={
+            "status":True,
+            "message":"با موفقیت انجام شد",
+            "data":{
+                "is_accepted":is_accepted
+            }
+        })
+
+
 
 
 @permission_classes([IsAuthenticated])

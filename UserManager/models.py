@@ -89,7 +89,7 @@ class UserAccount(AbstractBaseUser,PermissionsMixin):
     refrence_id = models.PositiveBigIntegerField(default=0)
     refrence_token = models.TextField(null=True)
     is_profile = models.BooleanField(default=False)
-    current_workspace_id = models.PositiveBigIntegerField(default=0)
+    current_workspace_id = models.BigIntegerField(default=0)
 
     is_auth = models.BooleanField(default=False)
     
