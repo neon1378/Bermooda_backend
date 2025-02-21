@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.middleware.csrf import get_token
 from rest_framework import mixins
 from rest_framework import generics
+import re
 from django.views.decorators.csrf import csrf_protect
 from .models import *
 from core.permission import IsWorkSpaceUser
@@ -376,8 +377,12 @@ def get_phone_number (request):
     data =request.data
     phone_number = data['phone_number']
     request_type = data.get("request_type",None)
-
-   
+    pattern = r"^09\d{9}$"
+    if not re.match(pattern, phone_number):
+        return Response(status=status.HTTP_400_BAD_REQUEST,data={
+            "status":False,
+            "message":"شماره تلفن وارد شده اشتباه میباشد"
+        })
 
     try :
         user_acc = UserAccount.objects.get(phone_number=phone_number)
