@@ -133,10 +133,12 @@ class WorkspaceManager(APIView):
                         "username":workspace_obj.jadoo_brand_name,
                         "workspaceId":workspace_obj.id,
                         "bio":workspace_obj.business_detail,
-                        "avatar":f"{base_url}{workspace_obj.avatar.file.url}",
+                        "avatar":"",
                         "industrialactivityId":workspace_obj.industrialactivity.refrence_id
 
             }
+            if workspace_obj.avatar:
+                payload['avatar'] = f"{base_url}{workspace_obj.avatar.file.url}",
             response = requests.post(url=url,json=payload,headers=headers)
             print(response.json())
             workspace_obj.jadoo_workspace_id= response.json()['id']
