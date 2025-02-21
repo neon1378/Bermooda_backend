@@ -601,22 +601,26 @@ def get_project_users(request,project_id):
             try:
                 workspace_member = WorkspaceMember.objects.get(user_account=member,workspace=workspace_obj)
                 for permission in workspace_member.permissions.all():
-                    dic['permission'].append(
+                    dic['permissions'].append(
                         {
                             "permission_name":permission.permission_name,
                             "permission_type":permission.permission_type
                         }
                     )
             except:
-                dic['permission'].append(
+                dic['permissions'].append(
                     {
                         "permission_name":"project board",
                         "permission_type":"no access",
                     },
+
+                )
+                dic['permissions'].append(
                     {
-                        "permission_name":"crm",
-                        "permission_type":"no access",
-                    },
+                        "permission_name": "crm",
+                        "permission_type": "no access",
+                    }
+
                 )
     return Response(status=status.HTTP_200_OK,data={
         "status":True,
