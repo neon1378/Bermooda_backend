@@ -197,6 +197,7 @@ class CustomerSmallSerializer(serializers.ModelSerializer):
                 "type": "send_data"
             }
             async_to_sync(channel_layer.group_send)(f"{new_customer.group_crm.id}_crm", event)
+
             return new_customer
 
 

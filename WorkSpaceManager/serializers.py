@@ -94,6 +94,7 @@ class WorkSpaceMemberSerializer(serializers.ModelSerializer):
         workspace_id = validated_data.get("workspace_id")
         workspace_obj = get_object_or_404(WorkSpace,id=workspace_id)
         user_account = validated_data.pop("user_account_data")
+
         permissions= validated_data.pop("permissions")
         try :
             user_acc = UserAccount.objects.get(phone_number=user_account.get("phone_number"))
@@ -122,6 +123,7 @@ class WorkSpaceMemberSerializer(serializers.ModelSerializer):
 
 
         new_workspace_member = WorkspaceMember.objects.create(**validated_data)
+        new_workspace_member.fullname = f"{new_workspace_member.first_name} {new_workspace_member.last_name}"
         new_workspace_member.user_account = user_acc
         new_workspace_member.save()
         send_invite_link(user_acc.phone_number, new_workspace_member.workspace.owner.fullname,

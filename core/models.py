@@ -157,3 +157,6 @@ class SoftDeleteModel(models.Model):
         Check if there are any soft-deleted instances
         """
         return cls.all_objects.filter(is_deleted=True).exists()
+
+
+
