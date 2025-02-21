@@ -125,6 +125,7 @@ class WorkspaceManager(APIView):
                         "Authorization":f"Bearer {request.user.refrence_token}"
             }
             base_url = os.getenv("BASE_URL")
+            print(workspace_obj.state.refrence_id,workspace_obj.city.refrence_id,"@@#!3")
             payload = {
 
                         "cityId":workspace_obj.state.refrence_id,
