@@ -1082,6 +1082,7 @@ def get_user_data (request):
                         } for permission in workspac_member.permissions.all()
                     ]
                 dic['permissions']=permissions
+                dic['is_accepted']=workspac_member.is_accepted
             except:
                 pass
             dic['type'] = "member"
