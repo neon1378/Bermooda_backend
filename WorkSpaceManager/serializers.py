@@ -121,7 +121,8 @@ class WorkSpaceMemberSerializer(serializers.ModelSerializer):
             if item.workspace == workspace_obj and item.user_account == user_acc:
 
                 item.is_deleted = False
-                item.restore()
+                item.deleted_at =None
+                item.save()
                 return item
 
 
