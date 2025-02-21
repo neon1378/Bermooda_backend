@@ -229,6 +229,25 @@ class ProjectManager(APIView):
 
 class TaskManager(APIView):
     permission_classes = [IsAuthenticated,IsWorkSpaceMemberAccess]
+    import jdatetime
+
+    def _convert_jalali_to_datetime(self,jalali_str):
+        # Convert Persian numbers to English numbers
+        jalali_str = jalali_str.replace("۰", "0").replace("۱", "1").replace("۲", "2") \
+            .replace("۳", "3").replace("۴", "4").replace("۵", "5") \
+            .replace("۶", "6").replace("۷", "7").replace("۸", "8") \
+            .replace("۹", "9")
+
+        # Extract date and time
+        date_part, time_part = jalali_str.split("T")
+        year, month, day = map(int, date_part.split("/"))
+        hour, minute = map(int, time_part.split(":"))
+
+        # Convert to jdatetime
+        return jdatetime.datetime(year, month, day, hour, minute).togregorian()
+
+
+
 
     def task_url_creator(self, task_obj):
         """Generate file URLs for a given task."""
@@ -287,7 +306,7 @@ class TaskManager(APIView):
             task = get_object_or_404(Task, id=task_id)
             if task.done_status is not True:
                 task_data = self.get_task_data(task, project)
-
+                task_data["check_list"].sort(key=lambda x: self._convert_jalali_to_datetime(x["end_time"]))
                 return Response(status=status.HTTP_200_OK, data={"status": True, "message": "success", "data": task_data})
             
             return Response(status=status.HTTP_200_OK, data={"status": True, "message": "task its completed", "data":{}})
@@ -299,7 +318,8 @@ class TaskManager(APIView):
 
         tasks = project.task.filter(done_status=False)
         task_data = [self.get_task_data(task, project) for task in tasks]
-        print(task_data,"@2")
+        for task in task_data:
+            task["check_list"].sort(key=lambda x: self._convert_jalali_to_datetime(x["end_time"]))
         return Response(status=status.HTTP_200_OK, data={"status": True, "message": "success", "data": task_data})
 
     def post(self, request, project_id):
