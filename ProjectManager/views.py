@@ -436,14 +436,21 @@ class TaskManager(APIView):
 
 class CheckListManager(APIView):
     permission_classes=[IsAuthenticated]
+
+    def _convert_jalali_to_datetime(self,date_str, time_str):
+        """ Convert Jalali date and time string to a datetime object. """
+        year, month, day = map(int, date_str.split("/"))
+        hour, minute = map(int, time_str.split(":"))
+        return jdatetime.datetime(year, month, day, hour, minute)
     def get (self,request,checklist_id_or_task_id):
         check_list_obj = CheckList.objects.filter(task_id=checklist_id_or_task_id)
         check_list_serializer = CheckListSerializer(check_list_obj,many=True)
-        print(check_list_serializer.data)
+
+        tasks_sorted = sorted(check_list_serializer.data, key=lambda x: self._convert_jalali_to_datetime(x['date_to_end'], x['time_to_end']))
         return Response(status=status.HTTP_200_OK,data={
             "status":True,
             "message":"success",
-            "data":check_list_serializer.data
+            "data":tasks_sorted
         })
     def post(self,request,checklist_id_or_task_id):
         
