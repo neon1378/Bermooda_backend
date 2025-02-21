@@ -128,8 +128,8 @@ class WorkspaceManager(APIView):
             print(workspace_obj.state.refrence_id,workspace_obj.city.refrence_id,"@@#!3")
             payload = {
 
-                        "cityId":workspace_obj.state.refrence_id,
-                        "stateId":workspace_obj.city.refrence_id,
+                        "cityId":workspace_obj.city.refrence_id,
+                        "stateId":workspace_obj.state.refrence_id,
                         "name":workspace_obj.title,
                         "username":workspace_obj.jadoo_brand_name,
                         "workspaceId":workspace_obj.id,
