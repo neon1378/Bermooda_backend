@@ -117,15 +117,15 @@ class WorkspaceManager(APIView):
             except:
                 new_wallet = Wallet(balance=100000,workspace=workspace_obj)
                 new_wallet.save()
-            if workspace_obj.is_authenticated == False:
+            # if workspace_obj.is_authenticated == False:
                 # try:
-                    url = f"{self.jadoo_base_url}/workspace/store"
-                    headers = {
+            url = f"{self.jadoo_base_url}/workspace/store"
+            headers = {
                         "content-type":"application/json",
                         "Authorization":f"Bearer {request.user.refrence_token}"
-                    }
-                    base_url = os.getenv("BASE_URL")
-                    payload = {
+            }
+            base_url = os.getenv("BASE_URL")
+            payload = {
 
                         "cityId":workspace_obj.state.refrence_id,
                         "stateId":workspace_obj.city.refrence_id,
@@ -136,10 +136,10 @@ class WorkspaceManager(APIView):
                         "avatar":f"{base_url}{workspace_obj.avatar.file.url}",
                         "industrialactivityId":workspace_obj.industrialactivity.refrence_id
 
-                    }
-                    response = requests.post(url=url,json=payload,headers=headers)
-                    print(response.json())
-                    workspace_obj.jadoo_workspace_id= response.json()['id']
+            }
+            response = requests.post(url=url,json=payload,headers=headers)
+            print(response.json())
+            workspace_obj.jadoo_workspace_id= response.json()['id']
                 # except:
                 #     pass
                 #
