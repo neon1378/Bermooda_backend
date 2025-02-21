@@ -231,12 +231,7 @@ class TaskManager(APIView):
     permission_classes = [IsAuthenticated,IsWorkSpaceMemberAccess]
     import jdatetime
 
-    def _convert_jalali_to_datetime(self,jalali_str):
-        # Convert Persian numbers to English numbers
-        date_part, time_part = jalali_str.split("T")
-        year, month, day = map(int, date_part.split("/"))
-        hour, minute = map(int, time_part.split(":"))
-        return jdatetime.datetime(year, month, day, hour, minute)
+
 
 
 
@@ -258,34 +253,7 @@ class TaskManager(APIView):
  
             "category_task": task.category_task.title,
             "category_task_id": task.category_task.id,
-            "check_list": [
-                {
-                    "id": item.id,
-                    "title": item.title,
-                    "status": item.status,
-                    "label": {
-                            "title": item.label.title,
-                            "color_code": item.label.color_code,
-                            } if item.label else {},
-                    "responsible_for_doing":{
-                            "fullname": item.responsible_for_doing.fullname,
-                            "id": item.responsible_for_doing.id,
-                            "avatar_url":item.responsible_for_doing.avatar_url(),
-                           
-                    } if item.responsible_for_doing else {},
-                     
-                    
-         
-
-
-                    "start_time": f"{item.date_to_start}T{item.time_to_start}",
-
-                    # "time_to_start": item.time_to_start,
-                    "end_time": f"{item.date_to_end}T{item.time_to_end}",
-                    # "time_to_end": item.time_to_end,
-                }
-                for item in task.check_list.all()
-            ],
+            "check_list": None,
             "file_urls": self.task_url_creator(task),
         }
 
@@ -298,9 +266,7 @@ class TaskManager(APIView):
             task = get_object_or_404(Task, id=task_id)
             if task.done_status is not True:
                 task_data = self.get_task_data(task, project)
-                print(task_data["check_list"])
-                task_data["check_list"]= task_data["check_list"].sort(key=lambda x: self._convert_jalali_to_datetime(x["end_time"]))
-                print(task_data["check_list"])
+
                 return Response(status=status.HTTP_200_OK, data={"status": True, "message": "success", "data": task_data})
             
             return Response(status=status.HTTP_200_OK, data={"status": True, "message": "task its completed", "data":{}})
@@ -312,10 +278,7 @@ class TaskManager(APIView):
 
         tasks = project.task.filter(done_status=False)
         task_data = [self.get_task_data(task, project) for task in tasks]
-        for task in task_data:
-            print(task['check_list'])
-            task["check_list"] =task["check_list"].sort(key=lambda x: self._convert_jalali_to_datetime(x["end_time"]))
-            print(task['check_list'])
+
         return Response(status=status.HTTP_200_OK, data={"status": True, "message": "success", "data": task_data})
 
     def post(self, request, project_id):
