@@ -319,7 +319,9 @@ class TaskManager(APIView):
         tasks = project.task.filter(done_status=False)
         task_data = [self.get_task_data(task, project) for task in tasks]
         for task in task_data:
+            print(task['check_list'])
             task["check_list"].sort(key=lambda x: self._convert_jalali_to_datetime(x["end_time"]))
+            print(task['check_list'])
         return Response(status=status.HTTP_200_OK, data={"status": True, "message": "success", "data": task_data})
 
     def post(self, request, project_id):
