@@ -3,6 +3,7 @@ from multiprocessing.util import is_exiting
 from rest_framework.serializers import ModelSerializer
 from rest_framework import serializers
 from .models import *
+from .views import  create_permission_for_member
 from django.shortcuts import get_object_or_404
 from core.views import  send_invite_link
 
@@ -76,6 +77,7 @@ class WorkSpaceMemberSerializer(serializers.ModelSerializer):
     user_account = UserSerializer(required=False,read_only=True)
     workspace_id= serializers.IntegerField(required=True,write_only=True)
     permissions = serializers.ListField(write_only=True,required=True)
+
     class Meta:
         model = WorkspaceMember
         fields = [
@@ -83,6 +85,7 @@ class WorkSpaceMemberSerializer(serializers.ModelSerializer):
         "user_account_data",
         "user_account",
         "first_name",
+        "is_accepted",
         "permissions",
         "last_name",
         "workspace_id",
@@ -97,6 +100,7 @@ class WorkSpaceMemberSerializer(serializers.ModelSerializer):
 
         permissions= validated_data.pop("permissions")
         try :
+
             user_acc = UserAccount.objects.get(phone_number=user_account.get("phone_number"))
 
 
@@ -117,6 +121,7 @@ class WorkSpaceMemberSerializer(serializers.ModelSerializer):
             if item.workspace == workspace_obj and item.user_account == user_acc:
 
                 item.is_deleted = False
+                item.restore()
                 return item
 
 
@@ -125,9 +130,11 @@ class WorkSpaceMemberSerializer(serializers.ModelSerializer):
         new_workspace_member = WorkspaceMember.objects.create(**validated_data)
         new_workspace_member.fullname = f"{new_workspace_member.first_name} {new_workspace_member.last_name}"
         new_workspace_member.user_account = user_acc
+        new_workspace_member.is_accepted= False
         new_workspace_member.save()
         send_invite_link(user_acc.phone_number, new_workspace_member.workspace.owner.fullname,
                             new_workspace_member.workspace.title)
 
+        create_permission_for_member(member_id=new_workspace_member.id, permissions=permissions)
 
         return new_workspace_member

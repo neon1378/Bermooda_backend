@@ -638,7 +638,7 @@ class WorkSpaceMemberManger(APIView):
             if serializer_data.is_valid():
                 new_member = serializer_data.save()
 
-                create_permission_for_member(member_id=new_member.id, permissions=permissions)
+
 
                 return Response(status=status.HTTP_201_CREATED,data={
                     "status":True,
