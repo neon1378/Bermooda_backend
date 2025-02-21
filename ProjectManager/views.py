@@ -444,6 +444,11 @@ class TaskManager(APIView):
             sub_title = f"وضیفه {task.title} توسط {request.user.fullname} حذف شد"
             create_notification(related_instance=task,workspace=workspace_obj,user=member,title=title,sub_title=sub_title)
         task.delete()
+        channel_layer = get_channel_layer()
+        event ={
+            "type":"send_data"
+        }
+        async_to_sync(channel_layer.group_send)(f"{task.project.id}_amin",event)
         return Response(status=status.HTTP_204_NO_CONTENT, data={"status": True, "message": "Task deleted"})
 
 

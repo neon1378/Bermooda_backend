@@ -1,3 +1,5 @@
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
 from rest_framework import serializers
 from .models import *
 from django.shortcuts import get_object_or_404
@@ -190,6 +192,11 @@ class CustomerSmallSerializer(serializers.ModelSerializer):
                 new_customer.email = email
 
             new_customer.save()
+            channel_layer = get_channel_layer()
+            event = {
+                "type": "send_data"
+            }
+            async_to_sync(channel_layer.group_send)(f"{new_customer.group_crm.id}_crm", event)
             return new_customer
 
 

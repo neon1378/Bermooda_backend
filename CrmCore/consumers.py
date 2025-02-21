@@ -24,7 +24,7 @@ class CustomerTask(WebsocketConsumer):
         self.group_crm_obj = GroupCrm.objects.get(id=self.group_crm_id)
 
         async_to_sync(self.channel_layer.group_add)(
-            self.group_crm_id,self.channel_name
+            f"{self.group_crm_id}_crm",self.channel_name
         )
     def receive(self, text_data=None, bytes_data=None):
         data = json.loads(text_data)
@@ -92,7 +92,7 @@ class CustomerTask(WebsocketConsumer):
                 "type":"send_data"
             }
             async_to_sync(self.channel_layer.group_send)(
-                self.group_crm_id,event
+                f"{self.group_crm_id}_crm",event
 
             )
     def send_data(self,event):
@@ -141,7 +141,7 @@ class CustomerTask(WebsocketConsumer):
     def disconnect(self, code=None):
 
         async_to_sync(self.channel_layer.group_discard)(
-            self.group_crm_id,
+            f"{self.group_crm_id}_crm",
             self.channel_name
         )
         self.close(code=0)
