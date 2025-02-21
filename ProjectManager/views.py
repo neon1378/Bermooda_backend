@@ -570,19 +570,54 @@ def get_project_users(request,project_id):
             "fullname": workspace_obj.owner.fullname,
             "id": workspace_obj.owner.id,
             "avatar_url": workspace_obj.owner.avatar_url(),
-            "self": request.user == workspace_obj.owner
+            "self": request.user == workspace_obj.owner,
+            "permissions":[
+                {
+                    "permission_name": "project board",
+                    "permission_type": "manager",
+                },
+                {
+                    "permission_name": "crm",
+                    "permission_type": "manager",
+                },
+            ],
+            "type":"owner"
         }
     ]
     for member in project_obj.members.all():
         if member != workspace_obj.owner :
-            user_list.append({
+            dic={
 
                 "fullname": member.fullname,
                 "id": member.id,
                 "avatar_url": member.avatar_url(),
-                "self": request.user == member
+                "self": request.user == member,
+                "type":"member",
+                "permissions":[]
             }
+            user_list.append(
+                dic
             )
+            try:
+                workspace_member = WorkspaceMember.objects.get(user_account=member,workspace=workspace_obj)
+                for permission in workspace_member.permissions.all():
+                    dic['permission'].append(
+                        {
+                            "permission_name":permission.permission_name,
+                            "permission_type":permission.permission_type
+                        }
+                    )
+            except:
+                dic['permission'].append(
+                    {
+                        "permission_name":"project board",
+                        "permission_type":"no access",
+                    },
+                    {
+                        "permission_name":"crm",
+                        "permission_type":"no access",
+                    },
+                )
     return Response(status=status.HTTP_200_OK,data={
         "status":True,
         "message":"موفق",
