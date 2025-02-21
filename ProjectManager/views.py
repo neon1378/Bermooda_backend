@@ -439,6 +439,7 @@ class CheckListManager(APIView):
     def get (self,request,checklist_id_or_task_id):
         check_list_obj = CheckList.objects.filter(task_id=checklist_id_or_task_id)
         check_list_serializer = CheckListSerializer(check_list_obj,many=True)
+        print(check_list_serializer.data)
         return Response(status=status.HTTP_200_OK,data={
             "status":True,
             "message":"success",
