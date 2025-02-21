@@ -140,7 +140,7 @@ class WorkspaceManager(APIView):
             if workspace_obj.avatar:
                 payload['avatar'] = f"{base_url}{workspace_obj.avatar.file.url}",
             response = requests.post(url=url,json=payload,headers=headers)
-            print(response)
+            print(response.json())
             workspace_obj.jadoo_workspace_id= response.json()['id']
                 # except:
                 #     pass
