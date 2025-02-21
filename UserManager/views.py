@@ -223,7 +223,8 @@ def get_users_info(request):
                     "avatar_url":workspace_member.user_account.avatar_url(),
                     "self":workspace_member.user_account == request.user,
                     "type":"member",
-                    "permissions":[]
+                    "permissions":[],
+                    "member_id" :workspace_member.id,
 
             }
 
@@ -244,11 +245,13 @@ def get_users_info(request):
                 "avatar_url": workspace_obj.owner.avatar_url(),
                 "self": request.user == workspace_obj.owner,
                 "type":"owner",
+                "member_id":"555",
                 "permissions":[]
 
             }
         )
-    print(user_acc_list)
+    for item in user_acc_list:
+        print(item['member_id'])
     return Response(status=status.HTTP_200_OK,data={
         "status":True,
         "message":"succses",
