@@ -386,6 +386,7 @@ def get_phone_number (request):
 
     try :
         user_acc = UserAccount.objects.get(phone_number=phone_number)
+
         user_acc.is_staff=False
         user_acc.save()
         if request_type == "change password":
@@ -412,6 +413,11 @@ def get_phone_number (request):
                 "status":False,
                 "message":"کاربر از قبل ثبت نام شده است",
                 "data":{}
+            })
+        if user_acc.is_expired():
+            return Response(status=status.HTTP_400_BAD_REQUEST, data={
+                "status": False,
+                "message": "لطفا چند دقیقه دیگر امتحان کنید"
             })
         else:
             verify_code = random.randint(100000, 999999)

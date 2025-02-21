@@ -299,7 +299,7 @@ class TaskManager(APIView):
 
         tasks = project.task.filter(done_status=False)
         task_data = [self.get_task_data(task, project) for task in tasks]
-
+        print(task_data,"@2")
         return Response(status=status.HTTP_200_OK, data={"status": True, "message": "success", "data": task_data})
 
     def post(self, request, project_id):
