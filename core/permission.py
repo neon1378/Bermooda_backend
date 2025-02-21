@@ -108,7 +108,7 @@ class IsWorkSpaceUser(BasePermission):
             perm = False
             for member in workspace_obj.workspace_member.all():
                 if request.user == member.user_account:
-                    if member.is_accepted:
+                    # if member.is_accepted:
 
                         perm=True
                         break
