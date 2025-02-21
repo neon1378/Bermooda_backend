@@ -126,7 +126,8 @@ class WorkspaceManager(APIView):
                         "username":workspace_obj.jadoo_brand_name,
                         "workspaceId":workspace_obj.id,
                         "bio":workspace_obj.business_detail,
-                        "avatar":f"{base_url}{workspace_obj.avatar.file.url}"
+                        "avatar":f"{base_url}{workspace_obj.avatar.file.url}",
+                        "industrialactivityId":workspace_obj.industrialactivity.refrence_id
 
                     }
         
