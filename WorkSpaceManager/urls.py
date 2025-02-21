@@ -13,7 +13,7 @@ urlpatterns = [
     path("PermissionManager",views.PermissionManager.as_view()),
     path("PermissionManager/<int:permission_id>",views.PermissionManager.as_view()),
     # path("AcceptWorkspaceInvitation/<int:notification_id>",views.accept_workspace_invitation),
-    path("AcceptWorkspaceInvitation/<int:notification_id>", views.accept_workspace_invitation),
+    path("AcceptWorkspaceInvitation", views.accept_workspace_invitation),
     path("GetManagerUser", views.get_manager_users),
     path("GetExpertUser", views.get_expert_users),
     path("GetIndustrialActivity",views.get_industrial_activity),
