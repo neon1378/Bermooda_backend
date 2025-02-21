@@ -20,6 +20,8 @@ urlpatterns = [
     path("WorkSpaceMemberManger",views.WorkSpaceMemberManger.as_view()),
     path("WorkSpaceMemberManger/<int:member_id>",views.WorkSpaceMemberManger.as_view()),
 
+    path("GetTextInvite",views.get_text_workspace_invite),
+
 
 ]
 

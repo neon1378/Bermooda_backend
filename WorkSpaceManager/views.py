@@ -111,12 +111,13 @@ class WorkspaceManager(APIView):
                 new_wallet = Wallet(balance=100000,workspace=workspace_obj)
                 new_wallet.save()
             if workspace_obj.is_authenticated == False:
-                try:
+                # try:
                     url = f"{self.jadoo_base_url}/workspace/store"
                     headers = {
                         "content-type":"application/json",
                         "Authorization":f"Bearer {request.user.refrence_token}"
                     }
+                    base_url = os.getenv("BASE_URL")
                     payload = {
 
                         "cityId":workspace_obj.state.refrence_id,
@@ -125,14 +126,15 @@ class WorkspaceManager(APIView):
                         "username":workspace_obj.jadoo_brand_name,
                         "workspaceId":workspace_obj.id,
                         "bio":workspace_obj.business_detail,
+                        "avatar":f"{base_url}{workspace_obj.avatar.file.url}"
 
                     }
         
                     response = requests.post(url=url,json=payload,headers=headers)
                     workspace_obj.jadoo_workspace_id= response.json()['id']
-                except:
-                    pass
-      
+                # except:
+                #     pass
+                #
             # print(response.json())
             print(serializer_data.data)
             serializer_data.data['avatar_url'] = workspace_obj.avatar_url()
@@ -722,3 +724,19 @@ class WorkSpaceMemberManger(APIView):
             "message": "you dont have permission dont try!!",
             "data": {}
         })
+@permission_classes([IsAuthenticated])
+@api_view(['GET'])
+def get_text_workspace_invite(request):
+    workspace_obj = WorkSpace.objects.get(id =request.user.current_workspace_id)
+
+    text = f"{workspace_obj.owner.fullname} شما را به کسب کار {workspace_obj.title} دعوت کرده است"
+    return Response(
+        status=status.HTTP_200_OK,
+        data={
+            "status":True,
+            "message":"success",
+            "data":{
+                "text":text
+            }
+        }
+    )
