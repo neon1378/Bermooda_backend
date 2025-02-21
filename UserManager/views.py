@@ -247,7 +247,8 @@ def get_users_info(request):
                 "permissions":[]
 
             }
-        )    
+        )
+    print(user_acc_list)
     return Response(status=status.HTTP_200_OK,data={
         "status":True,
         "message":"succses",
