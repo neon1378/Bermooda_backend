@@ -621,14 +621,14 @@ def login_user(request):
             refresh_expiry = datetime.fromtimestamp(refresh.access_token.payload['exp'])
             refresh_expiry_aware = make_aware(refresh_expiry)
             jadoo_server =os.getenv("JADOO_BASE_URL")
-            try:
-                url = f"{jadoo_server}/user/auth/getUserTokenById?id={user_acc.refrence_id}"
-                response = requests.get(url=url)
-                respnse_data = response.json()
-                user_acc.refrence_token=respnse_data['data']['token']
-                user_acc.save()
-            except:
-                pass
+            # try:
+            url = f"{jadoo_server}/user/auth/getUserTokenById?id={user_acc.refrence_id}"
+            response = requests.get(url=url)
+            respnse_data = response.json()
+            user_acc.refrence_token=respnse_data['data']['token']
+            user_acc.save()
+            # except:
+            #     pass
             workspaces = WorkSpace.objects.filter(owner=user_acc).first()
             if user_acc.current_workspace_id == 0 or  not WorkSpace.objects.filter(id=user_acc.current_workspace_id).exists():
                 if workspaces:
