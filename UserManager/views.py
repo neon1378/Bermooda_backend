@@ -624,6 +624,7 @@ def login_user(request):
             # try:
             url = f"{jadoo_server}/user/auth/getUserTokenById?id={user_acc.refrence_id}"
             response = requests.get(url=url)
+            print(response.json())
             respnse_data = response.json()
             user_acc.refrence_token=respnse_data['data']['token']
             user_acc.save()
