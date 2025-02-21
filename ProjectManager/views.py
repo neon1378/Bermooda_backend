@@ -306,7 +306,9 @@ class TaskManager(APIView):
             task = get_object_or_404(Task, id=task_id)
             if task.done_status is not True:
                 task_data = self.get_task_data(task, project)
+                print(task_data["check_list"])
                 task_data["check_list"].sort(key=lambda x: self._convert_jalali_to_datetime(x["end_time"]))
+                print(task_data["check_list"])
                 return Response(status=status.HTTP_200_OK, data={"status": True, "message": "success", "data": task_data})
             
             return Response(status=status.HTTP_200_OK, data={"status": True, "message": "task its completed", "data":{}})
