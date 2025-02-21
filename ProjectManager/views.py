@@ -604,7 +604,7 @@ def get_project_users(request,project_id):
 
 
             except:
-                dic['permissions']={
+                dic['permission']={
                         "permission_name":"project board",
                         "permission_type":"no access",
                     }
