@@ -137,8 +137,8 @@ class WorkspaceManager(APIView):
                         "industrialactivityId":workspace_obj.industrialactivity.refrence_id
 
                     }
-        
                     response = requests.post(url=url,json=payload,headers=headers)
+                    print(response.json())
                     workspace_obj.jadoo_workspace_id= response.json()['id']
                 # except:
                 #     pass
