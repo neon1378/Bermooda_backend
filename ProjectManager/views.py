@@ -233,18 +233,10 @@ class TaskManager(APIView):
 
     def _convert_jalali_to_datetime(self,jalali_str):
         # Convert Persian numbers to English numbers
-        jalali_str = jalali_str.replace("۰", "0").replace("۱", "1").replace("۲", "2") \
-            .replace("۳", "3").replace("۴", "4").replace("۵", "5") \
-            .replace("۶", "6").replace("۷", "7").replace("۸", "8") \
-            .replace("۹", "9")
-
-        # Extract date and time
         date_part, time_part = jalali_str.split("T")
         year, month, day = map(int, date_part.split("/"))
         hour, minute = map(int, time_part.split(":"))
-
-        # Convert to jdatetime
-        return jdatetime.datetime(year, month, day, hour, minute).togregorian()
+        return jdatetime.datetime(year, month, day, hour, minute)
 
 
 
