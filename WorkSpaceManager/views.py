@@ -1,3 +1,4 @@
+from django.db.models.sql import Query
 from django.shortcuts import render
 from rest_framework import status
 from rest_framework.response import Response
@@ -91,11 +92,17 @@ class WorkspaceManager(APIView):
 
         avatar_id = data.get("avatar_id",None)
 
+        if WorkSpace.all_objects.filter(jadoo_brand_name=data['jadoo_brand_name']).exists():
+            return Response(status=status.HTTP_400_BAD_REQUEST,data={
+                "status":False,
+                "message":"نام کاربری مورد نظر در حال حاظر وجود دارد",
+                "data":{}
 
+            })
         serializer_data =WorkSpaceSerializer(workspace_obj,data=request.data)
         if serializer_data.is_valid():
             serializer_data.save()
-            
+
             workspace_obj.is_authenticated=True
 
             if avatar_id:
