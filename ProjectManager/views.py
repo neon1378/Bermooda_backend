@@ -571,17 +571,12 @@ def get_project_users(request,project_id):
             "id": workspace_obj.owner.id,
             "avatar_url": workspace_obj.owner.avatar_url(),
             "self": request.user == workspace_obj.owner,
-            "permissions":[
+            "type":"owner",
+            "permission":
                 {
                     "permission_name": "project board",
                     "permission_type": "manager",
                 },
-                {
-                    "permission_name": "crm",
-                    "permission_type": "manager",
-                },
-            ],
-            "type":"owner"
         }
     ]
     for member in project_obj.members.all():
@@ -593,7 +588,7 @@ def get_project_users(request,project_id):
                 "avatar_url": member.avatar_url(),
                 "self": request.user == member,
                 "type":"member",
-                "permissions":[]
+                "permission":{}
             }
             user_list.append(
                 dic
@@ -601,27 +596,22 @@ def get_project_users(request,project_id):
             try:
                 workspace_member = WorkspaceMember.objects.get(user_account=member,workspace=workspace_obj)
                 for permission in workspace_member.permissions.all():
-                    dic['permissions'].append(
-                        {
-                            "permission_name":permission.permission_name,
-                            "permission_type":permission.permission_type
-                        }
-                    )
+                    if permission.permission_name == "project board":
+                        dic['permission'] =  {
+                                "permission_name":permission.permission_name,
+                                "permission_type":permission.permission_type
+                            }
+
+
             except:
-                dic['permissions'].append(
-                    {
+                dic['permissions']={
                         "permission_name":"project board",
                         "permission_type":"no access",
-                    },
-
-                )
-                dic['permissions'].append(
-                    {
-                        "permission_name": "crm",
-                        "permission_type": "no access",
                     }
 
-                )
+
+
+
     return Response(status=status.HTTP_200_OK,data={
         "status":True,
         "message":"موفق",
