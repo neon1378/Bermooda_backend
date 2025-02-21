@@ -3,7 +3,7 @@ from multiprocessing.util import is_exiting
 from rest_framework.serializers import ModelSerializer
 from rest_framework import serializers
 from .models import *
-from .views import  create_permission_for_member
+
 from django.shortcuts import get_object_or_404
 from core.views import  send_invite_link
 
@@ -134,7 +134,7 @@ class WorkSpaceMemberSerializer(serializers.ModelSerializer):
         new_workspace_member.save()
         send_invite_link(user_acc.phone_number, new_workspace_member.workspace.owner.fullname,
                             new_workspace_member.workspace.title)
-
+        from .views import  create_permission_for_member
         create_permission_for_member(member_id=new_workspace_member.id, permissions=permissions)
 
         return new_workspace_member

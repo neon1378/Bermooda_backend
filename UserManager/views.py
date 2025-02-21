@@ -952,7 +952,7 @@ def get_workspaces (request):
     except:
         pass
     for workspace_member in WorkspaceMember.objects.filter(user_account=request.user):
-        if workspace_member.is_accepted:
+        # if workspace_member.is_accepted:
             respnse_data.append({
                 "id":workspace_member.workspace.id,
                 "title":workspace_member.workspace.title,
@@ -1016,8 +1016,8 @@ def create_workspace(request):
             },
             {
                 "title":"پیش نویس",
-                
-            },      
+            },
+
         ]
     
     for statuss in default_statuses:
