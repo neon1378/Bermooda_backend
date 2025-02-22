@@ -44,7 +44,7 @@ class WorkSpaceSerializer(ModelSerializer):
                 "status":False,
                 "message":"نام کاربری اجباری میباشد"
             })
-        if WorkSpace.all_objects.get(jadoo_brand_name=jadoo_brand_name).exists() :
+        if WorkSpace.all_objects.filter(jadoo_brand_name=jadoo_brand_name).exists() :
             if instance.jadoo_brand_name != jadoo_brand_name:
                 raise serializers.ValidationError({
                     "status":False,
