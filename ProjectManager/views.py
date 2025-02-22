@@ -553,8 +553,8 @@ class CheckListManager(APIView):
             checklist_obj.time_to_start =time_to_start
             checklist_obj.date_to_end =date_to_end
             checklist_obj.time_to_end =time_to_end
-            checklist_obj.save()
             checklist_obj.difficulty=difficulty
+            checklist_obj.save()
             channel_layer = get_channel_layer()
             event = {
                 "type": "send_data"
