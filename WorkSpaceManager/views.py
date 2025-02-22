@@ -96,7 +96,7 @@ class WorkspaceManager(APIView):
         if serializer_data.is_valid():
             serializer_data.save()
 
-            workspace_obj.is_authenticated=True
+
 
             if avatar_id:
                 avatar_obj = MainFile.objects.get(id=avatar_id)
@@ -142,6 +142,7 @@ class WorkspaceManager(APIView):
                 # except:
                 #     pass
 
+                    workspace_obj.is_authenticated = True
             # print(response.json())
             print(serializer_data.data)
             serializer_data.data['avatar_url'] = workspace_obj.avatar_url()
