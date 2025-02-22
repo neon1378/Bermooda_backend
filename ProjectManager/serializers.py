@@ -52,6 +52,7 @@ class CheckListSerializer(ModelSerializer):
         fields = [
             "label",
             "id",
+            "difficulty",
             "end_date_time_sort",
             "title",
             "status",
