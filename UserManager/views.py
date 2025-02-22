@@ -1267,20 +1267,20 @@ def account_verify (request):
     user_acc.save()
     return Response(status=status.HTTP_200_OK)
 
-@api_view(['DELETE'])
-@permission_classes([IsAuthenticated])
-def delete_account (request):
-    data =request.data
-
-    if int(data['code']) == int(request.user.verify_code):
-        request.user.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-    return Response(status=status.HTTP_400_BAD_REQUEST,data={
-        "status":False,
-        "message":"کد وارد شده اشتباه میباشد",
-        "data":{}
-
-    })
+# @api_view(['DELETE'])
+# @permission_classes([IsAuthenticated])
+# def delete_account (request):
+#     data =request.data
+#
+#     if int(data['code']) == int(request.user.verify_code):
+#         request.user.delete()
+#         return Response(status=status.HTTP_204_NO_CONTENT)
+#     return Response(status=status.HTTP_400_BAD_REQUEST,data={
+#         "status":False,
+#         "message":"کد وارد شده اشتباه میباشد",
+#         "data":{}
+#
+#     })
 @api_view(["GET"])
 @permission_classes([AllowAny])
 def change_user(request):
