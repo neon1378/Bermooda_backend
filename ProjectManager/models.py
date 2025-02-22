@@ -168,7 +168,9 @@ class Task (SoftDeleteModel):
 
 
 class CheckList (SoftDeleteModel):
+
     title = models.TextField(null=True)
+    difficulty = models.IntegerField(default=1)
     status= models.BooleanField(default=False)
     responsible_for_doing = models.ForeignKey(UserAccount,on_delete=models.CASCADE,null=True)
     date_to_start= models.CharField(max_length=30,null=True)
