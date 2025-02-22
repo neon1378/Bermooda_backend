@@ -129,6 +129,9 @@ class WorkSpaceMemberSerializer(serializers.ModelSerializer):
                 item.first_name = first_name
                 item.last_name = last_name
                 item.fullname = f"{first_name} {last_name}"
+                if item.user_account.current_workspace_id == 0 or WorkSpace.objects.filter(id=item.user_account.current_workspace_id).exists():
+                    item.user_account.current_workspace_id=workspace_obj.id
+                    item.user_account.save()
                 item.save()
                 return item
 
@@ -144,7 +147,7 @@ class WorkSpaceMemberSerializer(serializers.ModelSerializer):
                             new_workspace_member.workspace.title)
         from .views import  create_permission_for_member
         create_permission_for_member(member_id=new_workspace_member.id, permissions=permissions)
-        workspace_obj.wallet += 30000
+        workspace_obj.wallet.balance += 30000
         new_workspace_member.user_account.current_workspace_id=workspace_obj.id
         new_workspace_member.user_account.save()
         workspace_obj.wallet.save()
