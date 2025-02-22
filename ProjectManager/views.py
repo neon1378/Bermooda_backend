@@ -350,7 +350,7 @@ class TaskManager(APIView):
             new_check_list.save()
         response_data = TaskSerializer(task).data
         success_notif =[]
-        for member in task.project.check_list.all():
+        for member in task.check_list.all():
 
             if member.responsible_for_doing != request.user:
                 if member.responsible_for_doing.id not in success_notif:
