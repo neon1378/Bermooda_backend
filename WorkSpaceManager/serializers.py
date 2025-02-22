@@ -129,7 +129,7 @@ class WorkSpaceMemberSerializer(serializers.ModelSerializer):
                 item.first_name = first_name
                 item.last_name = last_name
                 item.fullname = f"{first_name} {last_name}"
-                if item.user_account.current_workspace_id == 0 or WorkSpace.objects.filter(id=item.user_account.current_workspace_id).exists():
+                if item.user_account.current_workspace_id == 0 or not WorkSpace.objects.filter(id=item.user_account.current_workspace_id).exists():
                     item.user_account.current_workspace_id=workspace_obj.id
                     item.user_account.save()
                 item.save()
