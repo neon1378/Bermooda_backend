@@ -110,6 +110,7 @@ class WorkspaceManager(APIView):
             except:
                 new_wallet = Wallet(balance=100000,workspace=workspace_obj)
                 new_wallet.save()
+
             if workspace_obj.is_authenticated == False:
                 # try:
                     url = f"{self.jadoo_base_url}/workspace/store"
