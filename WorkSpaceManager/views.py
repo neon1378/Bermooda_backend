@@ -111,7 +111,7 @@ class WorkspaceManager(APIView):
                 new_wallet = Wallet(balance=100000,workspace=workspace_obj)
                 new_wallet.save()
             if workspace_obj.is_authenticated == False:
-                try:
+                # try:
                     url = f"{self.jadoo_base_url}/workspace/store"
                     headers = {
                                 "content-type":"application/json",
@@ -138,8 +138,8 @@ class WorkspaceManager(APIView):
                     print(response.json())
                     response_data_main = response.json()['data']
                     workspace_obj.jadoo_workspace_id= response_data_main['id']
-                except:
-                    pass
+                # except:
+                #     pass
 
             # print(response.json())
             print(serializer_data.data)
