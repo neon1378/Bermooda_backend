@@ -339,7 +339,7 @@ class TaskManager(APIView):
                 responsible_user=request.user
             new_check_list =CheckList.objects.create(
                 title=item["title"],
-                difficulty=item["difficulty"],
+
                 date_to_start=item["date_to_start"],
                 time_to_start=item["time_to_start"],
                 date_to_end=item["date_to_end"],
@@ -348,6 +348,9 @@ class TaskManager(APIView):
                 task=task,
         
             )
+
+            if item["difficulty"]:
+                new_check_list.difficulty=item['difficulty']
             if item['label_id']:
                 new_check_list.label_id=item['label_id']['id']
             new_check_list.save()
