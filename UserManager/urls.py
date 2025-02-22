@@ -78,7 +78,7 @@ urlpatterns = [
     path("CreateAvatar",views.create_avatar),
     
     path("AccountVerify",views.account_verify),
-    path("DeleteAccount",views.delete_account),
+    # path("DeleteAccount",views.delete_account),
 
     
 
