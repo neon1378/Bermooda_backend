@@ -92,13 +92,6 @@ class WorkspaceManager(APIView):
 
         avatar_id = data.get("avatar_id",None)
 
-        if WorkSpace.all_objects.filter(jadoo_brand_name=data['jadoo_brand_name']).exists():
-            return Response(status=status.HTTP_400_BAD_REQUEST,data={
-                "status":False,
-                "message":"نام کاربری مورد نظر در حال حاظر وجود دارد",
-                "data":{}
-
-            })
         serializer_data =WorkSpaceSerializer(workspace_obj,data=request.data)
         if serializer_data.is_valid():
             serializer_data.save()
@@ -117,37 +110,37 @@ class WorkspaceManager(APIView):
             except:
                 new_wallet = Wallet(balance=100000,workspace=workspace_obj)
                 new_wallet.save()
-            # if workspace_obj.is_authenticated == False:
-                # try:
-            url = f"{self.jadoo_base_url}/workspace/store"
-            headers = {
-                        "content-type":"application/json",
-                        "Authorization":f"Bearer {request.user.refrence_token}"
-            }
-            base_url = os.getenv("BASE_URL")
-            print(workspace_obj.state.refrence_id,workspace_obj.city.refrence_id,"@@#!3")
-            payload = {
+            if workspace_obj.is_authenticated == False:
+                try:
+                    url = f"{self.jadoo_base_url}/workspace/store"
+                    headers = {
+                                "content-type":"application/json",
+                                "Authorization":f"Bearer {request.user.refrence_token}"
+                    }
+                    base_url = os.getenv("BASE_URL")
+                    print(workspace_obj.state.refrence_id,workspace_obj.city.refrence_id,"@@#!3")
+                    payload = {
 
-                        "cityId":workspace_obj.city.refrence_id,
-                        "stateId":workspace_obj.state.refrence_id,
-                        "name":workspace_obj.title,
-                        "username":workspace_obj.jadoo_brand_name,
-                        "workspaceId":workspace_obj.id,
-                        "bio":workspace_obj.business_detail,
-                        "avatar":"",
-                        "industrialActivityId":workspace_obj.industrialactivity.refrence_id
+                                "cityId":workspace_obj.city.refrence_id,
+                                "stateId":workspace_obj.state.refrence_id,
+                                "name":workspace_obj.title,
+                                "username":workspace_obj.jadoo_brand_name,
+                                "workspaceId":workspace_obj.id,
+                                "bio":workspace_obj.business_detail,
+                                "avatar":"",
+                                "industrialActivityId":workspace_obj.industrialactivity.refrence_id
 
-            }
-            if workspace_obj.avatar:
-                payload['avatar'] = f"{base_url}{workspace_obj.avatar.file.url}"
-                print(payload['avatar'])
-            response = requests.post(url=url,json=payload,headers=headers)
-            print(response.json())
-            response_data_main = response.json()['data']
-            workspace_obj.jadoo_workspace_id= response_data_main['id']
-                # except:
-                #     pass
-                #
+                    }
+                    if workspace_obj.avatar:
+                        payload['avatar'] = f"{base_url}{workspace_obj.avatar.file.url}"
+                        print(payload['avatar'])
+                    response = requests.post(url=url,json=payload,headers=headers)
+                    print(response.json())
+                    response_data_main = response.json()['data']
+                    workspace_obj.jadoo_workspace_id= response_data_main['id']
+                except:
+                    pass
+
             # print(response.json())
             print(serializer_data.data)
             serializer_data.data['avatar_url'] = workspace_obj.avatar_url()

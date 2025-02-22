@@ -34,7 +34,7 @@ class WorkSpace (SoftDeleteModel):
     reference_sub_category = models.PositiveBigIntegerField(default=0)
     reference_category = models.PositiveBigIntegerField(default=0)
     industrialactivity = models.ForeignKey(IndustrialActivity,on_delete=models.SET_NULL,null=True)
-    jadoo_brand_name = models.CharField(max_length=100,null=True,unique=True)
+    jadoo_brand_name = models.CharField(max_length=100,null=True)
     avatar = models.ForeignKey(MainFile,on_delete=models.SET_NULL,null=True)
 
     business_detail = models.TextField(null=True)

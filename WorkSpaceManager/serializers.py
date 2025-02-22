@@ -39,12 +39,12 @@ class WorkSpaceSerializer(ModelSerializer):
     def update(self,instance,validated_data):
         
         jadoo_brand_name= validated_data.get("jadoo_brand_name",None)
-        if jadoo_brand_name == None:
+        if not jadoo_brand_name :
             raise serializers.ValidationError({
                 "status":False,
                 "message":"نام کاربری اجباری میباشد"
             })
-        if WorkSpace.all_objects.filter(jadoo_brand_name=jadoo_brand_name).exists():
+        if WorkSpace.all_objects.get(jadoo_brand_name=jadoo_brand_name).exists() :
             if instance.jadoo_brand_name != jadoo_brand_name:
                 raise serializers.ValidationError({
                     "status":False,
