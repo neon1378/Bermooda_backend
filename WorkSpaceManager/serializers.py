@@ -144,5 +144,7 @@ class WorkSpaceMemberSerializer(serializers.ModelSerializer):
                             new_workspace_member.workspace.title)
         from .views import  create_permission_for_member
         create_permission_for_member(member_id=new_workspace_member.id, permissions=permissions)
+        workspace_obj.wallet += 30000
+        workspace_obj.wallet.save()
 
         return new_workspace_member

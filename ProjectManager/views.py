@@ -349,13 +349,17 @@ class TaskManager(APIView):
                 new_check_list.label_id=item['label_id']['id']
             new_check_list.save()
         response_data = TaskSerializer(task).data
-        for member in task.project.members.all():
-            if member != request.user:
-                title = f"وضیفه جدید"
-                sub_title = f"وضیفه {task.title} توسط {request.user.fullname} به  پروژه شما اضافه شد"
-                create_notification(related_instance=task,workspace=WorkSpace.objects.get(id=workspace_id),user=member,title=title,sub_title=sub_title,side_type="new_task")
+        success_notif =[]
+        for member in task.project.check_list.all():
 
+            if member.responsible_for_doing != request.user:
+                if member.responsible_for_doing.id not in success_notif:
 
+                    title = f"وظیفه جدید"
+                    sub_title = f"وظیفه {task.title} توسط {request.user.fullname} به  پروژه شما اضافه شد"
+                    create_notification(related_instance=task,workspace=WorkSpace.objects.get(id=workspace_id),user=member.responsible_for_doing,title=title,sub_title=sub_title,side_type="new_task")
+
+                    success_notif.append(member.responsible_for_doing.id)
 # 
         for report_id in task_reports:
             report_obj = get_object_or_404(TaskReport,id=report_id)
@@ -401,10 +405,13 @@ class TaskManager(APIView):
         # Identify and delete files that are no longer associated with the task
         removed_file_ids = set(existing_file_ids) - set(file_ids)
         MainFile.objects.filter(id__in=removed_file_ids).delete()
-        for member in task.project.members.all():
-            title = f"بروزرسانی وظیفه"
-            sub_title = f"وضیفه {task.title} توسط {request.user.fullname} بروزرسانی شد"
-            create_notification(related_instance=task,workspace=workspace_obj,user=member,title=title,sub_title=sub_title,side_type="update_task")
+        success_notif = []
+        for member in task.check_list.all():
+            if member.responsible_for_doing.id not in success_notif:
+                title = f"بروزرسانی وظیفه"
+                sub_title = f"وظیفه {task.title} توسط {request.user.fullname} بروزرسانی شد"
+                create_notification(related_instance=task,workspace=workspace_obj,user=member.responsible_for_doing,title=title,sub_title=sub_title,side_type="update_task")
+                success_notif.append(member.responsible_for_doing.id)
         task.save()
         channel_layer = get_channel_layer()
         event ={
@@ -453,12 +460,13 @@ class CheckListManager(APIView):
             "data":tasks_sorted
         })
     def post(self,request,checklist_id_or_task_id):
-        
+
         task_obj = get_object_or_404(Task,id=checklist_id_or_task_id)
         data = request.data
-        print(data)
+
         label_id = data.get("label_id",None)
         title = data.get("title")
+
         responsible_for_doing = data.get("responsible_for_doing",None)
         date_to_start = data.get("date_to_start",None)
         time_to_start = data.get("time_to_start",None)
@@ -478,11 +486,16 @@ class CheckListManager(APIView):
             check_list_obj.responsible_for_doing_id=responsible_for_doing
         
         check_list_obj.save()
+
         channel_layer = get_channel_layer()
         event ={
             "type":"send_data"
         }
         async_to_sync(channel_layer.group_send)(f"{task_obj.project.id}_amin",event)
+        if request.user != check_list_obj.responsible_for_doing:
+            title = f"بروزرسانی وظیفه"
+            sub_title = f"چک لیست {check_list_obj.title} در تسک {check_list_obj.task.title} توسط {request.user.fullname} برای شما اضافه شد "
+            create_notification(related_instance=check_list_obj.task,workspace=check_list_obj.task.project.workspace,user=check_list_obj.responsible_for_doing,title=title,sub_title=sub_title,side_type="update_task")
         return Response(status=status.HTTP_200_OK,data={
             "status":True,
             "message":"success",
@@ -539,6 +552,13 @@ class CheckListManager(APIView):
                 "type": "send_data"
             }
             async_to_sync(channel_layer.group_send)(f"{checklist_obj.task.project.id}_amin", event)
+            if request.user != checklist_obj.responsible_for_doing:
+                title = f"بروزرسانی وظیفه"
+                sub_title = f"چک لیست {checklist_obj.title} در تسک {checklist_obj.task.title} توسط {request.user.fullname} بروزرسانی شد "
+                create_notification(related_instance=checklist_obj.task,
+                                    workspace=checklist_obj.task.project.workspace,
+                                    user=checklist_obj.responsible_for_doing, title=title, sub_title=sub_title,
+                                    side_type="update_task")
             return Response(status=status.HTTP_200_OK,data={
                 "status":True,
                 "message":"success",
