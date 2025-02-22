@@ -139,7 +139,7 @@ class WorkspaceManager(APIView):
 
             }
             if workspace_obj.avatar:
-                payload['avatar'] = f"{base_url}{workspace_obj.avatar.file.url}",
+                payload['avatar'] = f"{base_url}{workspace_obj.avatar.file.url}"
                 print(payload['avatar'])
             response = requests.post(url=url,json=payload,headers=headers)
             print(response.json())
