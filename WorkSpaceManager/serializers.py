@@ -146,6 +146,7 @@ class WorkSpaceMemberSerializer(serializers.ModelSerializer):
         create_permission_for_member(member_id=new_workspace_member.id, permissions=permissions)
         workspace_obj.wallet += 30000
         new_workspace_member.user_account.current_workspace_id=workspace_obj.id
+        new_workspace_member.user_account.save()
         workspace_obj.wallet.save()
 
         return new_workspace_member
