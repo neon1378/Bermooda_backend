@@ -741,6 +741,7 @@ class TaskReportManager(APIView):
         if report_id:
             report_obj = get_object_or_404(TaskReport,id=report_id)
             serializer_data = TaskReportSerializer(report_obj)
+            serializer_data.data['self']=serializer_data.data['creator']['id'] == request.user.id
             return Response(status=status.HTTP_200_OK,data={
                 "status":True,
                 "message":"success",
@@ -750,6 +751,9 @@ class TaskReportManager(APIView):
         task_obj = get_object_or_404(Task,id=task_id)
         report_objs = TaskReport.objects.filter(task=task_obj).order_by('-id')
         serializer_data = TaskReportSerializer(report_objs,many=True)
+        for item in serializer_data.data:
+            item['self'] = item['creator']['id'] == request.user.id
+
         return Response(status=status.HTTP_200_OK,data={
             "status":"True",
             "message":"success",
@@ -920,3 +924,19 @@ class ProjectDepartmentManager(APIView):
     
 
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def my_task_checklist(request,project_id):
+    project_obj = get_object_or_404(Project,id=project_id)
+    task_objs = Task.objects.filter(done_status=False,project=project_obj)
+    check_list_objs = []
+    for task in task_objs:
+        for check_list in task.check_list.all():
+            if check_list.responsible_for_doing == request.user:
+                check_list_objs.append(check_list)
+    serializer_data =CheckListSerializer(check_list_objs,many=True)
+    return Response(status=status.HTTP_200_OK,data={
+        "status":True,
+        "message":"success",
+        "data":serializer_data.data
+    })

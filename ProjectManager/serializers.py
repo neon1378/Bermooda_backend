@@ -162,7 +162,7 @@ class TaskSerializer(ModelSerializer):
 
 
 class TaskReportSerializer(serializers.ModelSerializer):
- 
+    creator = MemberSerializer(read_only=True)
     class Meta:
         model = TaskReport
         fields = [
