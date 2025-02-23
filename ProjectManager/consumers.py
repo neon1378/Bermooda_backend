@@ -255,9 +255,30 @@ class ProjectTask(WebsocketConsumer):
 
         self.project_obj = Project.objects.get(id=self.project_id)
         self.workspace_obj = self.project_obj.workspace
+        if self.workspace_obj.owner == self.user or self.get_permission_user() == "manager":
+            task_objs = Task.objects.filter(project=self.project_obj, done_status=False)
+        else:
+            task_list = Task.objects.filter(project=self.project_obj, done_status=False)
+            task_objs = [
+                task
+                for task in task_list
+                if any(check_list.responsible_for_doing == self.user for check_list in task.check_list.all())
+            ]
+        serializer_data = TaskSerializer(task_objs, many=True)
+        self.send(
+            json.dumps(
+
+                {
+                    "data_type": "task_list",
+                    "data": serializer_data.data
+
+                }
+            )
+        )
         async_to_sync(self.channel_layer.group_add)(
             f"{self.project_id}_amin",self.channel_name
         )
+
     def get_permission_user(self):
         workspace_member = WorkspaceMember.objects.get(user_account=self.user, workspace=self.workspace_obj)
         for permission in workspace_member.permissions.all():
