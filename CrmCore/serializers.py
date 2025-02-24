@@ -137,12 +137,19 @@ class CustomerSmallSerializer(serializers.ModelSerializer):
     workspace_id = serializers.IntegerField(write_only=True,required=True)
     label = LabelSerializer(read_only=True)
     user_account = MemberSerializer(read_only=True)
+
     avatar_id = serializers.CharField(max_length=55,write_only=True,required=False)
+    category = CategorySerializer(read_only=True)
+    category_id = serializers.IntegerField(write_only=True,required=True)
+
+    city_id =serializers.IntegerField(write_only=True,required=False)
+    state_id =serializers.IntegerField(write_only=True,required=False)
     class Meta:
         model = CustomerUser
         fields = [
             "user_account",
             "user_account_id",
+
             "avatar_id",
             "group_crm_id",
             "avatar_url",
@@ -161,10 +168,33 @@ class CustomerSmallSerializer(serializers.ModelSerializer):
             "agent_name",
             "agent_phone_number",
 
+            #new
+            "city_id",
+            "state_id",
+            "category",
+            "category_id",
+            "phone_number_static",
+            "agent_email_or_link",
+            "agent_position",
+            "address",
+            "description",
+
+            "city_name",
+            "state_name",
+
+            "fax",
+            "manager_national_code",
+            "economic_code",
+            "manager_phone_number",
+
         ]
         def create(self,validated_data):
             workspace_id = validated_data.pop("workspace_id")
             avatar_id = validated_data.pop("avatar_id",None)
+            city_id =validated_data.pop("city_id",None)
+            state_id =validated_data.pop("state_id",None)
+            agent_email_or_link=validated_data.pop("agent_email_or_link",None)
+            agent_position=validated_data.pop("agent_position",None)
             agent_status = validated_data.pop("agent_status",False)
             agent_name = validated_data.pop("agent_name",None)
             agent_phone_number = validated_data.pop("agent_phone_number",None)
@@ -177,11 +207,19 @@ class CustomerSmallSerializer(serializers.ModelSerializer):
                 main_file.its_blong =True
                 main_file.save()
                 new_customer.avatar = main_file
+            if city_id:
+                new_customer.city_id=city_id
+            if state_id :
+                new_customer.state_id=state_id
 
             if agent_status:
                 new_customer.agent_status = True
                 new_customer.agent_name = agent_name
+                new_customer.agent_email_or_link = agent_email_or_link
+                new_customer.agent_position = agent_position
+
                 new_customer.agent_phone_number= agent_phone_number
+
 
 
             if conection_type == "phone":

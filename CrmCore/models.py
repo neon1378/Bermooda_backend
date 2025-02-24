@@ -198,25 +198,25 @@ class CustomerUser(SoftDeleteModel):
     email = models.EmailField(null=True,blank=True)
     website = models.CharField(max_length=200,null=True,blank=True)
     description = models.TextField(null=True,blank=True)
-    agent_position = models.CharField(max_length=100,null=True,blank=True)
     legal_information =models.BooleanField(default=True)
-    
+
 
     possibility_of_sale = models.IntegerField(default=0)
     date_time_to_remember= models.CharField(max_length=100,null=True)
-    
+
 
     fax = models.BigIntegerField(null=True,blank=True)
     manager_national_code = models.BigIntegerField(null=True,blank=True)
     economic_code = models.BigIntegerField(null=True,blank=True)
     manager_phone_number = models.BigIntegerField(null=True,blank=True)
-    
+
     agent_status = models.BooleanField(default=False)
-    
+
     agent_name = models.CharField(max_length=55,null=True,blank=True)
     agent_email_or_link = models.CharField(max_length=200,null=True,blank=True)
     agent_phone_number = models.CharField(max_length=15,null=True,blank=True)
-     
+    agent_position = models.CharField(max_length=100,null=True,blank=True)
+
     order =models.IntegerField(default=0,blank=True)
 
     def avatar_url(self):
