@@ -228,7 +228,7 @@ class CustomerUser(SoftDeleteModel):
             return {}
     def avatar_url(self):
         try:
-            base_url = os.getenv("BASE_URl")
+            base_url = os.getenv("BASE_URL")
             return {
                 "id":self.avatar.id,
                 "url":f"{base_url}{self.avatar.file.url}"
