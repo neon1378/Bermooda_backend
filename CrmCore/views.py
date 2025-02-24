@@ -871,44 +871,12 @@ class CustomerUserView(APIView):
 
         custommer_objs = CustomerUser.objects.filter(group_crm_id=group_crm_id)
 
-        data_list = []
-        for custommer_obj in custommer_objs:
-            not_exsit =True
-            try:
-                for data in data_list:
-                    if data['label_id'] == custommer_obj.label.id:
-                        data['customer_list'].append(CustomerSmallSerializer(custommer_obj).data)
-                        not_exsit=False
-                        break
-                if not_exsit:
-                    data_list.append({
-                        "label_id":custommer_obj.label.id,
-                        "color":custommer_obj.label.color,
-                        "title":custommer_obj.label.title,
-                        "customer_list":[CustomerSmallSerializer(custommer_obj).data]
-                    })
-            except:
-                pass
 
-        label_objs = Label.objects.filter(group_crm_id=group_crm_id)
-        for label in label_objs:
-            not_exsit= True
-            for data in data_list:
-                if data['label_id'] == label.id:
-                    not_exsit=False
-                    break
-            if not_exsit:
-                data_list.append({
-                    "label_id": label.id,
-                    "color": label.color,
-                    "title": label.title,
-                    "customer_list": []
-                })
-        # serializer_data = CustomerSmallSerializer(custommer_objs,many=True)
+        serializer_data = CustomerSmallSerializer(custommer_objs,many=True)
         return Response(status=status.HTTP_200_OK, data={
             "status": True,
             "message": "success",
-            "data": data_list
+            "data": serializer_data.data
         })
 
     def post(self,request):
