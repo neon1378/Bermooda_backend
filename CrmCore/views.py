@@ -903,7 +903,7 @@ class CustomerUserView(APIView):
         workspace_id = request.user.current_workspace_id
         request.data['workspace_id'] = workspace_id
         request.data['user_account_id'] = user_account_id
-        serializer_data = CustomerSerializer(data=request.data,instance=customer_obj)
+        serializer_data = CustomerSmallSerializer(data=request.data,instance=customer_obj)
         if serializer_data.is_valid():
             serializer_data.save()
 
