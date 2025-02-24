@@ -67,7 +67,7 @@ class UserAccount(AbstractBaseUser,PermissionsMixin):
     brand_name = models.CharField(max_length=100,null=True)
     economic_code = models.BigIntegerField(null=True)
 
-    avatar = models.ForeignKey(MainFile,on_delete=models.CASCADE,null=True)
+    avatar = models.ForeignKey(MainFile,on_delete=models.SET_NULL,null=True)
     username = models.CharField(max_length=70, unique=True,null=True)
     state = models.ForeignKey(State, on_delete=models.SET_NULL, null=True)
     city = models.ForeignKey(City, on_delete=models.SET_NULL, null=True)

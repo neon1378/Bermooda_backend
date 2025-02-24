@@ -181,6 +181,15 @@ class CheckList (SoftDeleteModel):
     check_by_time =models.BooleanField(default=False)
     task= models.ForeignKey(Task,on_delete=models.CASCADE,null=True,related_name="check_list")
     label = models.ForeignKey(TaskLabel,on_delete=models.SET_NULL,null=True,blank=True)
+    def task_data (self):
+        try:
+            return {
+                "id":self.task.id,
+                "title":self.task.title
+            }
+        except:
+            return {}
+
     def end_date_time_sort(self):
         try:
             return f"{self.date_to_end} {self.time_to_end}"

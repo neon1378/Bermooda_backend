@@ -935,6 +935,7 @@ def my_task_checklist(request,project_id):
             if check_list.responsible_for_doing == request.user:
                 check_list_objs.append(check_list)
     serializer_data =CheckListSerializer(check_list_objs,many=True)
+
     return Response(status=status.HTTP_200_OK,data={
         "status":True,
         "message":"success",
