@@ -186,7 +186,7 @@ class CustomerUser(SoftDeleteModel):
     workspace = models.ForeignKey(WorkSpace,null=True,on_delete=models.CASCADE,related_name="customer")
     user_account = models.ForeignKey(UserAccount,null=True,blank=True,on_delete=models.CASCADE,related_name="customer_user_acc")
     label = models.ForeignKey(Label,on_delete=models.SET_NULL,null=True,related_name="customer_label")
-    category =models.ForeignKey(Category,null=True,on_delete=models.SET_NULL)
+    category =models.ForeignKey(Category,on_delete=models.SET_NULL,blank=True)
     report =models.ManyToManyField(Report,blank=True,related_name="customer_user")
     invoice = models.ManyToManyField(Invoice,related_name="customer_invoice",blank=True)
     fullname_or_company_name = models.CharField(max_length=100,null=True)

@@ -140,7 +140,7 @@ class CustomerSmallSerializer(serializers.ModelSerializer):
     user_account = MemberSerializer(read_only=True)
 
     avatar_id = serializers.CharField(max_length=55,write_only=True,required=False)
-
+    category = CategorySerializer(read_only=True,required=False)
     category_id = serializers.IntegerField(write_only=True,required=False)
     city = CitySerializer(read_only=True)
     state = StateSerializer(read_only=True)
@@ -154,7 +154,6 @@ class CustomerSmallSerializer(serializers.ModelSerializer):
 
             "avatar_id",
             "group_crm_id",
-            "category_data",
             "avatar_url",
             "workspace_id",
             "id",
@@ -174,7 +173,7 @@ class CustomerSmallSerializer(serializers.ModelSerializer):
             #new
             "city_id",
             "state_id",
-
+            "category",
             "category_id",
             "phone_number_static",
             "agent_email_or_link",
