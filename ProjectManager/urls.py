@@ -27,7 +27,7 @@ urlpatterns = [
     path("ProjectDepartmentManager",views.ProjectDepartmentManager.as_view()),
     path("ProjectDepartmentManager/<int:department_id>",views.ProjectDepartmentManager.as_view()),
 
-    path("MyTaskCheckList",views.my_task_checklist),
+    path("MyTaskCheckList/<int:project_id>",views.my_task_checklist),
 
 
     
