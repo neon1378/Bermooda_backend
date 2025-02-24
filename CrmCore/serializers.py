@@ -140,8 +140,8 @@ class CustomerSmallSerializer(serializers.ModelSerializer):
     user_account = MemberSerializer(read_only=True)
 
     avatar_id = serializers.CharField(max_length=55,write_only=True,required=False)
-    category = CategorySerializer(read_only=True)
-    category_id = serializers.IntegerField(write_only=True,required=True)
+    category = CategorySerializer(read_only=True,required=False)
+    category_id = serializers.IntegerField(write_only=True,required=False)
     city = CitySerializer(read_only=True)
     state = StateSerializer(read_only=True)
     city_id =serializers.IntegerField(write_only=True,required=False)
