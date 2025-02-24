@@ -6,7 +6,7 @@ from .models import *
 
 from django.shortcuts import get_object_or_404
 from core.views import  send_invite_link
-
+from WorkSpaceChat.serializers import  GroupSerializer
 class IndustrialActivitySerializer(ModelSerializer):
     class Meta:
         model =IndustrialActivity
@@ -143,6 +143,7 @@ class WorkSpaceMemberSerializer(serializers.ModelSerializer):
         new_workspace_member.user_account = user_acc
         new_workspace_member.is_accepted= False
         new_workspace_member.save()
+
         send_invite_link(user_acc.phone_number, new_workspace_member.workspace.owner.fullname,
                             new_workspace_member.workspace.title)
         from .views import  create_permission_for_member
@@ -150,6 +151,27 @@ class WorkSpaceMemberSerializer(serializers.ModelSerializer):
         workspace_obj.wallet.balance += 30000
         new_workspace_member.user_account.current_workspace_id=workspace_obj.id
         new_workspace_member.user_account.save()
+        # create group messages
+        group_message = GroupSerializer(data={
+            "workspace_id":workspace_obj.id,
+            "member_id_list":[workspace_obj.owner.id,new_workspace_member.user_account.id]
+
+        })
+        if group_message.is_valid():
+            group_message.save()
+        for member in WorkspaceMember.objects.filter(workspace=workspace_obj):
+            if member.id !=new_workspace_member:
+
+                group_message_member =GroupSerializer(
+                    data={
+                        "workspace_id": workspace_obj.id,
+                        "member_id_list": [member.user_account.id, new_workspace_member.user_account.id]
+
+                    }
+                )
+                if group_message_member.is_valid():
+                    group_message_member.save()
+
         workspace_obj.wallet.save()
 
         return new_workspace_member
