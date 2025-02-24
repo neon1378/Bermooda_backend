@@ -4,6 +4,7 @@ from rest_framework import serializers
 from .models import *
 from django.shortcuts import get_object_or_404
 from UserManager.serializers import UserDetailSerializer
+from core.serializers import   StateSerializer,CitySerializer
 from MailManager.serializers import  MemberSerializer
 class CrmDepartmentSerializer(serializers.ModelSerializer):
     workspace_id = serializers.IntegerField(write_only=True,required=True)
@@ -141,7 +142,8 @@ class CustomerSmallSerializer(serializers.ModelSerializer):
     avatar_id = serializers.CharField(max_length=55,write_only=True,required=False)
     category = CategorySerializer(read_only=True)
     category_id = serializers.IntegerField(write_only=True,required=True)
-
+    city = CitySerializer(read_only=True)
+    state = StateSerializer(read_only=True)
     city_id =serializers.IntegerField(write_only=True,required=False)
     state_id =serializers.IntegerField(write_only=True,required=False)
     class Meta:
@@ -179,8 +181,8 @@ class CustomerSmallSerializer(serializers.ModelSerializer):
             "address",
             "description",
 
-            "city_name",
-            "state_name",
+            "city",
+            "state",
 
             "fax",
             "manager_national_code",

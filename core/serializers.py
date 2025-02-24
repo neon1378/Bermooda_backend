@@ -25,3 +25,21 @@ class CoreSerializer(serializers.ModelSerializer):
             "description_en"
             
         ]
+
+
+class StateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = State
+        fields = [
+            "id",
+            "name"
+        ]
+
+
+class CitySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = City
+        fields = [
+            "id",
+            "name"
+        ]
