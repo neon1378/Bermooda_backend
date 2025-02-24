@@ -899,10 +899,10 @@ class CustomerUserView(APIView):
         })
     def put(self,request,customer_id):
         customer_obj = get_object_or_404(CustomerUser,id=customer_id)
-        user_account_id = customer_obj.user_account.id,
+
         workspace_id = request.user.current_workspace_id
         request.data['workspace_id'] = workspace_id
-        request.data['user_account_id'] = user_account_id
+        request.data['user_account_id'] = int(customer_obj.user_account.id)
         serializer_data = CustomerSmallSerializer(data=request.data,instance=customer_obj)
         if serializer_data.is_valid():
             serializer_data.save()
