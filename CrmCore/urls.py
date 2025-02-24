@@ -29,6 +29,7 @@ urlpatterns = [
 
     path("ExistMemberCrm/<int:group_id>",views.exist_member_in_crm),
     path("CustomerUserView", views.CustomerUserView.as_view()),
+    path("CustomerUserView/<int:customer_id>", views.CustomerUserView.as_view()),
     path("CampaignManager", views.CampaignManager.as_view()),
     path("CampaignManager/<int:campaign_id>", views.CampaignManager.as_view()),
     path("CampaignShow/<uuid:uuid>", views.campaign_show),
