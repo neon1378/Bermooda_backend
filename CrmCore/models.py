@@ -218,7 +218,14 @@ class CustomerUser(SoftDeleteModel):
     agent_position = models.CharField(max_length=100,null=True,blank=True)
 
     order =models.IntegerField(default=0,blank=True)
-
+    def category_data (self):
+        try:
+            return  {
+                "id":self.category.id,
+                "title":self.category.title
+            }
+        except:
+            return {}
     def avatar_url(self):
         try:
             base_url = os.getenv("BASE_URl")
