@@ -228,7 +228,7 @@ class CustomerSmallSerializer(serializers.ModelSerializer):
                 new_customer.connection_type =conection_type
                 new_customer.phone_number = phone_number
             else:
-                new_customer.connection_type = conection_type
+                new_customer.connection_type = "email"
                 new_customer.email = email
 
             new_customer.save()
@@ -264,7 +264,7 @@ class CustomerSmallSerializer(serializers.ModelSerializer):
                 main_file.its_blong = True
                 main_file.save()
                 instance.avatar = main_file
-
+        print(conection_type)
         if city_id:
             instance.city_id = city_id
         if state_id:
