@@ -929,7 +929,31 @@ class CustomerUserView(APIView):
             "message":"اطلاعات به درستی ارسال نشده است ",
             "data":serializer_data.errors
         })
+    def put(self,request,customer_id):
+        customer_obj = get_object_or_404(CustomerUser,id=customer_id)
+        user_account_id = customer_obj.user_account.id,
+        workspace_id = request.user.current_workspace_id
+        request.data['workspace_id'] = workspace_id
+        request.data['user_account_id'] = user_account_id
+        serializer_data = CustomerSerializer(data=request.data,instance=customer_obj)
+        if serializer_data.is_valid():
+            serializer_data.save()
 
+            return Response(status=status.HTTP_201_CREATED, data={
+                "status": True,
+                "message": "مشتری با موفقیت بروزرسانی  شد",
+                "data": serializer_data.data
+            })
+
+        return Response(status=status.HTTP_400_BAD_REQUEST, data={
+            "status": False,
+            "message": "اطلاعات به درستی ارسال نشده است ",
+            "data": serializer_data.errors
+        })
+    def delete(self,customer_id):
+        customer_obj = get_object_or_404(CustomerUser, id=customer_id)
+        customer_obj.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class CampaignManager(APIView):

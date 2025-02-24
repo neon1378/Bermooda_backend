@@ -238,7 +238,56 @@ class CustomerSmallSerializer(serializers.ModelSerializer):
 
             return new_customer
 
+    def update(self, instance, validated_data):
+        workspace_id = validated_data.pop("workspace_id")
+        avatar_id = validated_data.pop("avatar_id", None)
+        city_id = validated_data.pop("city_id", None)
+        state_id = validated_data.pop("state_id", None)
+        agent_email_or_link = validated_data.pop("agent_email_or_link", None)
+        agent_position = validated_data.pop("agent_position", None)
+        agent_status = validated_data.pop("agent_status", None)
+        agent_name = validated_data.pop("agent_name", None)
+        agent_phone_number = validated_data.pop("agent_phone_number", None)
+        conection_type = validated_data.pop("conection_type", None)
+        phone_number = validated_data.pop("phone_number", None)
+        email = validated_data.pop("email", None)
 
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+
+        if avatar_id:
+            if avatar_id != instance.avatar.id:
+                instance.avatar.delete()
+                main_file = MainFile.objects.get(id=avatar_id)
+                main_file.its_blong = True
+                main_file.save()
+                instance.avatar = main_file
+
+        if city_id:
+            instance.city_id = city_id
+        if state_id:
+            instance.state_id = state_id
+
+        if agent_status is not None:
+            instance.agent_status = agent_status
+            instance.agent_name = agent_name
+            instance.agent_email_or_link = agent_email_or_link
+            instance.agent_position = agent_position
+            instance.agent_phone_number = agent_phone_number
+
+        if conection_type:
+            instance.connection_type = conection_type
+            if conection_type == "phone":
+                instance.phone_number = phone_number
+            else:
+                instance.email = email
+
+        instance.save()
+        channel_layer = get_channel_layer()
+        event = {"type": "send_data"}
+        async_to_sync(channel_layer.group_send)(f"{instance.group_crm.id}_crm", event)
+
+        return instance
 
 class CampaignFieldSerializer(serializers.ModelSerializer):
     class Meta:
