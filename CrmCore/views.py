@@ -918,7 +918,7 @@ class CustomerUserView(APIView):
             "message": "اطلاعات به درستی ارسال نشده است ",
             "data": serializer_data.errors
         })
-    def delete(self,customer_id):
+    def delete(self,request,customer_id):
         customer_obj = get_object_or_404(CustomerUser, id=customer_id)
         customer_obj.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
