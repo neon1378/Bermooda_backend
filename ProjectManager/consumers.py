@@ -394,12 +394,10 @@ class ProjectTaskConsumer(AsyncWebsocketConsumer):
 
     @database_sync_to_async
     def update_task_orders(self, orders):
-        tasks = Task.objects.filter(id__in=[o['task_id'] for o in orders])
-        task_map = {t.id: t for t in tasks}
-        for order in orders:
-            if task := task_map.get(order['task_id']):
-                task.order = order['order']
-        Task.objects.bulk_update(tasks, ['order'])
+        for order in orders :
+            task_obj = Task.objects.get(order['task_id'])
+            task_obj.order = order['order']
+            task_obj.save()
 
     @database_sync_to_async
     def get_sub_task(self, sub_task_id):
