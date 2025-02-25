@@ -395,7 +395,7 @@ class ProjectTaskConsumer(AsyncWebsocketConsumer):
     @database_sync_to_async
     def update_task_orders(self, orders):
         for order in orders :
-            task_obj = Task.objects.get(order['task_id'])
+            task_obj = Task.objects.get(id =order['task_id'])
             task_obj.order = order['order']
             task_obj.save()
 
