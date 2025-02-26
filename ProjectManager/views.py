@@ -344,13 +344,17 @@ class TaskManager(APIView):
                 responsible_user = get_object_or_404(UserAccount, id=item["responsible_for_doing"])
             else:
                 responsible_user=request.user
+            date_to_start = item.get("date_to_start",None)
+            time_to_start = item.get("time_to_start",None)
+            date_to_end = item.get("date_to_end",None)
+            time_to_end = item.get("time_to_end",None)
             new_check_list =CheckList.objects.create(
                 title=item["title"],
 
-                date_to_start=item["date_to_start"],
-                time_to_start=item["time_to_start"],
-                date_to_end=item["date_to_end"],
-                time_to_end=item["time_to_end"],
+                date_to_start=date_to_start,
+                time_to_start=time_to_start,
+                date_to_end=date_to_end,
+                time_to_end=time_to_end,
                 responsible_for_doing=responsible_user,
                 task=task,
         
