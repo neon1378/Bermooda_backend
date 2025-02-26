@@ -42,6 +42,7 @@ urlpatterns = [
     path("ReferralCustomer/<int:customer_id>", views.referral_customer),
 
     path("CustomerArchive", views.CustomerArchive.as_view()),
+    path("CustomerArchive/<int:customer_id>", views.CustomerArchive.as_view()),
 
     path("GetMyCustomers", views.my_customers),
 
