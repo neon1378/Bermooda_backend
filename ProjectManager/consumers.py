@@ -669,15 +669,7 @@ class ProjectTaskConsumer(AsyncWebsocketConsumer):
 #          self.close(code=0)
 
 
-
-
-
-
 class ProjectTask(AsyncWebsocketConsumer):
-    @sync_to_async
-    def _get_workspace(self):
-        """Helper method to get workspace object synchronously"""
-        return self.project_obj.workspace
     async def connect(self):
         self.user = self.scope["user"]
         self.project_id = self.scope['url_route']['kwargs']['project_id']
@@ -687,6 +679,7 @@ class ProjectTask(AsyncWebsocketConsumer):
             return
 
         try:
+            # Use sync_to_async for database operations
             self.project_obj = await sync_to_async(Project.objects.get)(id=self.project_id)
             self.workspace_obj = await sync_to_async(self._get_workspace)()
         except ObjectDoesNotExist:
@@ -695,7 +688,7 @@ class ProjectTask(AsyncWebsocketConsumer):
 
         await self.accept()
 
-        # Initial data send
+        # Send initial data
         await self.send_initial_data()
 
         # Add to channel group
@@ -703,6 +696,11 @@ class ProjectTask(AsyncWebsocketConsumer):
             f"{self.project_id}_admin",
             self.channel_name
         )
+
+    @sync_to_async
+    def _get_workspace(self):
+        """Helper method to get workspace object synchronously"""
+        return self.project_obj.workspace
 
     async def disconnect(self, close_code):
         await self.channel_layer.group_discard(
