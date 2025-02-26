@@ -681,7 +681,7 @@ class ProjectTask(AsyncWebsocketConsumer):
         try:
             # Use sync_to_async for database operations
             self.project_obj = await sync_to_async(Project.objects.get)(id=self.project_id)
-            self.workspace_obj = await sync_to_async(lambda:self.workspace_obj.workspace)
+            self.workspace_obj = await sync_to_async(lambda: self.project_obj.workspace)()
         except ObjectDoesNotExist:
             await self.close(code=4004)
             return
