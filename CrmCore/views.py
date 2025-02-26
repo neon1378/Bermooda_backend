@@ -1141,7 +1141,7 @@ class CustomerArchive(APIView):
             "data":serializer_data.data
         })
     def put(self,request,customer_id):
-        customer_obj =get_object_or_404(CustomerUser,id=customer_id)
+        customer_obj =CustomerUser.all_objects.get(id=customer_id)
         customer_obj.restore()
         customer_obj.save()
         return Response(status=status.HTTP_202_ACCEPTED,data={
