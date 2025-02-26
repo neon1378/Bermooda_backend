@@ -681,7 +681,7 @@ class ProjectTask(AsyncWebsocketConsumer):
         try:
             # Use sync_to_async for database operations
             self.project_obj = await sync_to_async(Project.objects.get)(id=self.project_id)
-            self.workspace_obj = await sync_to_async(self._get_workspace)()
+            self.workspace_obj = await sync_to_async(self._get_workspace)(self.project_obj)
         except ObjectDoesNotExist:
             await self.close(code=4004)
             return
@@ -698,9 +698,9 @@ class ProjectTask(AsyncWebsocketConsumer):
         )
 
     @sync_to_async
-    def _get_workspace(self):
+    def _get_workspace(self, project_obj):
         """Helper method to get workspace object synchronously"""
-        return self.project_obj.workspace
+        return project_obj.workspace
 
     async def disconnect(self, close_code):
         await self.channel_layer.group_discard(
