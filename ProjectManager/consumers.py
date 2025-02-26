@@ -761,7 +761,7 @@ class ProjectTask(AsyncWebsocketConsumer):
             if category.id not in categories:
                 categories[category.id] = {
                     "category_id": category.id,
-                    "color": category.color,
+                    "color": category.color_code,
                     "title": category.title,
                     "task_list": []
                 }
