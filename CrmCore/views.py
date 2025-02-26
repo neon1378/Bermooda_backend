@@ -586,28 +586,28 @@ class GroupCrmManager(APIView):
         label_list = [
             {
                 "title":"سرنخ ها",
-                "color_code":"#E726A0"
+                "color_code":"#E82BA3"
                 
             },
             {
                 "title":"فرصت ها",
-                "color_code":"#E7C726"
+                "color_code":"#DB4646"
             },
 
             {
                 "title":"مشتری",
-                "color_code":"#E61D1D"
+                "color_code":"#02C875"
             },
 
             {
                 "title":"فاکتور",
-                "color_code":"#8E19F3"
+                "color_code":"#04C4B7"
             },
             
 
             {
                 "title":"فروش",
-                "color_code":"#1DDB16"
+                "color_code":"#636D74"
             },
         ]
         # order= 1
@@ -1118,9 +1118,9 @@ def referral_customer(request,customer_id):
     customer_obj = get_object_or_404(CustomerUser,id=customer_id)
     group_crm_id = data.get("group_crm_id")
     group_obj = get_object_or_404(GroupCrm,id=group_crm_id)
-    first_label = Label.objects.filter(group_crm=group_obj).last()
+    last_label = Label.objects.filter(group_crm=group_obj).last()
     customer_obj.group_crm =group_obj
-    customer_obj.label = first_label
+    customer_obj.label = last_label
     customer_obj.save()
     return Response(status=status.HTTP_200_OK,data={
         "status":True,
@@ -1139,6 +1139,15 @@ class CustomerArchive(APIView):
             "status":True,
             "message":"موفق",
             "data":serializer_data.data
+        })
+    def put(self,request,customer_id):
+        customer_obj =get_object_or_404(CustomerUser,id=customer_id)
+        customer_obj.restore()
+        customer_obj.save()
+        return Response(status=status.HTTP_202_ACCEPTED,data={
+            "status":True,
+            "message":"با موفقیت بازیابی شد",
+            "data":CustomerSmallSerializer(customer_obj).data
         })
 
 
