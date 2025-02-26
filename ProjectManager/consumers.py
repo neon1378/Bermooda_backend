@@ -3,6 +3,9 @@ import django
 django.setup()
 from channels.generic.websocket import WebsocketConsumer
 from .models import *
+from django.core.exceptions import PermissionDenied, ObjectDoesNotExist
+
+from asgiref.sync import sync_to_async
 from django.shortcuts import get_object_or_404
 from asgiref.sync import async_to_sync
 from rest_framework.authtoken.models import Token
@@ -458,7 +461,7 @@ class ProjectTaskConsumer(AsyncWebsocketConsumer):
             self.channel_name
         )
         await self.close(close_code)
-
+#
 # class ProjectTask(WebsocketConsumer):
 #     def connect(self):
 #         self.user = self.scope['user']
@@ -472,6 +475,20 @@ class ProjectTaskConsumer(AsyncWebsocketConsumer):
 #
 #         self.project_obj = Project.objects.get(id=self.project_id)
 #         self.workspace_obj = self.project_obj.workspace
+#
+#         self.send(
+#             json.dumps(
+#
+#                 {
+#                     "data_type": "task_list",
+#                     "data": self._main_serializer_data()
+#                 }
+#             )
+#         )
+#         async_to_sync(self.channel_layer.group_add)(
+#             f"{self.project_id}_amin",self.channel_name
+#         )
+#     def _main_serializer_data(self):
 #         if self.workspace_obj.owner == self.user or self.get_permission_user() == "manager":
 #             task_objs = Task.objects.filter(project=self.project_obj, done_status=False)
 #         else:
@@ -482,20 +499,43 @@ class ProjectTaskConsumer(AsyncWebsocketConsumer):
 #                 if any(check_list.responsible_for_doing == self.user for check_list in task.check_list.all())
 #             ]
 #         serializer_data = TaskSerializer(task_objs, many=True)
-#         self.send(
-#             json.dumps(
+#         data= []
 #
-#                 {
-#                     "data_type": "task_list",
-#                     "data": serializer_data.data
+#         for task in serializer_data.data:
+#             not_exsit = True
 #
-#                 }
-#             )
-#         )
-#         async_to_sync(self.channel_layer.group_add)(
-#             f"{self.project_id}_amin",self.channel_name
-#         )
+#             for data in data:
+#                 if data['category_id'] == task['category_task_id']:
+#                     data['task_list'].append(task)
+#                     not_exsit = False
+#                     break
+#             if not_exsit:
 #
+#
+#                 data.append({
+#
+#                     "category_id": task['category_task_id'],
+#                     "color": task["category_task"]['title'],
+#                     "title": task["category_task"]['color_code'],
+#
+#                     "task_list": [task]
+#                 })
+#         category_objs = CategoryProject.objects.filter(project=self.project_obj).order_by("-id")
+#         for category in category_objs:
+#             not_exsit = True
+#             for loop_data in data:
+#                 if loop_data['category_id'] == category.id:
+#                     not_exsit = False
+#                     break
+#             if not_exsit:
+#                 data.append({
+#
+#                     "category_id": category.id,
+#                     "color": category.color,
+#                     "title": category.title,
+#                     "task_list": []
+#                 })
+#         return data
 #     def get_permission_user(self):
 #         workspace_member = WorkspaceMember.objects.get(user_account=self.user, workspace=self.workspace_obj)
 #         for permission in workspace_member.permissions.all():
@@ -607,22 +647,13 @@ class ProjectTaskConsumer(AsyncWebsocketConsumer):
 #                     "data":{}
 #                 }))
 #     def send_data(self,event):
-#         if self.workspace_obj.owner == self.user or self.get_permission_user() == "manager":
-#             task_objs = Task.objects.filter(project=self.project_obj, done_status=False)
-#         else:
-#             task_list = Task.objects.filter(project=self.project_obj, done_status=False)
-#             task_objs = [
-#                 task
-#                 for task in task_list
-#                 if any(check_list.responsible_for_doing == self.user for check_list in task.check_list.all())
-#             ]
-#         serializer_data = TaskSerializer(task_objs,many=True)
+#
 #         self.send(
 #             json.dumps(
 #
 #                 {
 #                     "data_type":"task_list",
-#                     "data":serializer_data.data
+#                     "data":self._main_serializer_data()
 #
 #                 }
 #             )
@@ -636,3 +667,233 @@ class ProjectTaskConsumer(AsyncWebsocketConsumer):
 #             self.channel_name
 #         )
 #          self.close(code=0)
+
+
+
+
+
+
+class ProjectTask(AsyncWebsocketConsumer):
+    async def connect(self):
+        self.user = self.scope["user"]
+        self.project_id = self.scope['url_route']['kwargs']['project_id']
+
+        if not self.user.is_authenticated:
+            await self.close(code=4001)
+            return
+
+        try:
+            self.project_obj = await sync_to_async(Project.objects.get)(id=self.project_id)
+            self.workspace_obj = self.project_obj.workspace
+        except ObjectDoesNotExist:
+            await self.close(code=4004)
+            return
+
+        await self.accept()
+
+        # Initial data send
+        await self.send_initial_data()
+
+        # Add to channel group
+        await self.channel_layer.group_add(
+            f"{self.project_id}_admin",
+            self.channel_name
+        )
+
+    async def disconnect(self, close_code):
+        await self.channel_layer.group_discard(
+            f"{self.project_id}_admin",
+            self.channel_name
+        )
+
+    async def receive(self, text_data=None, bytes_data=None):
+        try:
+            data = json.loads(text_data)
+            command = data.get('command')
+
+            command_handlers = {
+                'task_list': self.handle_task_list,
+                'move_a_task': self.handle_move_task,
+                'change_sub_task_status': self.handle_subtask_status,
+                'change_task_status': self.handle_task_status
+            }
+
+            handler = command_handlers.get(command)
+            if handler:
+                await handler(data)
+            else:
+                await self.send_error("Invalid command")
+
+        except json.JSONDecodeError:
+            await self.send_error("Invalid JSON format")
+        except Exception as e:
+            await self.send_error(str(e))
+
+    async def send_initial_data(self):
+        """Send initial task list data on connection"""
+        data = await self._main_serializer_data()
+        await self.send_json({
+            "data_type": "task_list",
+            "data": data
+        })
+
+    @sync_to_async
+    def _main_serializer_data(self):
+        """Generate structured task data with categories"""
+        # Get base task queryset
+        task_objs = self._get_filtered_tasks()
+        serializer_data = TaskSerializer(task_objs, many=True).data
+
+        # Organize tasks by category
+        categories = {}
+        for task in serializer_data:
+            category_id = task['category_task_id']
+            if category_id not in categories:
+                categories[category_id] = {
+                    "category_id": category_id,
+                    "color": task["category_task"]['color_code'],
+                    "title": task["category_task"]['title'],
+                    "task_list": []
+                }
+            categories[category_id]['task_list'].append(task)
+
+        # Add empty categories
+        category_objs = CategoryProject.objects.filter(project=self.project_obj).order_by("-id")
+        for category in category_objs:
+            if category.id not in categories:
+                categories[category.id] = {
+                    "category_id": category.id,
+                    "color": category.color,
+                    "title": category.title,
+                    "task_list": []
+                }
+
+        return list(categories.values())
+
+    def _get_filtered_tasks(self):
+        """Get tasks based on user permissions"""
+        if self._has_admin_access():
+            return Task.objects.filter(project=self.project_obj, done_status=False)
+
+        return [
+            task for task in Task.objects.filter(project=self.project_obj, done_status=False)
+            if any(check.responsible_for_doing == self.user
+                   for check in task.check_list.all())
+        ]
+
+    def _has_admin_access(self):
+        """Check if user has admin-level permissions"""
+        return (
+                self.workspace_obj.owner == self.user or
+                self._get_permission_type() == "manager"
+        )
+
+    @sync_to_async
+    def _get_permission_type(self):
+        """Get user's permission type for the workspace"""
+        try:
+            member = WorkspaceMember.objects.get(
+                user_account=self.user,
+                workspace=self.workspace_obj
+            )
+            return next(
+                (p.permission_type for p in member.permissions.all()
+                 if p.permission_name == "project board"),
+                None
+            )
+        except ObjectDoesNotExist:
+            return None
+
+    async def handle_task_list(self, data):
+        """Handle task list refresh requests"""
+        data = await self._main_serializer_data()
+        await self.send_json({
+            "data_type": "task_list",
+            "data": data
+        })
+
+    async def handle_move_task(self, data):
+        """Handle task movement between categories"""
+        category = await sync_to_async(get_object_or_404)(
+            CategoryProject,
+            id=data['category_id']
+        )
+        task = await sync_to_async(get_object_or_404)(Task, id=data['task_id'])
+
+        # Update task category
+        task.category_task = category
+        await sync_to_async(task.save)()
+
+        # Update task orders
+        for order_data in data['orders_task']:
+            t = await sync_to_async(Task.objects.get)(id=order_data['task_id'])
+            t.order = order_data['order']
+            await sync_to_async(t.save)()
+
+        # Broadcast update
+        await self.broadcast_event({
+            "type": "send_data",
+            **data,
+            "project_id": self.project_id
+        })
+
+    async def handle_subtask_status(self, data):
+        """Handle subtask status changes"""
+        subtask = await sync_to_async(get_object_or_404)(
+            CheckList,
+            id=data['sub_task_id']
+        )
+
+        if subtask.responsible_for_doing != self.user:
+            raise PermissionDenied("Access denied")
+
+        subtask.status = data['status']
+        await sync_to_async(subtask.save)()
+
+        await self.broadcast_event({
+            "type": "send_data",
+            **data,
+            "project_id": self.project_id
+        })
+
+    async def handle_task_status(self, data):
+        """Handle main task status changes"""
+        task = await sync_to_async(get_object_or_404)(Task, id=data['task_id'])
+
+        if not (self.user == self.project_obj.creator or self.project_obj.creator is None):
+            raise PermissionDenied("Access denied")
+
+        task.done_status = data['done_status']
+        await sync_to_async(task.save)()
+
+        await self.broadcast_event({
+            "type": "send_data",
+            **data,
+            "project_id": self.project_id
+        })
+
+    async def broadcast_event(self, event):
+        """Helper method for broadcasting events to group"""
+        await self.channel_layer.group_send(
+            f"{self.project_id}_admin",
+            event
+        )
+
+    async def send_data(self, event):
+        """Handler for group send events"""
+        await self.send_json({
+            "data_type": "task_list",
+            "data": await self._main_serializer_data()
+        })
+
+    async def send_json(self, data):
+        """Helper method for sending JSON data"""
+        await self.send(text_data=json.dumps(data))
+
+    async def send_error(self, message):
+        """Helper method for sending error messages"""
+        await self.send_json({
+            "data_type": "error",
+            "message": message,
+            "data": {}
+        })

@@ -1,4 +1,6 @@
 from django.db import models
+from kombu.utils import retry_over_time
+
 from core.models import MainFile
 from UserManager.models import UserAccount
 from WorkSpaceManager.models import WorkSpace
@@ -156,7 +158,12 @@ class Task (SoftDeleteModel):
             return self.category_task.id
         else:
             return 0    
-        
+
+    def project_id (self):
+        try:
+            return self.project.id
+        except:
+            return None
     def task_progress(self):
         check_list_count = self.check_list.all().count()
         check_list_completed= self.check_list.filter(status=True).count()

@@ -6,6 +6,7 @@ websocket_urlpatterns = [
     path("ws/ProjectTask/<project_id>",consumers.ProjectTaskConsumer.as_asgi()),
 
     path("ws/Project/GroupMessage/<project_id>",consumers.ProjectChatMainWs.as_asgi()),
+    path("ws/test/ProjectTask/<project_id>",consumers.ProjectChatMainWs.as_asgi()),
 
     
 ]

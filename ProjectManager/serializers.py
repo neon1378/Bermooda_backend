@@ -43,6 +43,7 @@ class LabelSerializer(ModelSerializer):
     class Meta:
         model =TaskLabel
         fields = "__all__"
+
 class CheckListSerializer(ModelSerializer):
     label = LabelSerializer()
     responsible_for_doing = MemberSerializer(read_only=True)
@@ -296,4 +297,12 @@ class ProjectSerializer(serializers.ModelSerializer):
 
         instance.save()
         return instance
+
+
+
+
+
+
+
+
 
