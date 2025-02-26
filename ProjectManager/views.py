@@ -382,7 +382,7 @@ class TaskManager(APIView):
         event ={
             "type":"send_data"
         }
-        async_to_sync(channel_layer.group_send)(f"{project.id}_amin",event)
+        async_to_sync(channel_layer.group_send)(f"{project.id}_admin",event)
         return Response(status=status.HTTP_201_CREATED, data={"status": True, "message": "تسک جدید با موفقیت ثبت شد", "data": response_data})
 
     def put(self, request):
@@ -430,7 +430,7 @@ class TaskManager(APIView):
         event ={
             "type":"send_data"
         }
-        async_to_sync(channel_layer.group_send)(f"{task.project.id}_amin",event)
+        async_to_sync(channel_layer.group_send)(f"{task.project.id}_admin",event)
         return Response(status=status.HTTP_202_ACCEPTED, data={"status": True, "message": "تسک با موفقیت آپدیت شد"})
 
     def delete(self, request):
@@ -447,7 +447,7 @@ class TaskManager(APIView):
         event ={
             "type":"send_data"
         }
-        async_to_sync(channel_layer.group_send)(f"{task.project.id}_amin",event)
+        async_to_sync(channel_layer.group_send)(f"{task.project.id}_admin",event)
         return Response(status=status.HTTP_204_NO_CONTENT, data={"status": True, "message": "Task deleted"})
 
 
@@ -504,7 +504,7 @@ class CheckListManager(APIView):
         event ={
             "type":"send_data"
         }
-        async_to_sync(channel_layer.group_send)(f"{task_obj.project.id}_amin",event)
+        async_to_sync(channel_layer.group_send)(f"{task_obj.project.id}_admin",event)
         if request.user != check_list_obj.responsible_for_doing:
             title = f"بروزرسانی وظیفه"
             sub_title = f"چک لیست {check_list_obj.title} در تسک {check_list_obj.task.title} توسط {request.user.fullname} برای شما اضافه شد "
@@ -566,7 +566,7 @@ class CheckListManager(APIView):
             event = {
                 "type": "send_data"
             }
-            async_to_sync(channel_layer.group_send)(f"{checklist_obj.task.project.id}_amin", event)
+            async_to_sync(channel_layer.group_send)(f"{checklist_obj.task.project.id}_admin", event)
             if request.user != checklist_obj.responsible_for_doing:
                 title = f"بروزرسانی وظیفه"
                 sub_title = f"چک لیست {checklist_obj.title} در تسک {checklist_obj.task.title} توسط {request.user.fullname} بروزرسانی شد "
@@ -588,7 +588,7 @@ class CheckListManager(APIView):
         event = {
             "type": "send_data"
         }
-        async_to_sync(channel_layer.group_send)(f"{checklist_obj.task.project.id}_amin", event)
+        async_to_sync(channel_layer.group_send)(f"{checklist_obj.task.project.id}_admin", event)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
         
