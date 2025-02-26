@@ -224,6 +224,13 @@ class LabelMangaer(APIView):
         })
     def delete(self,request,label_id):
         label_obj = get_object_or_404(Label,id=label_id)
+        first_label =Label.objects.filter(group_crm=label_obj.group_crm).first()
+        if first_label.id == label_obj.id:
+            return Response(status=status.HTTP_400_BAD_REQUEST,data={
+                "status":False,
+                "message":"لیست پیشفرض را نمیتوانید حذف کنید",
+                "data":{}
+            })
         label_obj.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
     
@@ -1101,4 +1108,39 @@ def create_fake_ip (request):
         ip = request.META.get('REMOTE_ADDR')
     obj  =IpAshol.objects.create(ip=ip)
     return render(request,"CrmCore/test.html")
+
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def referral_customer(request,customer_id):
+    data= request.data
+    customer_obj = get_object_or_404(CustomerUser,id=customer_id)
+    group_crm_id = data.get("group_crm_id")
+    group_obj = get_object_or_404(GroupCrm,id=group_crm_id)
+    first_label = Label.objects.filter(group_crm=group_obj).first()
+    customer_obj.group_crm =group_obj
+    customer_obj.label = first_label
+    customer_obj.save()
+    return Response(status=status.HTTP_200_OK,data={
+        "status":True,
+        "message":"با موفقیت انجام شد",
+        "data":{}
+    })
+
+class CustomerArchive(APIView):
+    permission_classes= [IsAuthenticated]
+    def get(self,request):
+
+        group_crm_id = request.GET.get("group_crm_id")
+        customer_objs = CustomerUser.all_objects.filter(is_deleted=True,group_crm_id=group_crm_id)
+        serializer_data = CustomerSmallSerializer(customer_objs,many=True)
+        return Response(status=status.HTTP_200_OK,data={
+            "status":True,
+            "message":"موفق",
+            "data":serializer_data.data
+        })
+
+
+
 
