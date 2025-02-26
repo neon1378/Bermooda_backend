@@ -83,6 +83,13 @@ class CategoryProjectManager(APIView):
     def delete(self,request,category_id):
         category_obj = get_object_or_404(CategoryProject,id=category_id)
         if not Task.objects.filter(category_task=category_obj).exists():
+            first_category= CategoryProject.objects.filter(project=category_obj.project).first()
+            if first_category == category_obj:
+                return Response(status=status.HTTP_400_BAD_REQUEST,data={
+                    "status":False,
+                    "message":"امکان حذف وجود ندارد",
+                    "data":{}
+                })
             category_obj.delete()
 
             return Response(status=status.HTTP_204_NO_CONTENT)
@@ -940,4 +947,23 @@ def my_task_checklist(request,project_id):
         "status":True,
         "message":"success",
         "data":serializer_data.data
+    })
+
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def referral_task(request,task_id):
+    data =request.data
+    project_id = data.get("project_id")
+    task_obj = get_object_or_404(Task,id=task_id)
+    project_obj = get_object_or_404(Project,id=project_id)
+    first_category = CategoryProject.objects.filter(project=project_obj).first()
+    task_obj.project =project_obj
+    task_obj.category_task = first_category
+    task_obj.save()
+    return Response(status=status.HTTP_200_OK,data={
+        "status":True,
+        "message":"با موفقیت ارجاع داده شد",
+        "data":{}
     })

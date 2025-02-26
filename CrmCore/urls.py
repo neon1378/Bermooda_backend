@@ -39,7 +39,7 @@ urlpatterns = [
     path("GetCampaignForm", views.get_campaign_form),
     path("ReferralTheLead", views.referral_the_lead),
 
-    path("ReferralCustomer", views.referral_customer),
+    path("ReferralCustomer/<int:customer_id>", views.referral_customer),
 
     path("CustomerArchive", views.CustomerArchive.as_view()),
 

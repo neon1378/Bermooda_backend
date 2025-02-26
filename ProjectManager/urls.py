@@ -29,6 +29,7 @@ urlpatterns = [
 
     path("MyTaskCheckList/<int:project_id>",views.my_task_checklist),
 
+    path("ReferralTask/<int:task_id>",views.referral_task),
 
-    
+
 ]
