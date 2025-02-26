@@ -674,6 +674,10 @@ class ProjectTaskConsumer(AsyncWebsocketConsumer):
 
 
 class ProjectTask(AsyncWebsocketConsumer):
+    @sync_to_async
+    def _get_workspace(self):
+        """Helper method to get workspace object synchronously"""
+        return self.project_obj.workspace
     async def connect(self):
         self.user = self.scope["user"]
         self.project_id = self.scope['url_route']['kwargs']['project_id']
@@ -684,7 +688,7 @@ class ProjectTask(AsyncWebsocketConsumer):
 
         try:
             self.project_obj = await sync_to_async(Project.objects.get)(id=self.project_id)
-            self.workspace_obj = self.project_obj.workspace
+            self.workspace_obj = await sync_to_async(self._get_workspace)()
         except ObjectDoesNotExist:
             await self.close(code=4004)
             return
