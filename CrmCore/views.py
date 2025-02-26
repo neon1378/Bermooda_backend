@@ -1118,7 +1118,7 @@ def referral_customer(request,customer_id):
     customer_obj = get_object_or_404(CustomerUser,id=customer_id)
     group_crm_id = data.get("group_crm_id")
     group_obj = get_object_or_404(GroupCrm,id=group_crm_id)
-    first_label = Label.objects.filter(group_crm=group_obj).first()
+    first_label = Label.objects.filter(group_crm=group_obj).last()
     customer_obj.group_crm =group_obj
     customer_obj.label = first_label
     customer_obj.save()
@@ -1143,4 +1143,16 @@ class CustomerArchive(APIView):
 
 
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def my_customers(request):
+    group_crm_id = request.GET.get("group_crm_id")
+    customer_objs = CustomerUser.objects.filter(group_crm_id=group_crm_id,user_account=request.user)
+    serializer_data = CustomerSmallSerializer(customer_objs, many=True)
 
+
+    return Response(status=status.HTTP_200_OK, data={
+        "status": True,
+        "message": "موفق",
+        "data": serializer_data.data
+    })

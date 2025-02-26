@@ -43,6 +43,7 @@ urlpatterns = [
 
     path("CustomerArchive", views.CustomerArchive.as_view()),
 
+    path("GetMyCustomers", views.my_customers),
 
 ]
 

@@ -151,7 +151,7 @@ class CustomerSmallSerializer(serializers.ModelSerializer):
         fields = [
             "user_account",
             "user_account_id",
-
+            "is_deleted",
             "avatar_id",
             "group_crm_id",
             "avatar_url",
