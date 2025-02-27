@@ -63,11 +63,12 @@ class InvoiceSerializer(ModelSerializer):
         logo_file = validated_data.pop("logo_file",None)
         buyer_information = validated_data.pop("buyer_information")
         seller_information = validated_data.pop("seller_information")
-        buyer_city = buyer_information.pop("city")
-        buyer_state = buyer_information.pop("state")
+        buyer_city = buyer_information.pop("city_buyer")
+        buyer_state = buyer_information.pop("state_buyer")
 
-        sller_state = seller_information.pop("state")
-        sller_city = seller_information.pop("city")
+
+        sller_state = seller_information.pop("state_seller")
+        sller_city = seller_information.pop("city_seller")
    
         customer_id= validated_data.pop("customer_id")
         buyer_information_obj = Information(
