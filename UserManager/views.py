@@ -1141,9 +1141,7 @@ def change_username(request):
     return Response(status=status.HTTP_200_OK,data={
         "status":True,
         "message":"success",
-        "data":{
-            "username":username
-        }
+        "data":{}
     })
 
 
