@@ -93,7 +93,7 @@ class CategoryProjectManager(APIView):
     def delete(self,request,category_id):
         category_obj = get_object_or_404(CategoryProject,id=category_id)
         if not Task.objects.filter(category_task=category_obj).exists():
-            first_category= CategoryProject.objects.filter(project=category_obj.project).first()
+            first_category= CategoryProject.objects.filter(project=category_obj.project).last()
             if first_category == category_obj:
                 return Response(status=status.HTTP_400_BAD_REQUEST,data={
                     "status":False,
