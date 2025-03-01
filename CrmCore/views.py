@@ -508,7 +508,7 @@ class GroupCrmManager(APIView):
         paginator = Paginator(queryset.order_by("-id"), 20)  # Set items per page
 
         # Check if the requested page exists
-        if page_number > paginator.num_pages:
+        if int(page_number) > paginator.num_pages:
             return {
                 "count": paginator.count,
                 "next": None,
