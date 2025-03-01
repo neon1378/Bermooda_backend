@@ -13,6 +13,9 @@ from core.permission import IsAccess
 from dotenv import load_dotenv
 import os
 load_dotenv()
+import qrcode
+from django.core.files.base import ContentFile
+from io import BytesIO
 # Invoice Manager Begin 
 
 
@@ -55,11 +58,12 @@ class InvoiceManager(APIView):
         customer_obj = get_object_or_404(CustomerUser, id=customer_id)
         invoice_objs = customer_obj.invoice.all().order_by("-id")
         invoice_data_list = InvoiceSerializer(invoice_objs, many=True).data
-        
+
         # Add file URLs to each serialized invoice
         for invoice_data in invoice_data_list:
             invoice_obj = Invoice.objects.get(id=invoice_data['id'])
             invoice_data.update(self.add_file_urls(invoice_obj))
+
         
         return Response(
             status=status.HTTP_200_OK,
@@ -71,9 +75,16 @@ class InvoiceManager(APIView):
         data =request.data
         customer_id = data['customer_id']
         serializer_data = InvoiceSerializer(data= request.data)
-        
+
         if serializer_data.is_valid():
             invoice_obj = serializer_data.create(validated_data=request.data)
+            qr = qrcode.make("https://google.com")
+            buffer = BytesIO()
+            qr.save(buffer, format="PNG")
+            random_number = random.randint(1,2312313)
+            # Save QR code image
+            invoice_obj.qr_code.file.save(f"{random_number}_1s.png", ContentFile(buffer.getvalue()), save=True)
+            invoice_obj.save()
             response_data = InvoiceSerializer(invoice_obj).data
             
             customer_obj = CustomerUser.objects.get(id=customer_id)

@@ -5,7 +5,7 @@ from extensions.utils import costum_date
 
 
 from core.models import City,State,MainFile
-
+import uuid
 class Information(models.Model):
 
     fullname_or_company_name = models.CharField(max_length=50,null=True)
@@ -39,6 +39,7 @@ class ProductInvoice(models.Model):
 
 
 class Invoice(models.Model):
+    models.UUIDField(unique=True, default=uuid.uuid4, editable=False)
     title = models.CharField(max_length=60,null=True)
     seller_information = models.OneToOneField(Information,on_delete=models.CASCADE,null=True,related_name="information_seller")
     buyer_information = models.OneToOneField(Information,on_delete=models.CASCADE,null=True,related_name="information_buyer")
@@ -50,6 +51,7 @@ class Invoice(models.Model):
     taxes = models.PositiveIntegerField(default=0)
     created = models.DateField(auto_now_add=True)
     invoice_code = models.CharField(max_length=90,null=True)
+    qr_code = models.ForeignKey(MainFile,on_delete=models.SET_NULL,null=True)
 
     def invoice_date (self):
         return costum_date(self.created)
