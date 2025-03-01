@@ -915,12 +915,18 @@ class CustomerUserView(APIView):
 
         serializer_data = CustomerSmallSerializer(data=request.data)
         if serializer_data.is_valid():
-            serializer_data.save()
+            customer_obj = serializer_data.save()
+            channel_layer = get_channel_layer()
+            event = {
+                "type": "send_data"
+            }
+            async_to_sync(channel_layer.group_send)(f"{customer_obj.group_crm.id}_crm", event)
             return Response(status=status.HTTP_201_CREATED,data={
                 "status":True,
                 "message":"مشتری با موفقیت ثبت شد",
                 "data":serializer_data.data
             })
+
         return Response(status=status.HTTP_400_BAD_REQUEST,data={
             "status":False,
             "message":"اطلاعات به درستی ارسال نشده است ",
@@ -935,7 +941,11 @@ class CustomerUserView(APIView):
         serializer_data = CustomerSmallSerializer(data=request.data,instance=customer_obj)
         if serializer_data.is_valid():
             serializer_data.save()
-
+            channel_layer = get_channel_layer()
+            event = {
+                "type": "send_data"
+            }
+            async_to_sync(channel_layer.group_send)(f"{customer_obj.group_crm.id}_crm", event)
             return Response(status=status.HTTP_201_CREATED, data={
                 "status": True,
                 "message": "مشتری با موفقیت بروزرسانی  شد",
@@ -949,7 +959,13 @@ class CustomerUserView(APIView):
         })
     def delete(self,request,customer_id):
         customer_obj = get_object_or_404(CustomerUser, id=customer_id)
+        group_crm_id = customer_obj.group_crm.id
         customer_obj.delete()
+        channel_layer = get_channel_layer()
+        event = {
+            "type": "send_data"
+        }
+        async_to_sync(channel_layer.group_send)(f"{group_crm_id}_crm", event)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
