@@ -847,7 +847,7 @@ class ProjectTask(AsyncWebsocketConsumer):
             raise PermissionDenied("Access denied")
 
         subtask.status = data['status']
-        await sync_to_async(subtask.save)()
+        await sync_to_async(subtask.save, thread_sensitive=True)()
         print("no")
         await self.broadcast_event({
             "type": "send_data",
