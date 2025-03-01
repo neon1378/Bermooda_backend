@@ -1,3 +1,4 @@
+from django.core.paginator import Paginator
 from django.shortcuts import render
 from rest_framework.permissions import AllowAny,IsAuthenticated,DjangoModelPermissions
 from rest_framework.views import APIView
@@ -500,13 +501,37 @@ class ReportManager(APIView):
 
 class GroupCrmManager(APIView):
     permission_classes = [IsAuthenticated,IsWorkSpaceMemberAccess]
+    def paginate_queryset(self,page_number,queryset):
 
+
+        # Set up custom pagination
+        paginator = Paginator(queryset.order_by("-id"), 20)  # Set items per page
+
+        # Check if the requested page exists
+        if page_number > paginator.num_pages:
+            return {
+                "count": paginator.count,
+                "next": None,
+                "previous": None,
+                "data": []
+            }
+
+        # Get the page
+        page = paginator.get_page(page_number)
+        serializer_data=GroupCrmSerializer(page.object_list,many=True)
+
+        return {
+            "count": paginator.count,
+            "next": page.next_page_number() if page.has_next() else None,
+            "previous": page.previous_page_number() if page.has_previous() else None,
+            "list": serializer_data.data
+        }
 
     def get(self, request, group_id=None):
 
         workspace_id = request.GET.get("workspace_id")
         workspace_obj = get_object_or_404(WorkSpace, id=workspace_id)
-
+        page = request.GET.get("page",1)
         # Fetch single group if `group_id` is provided
         if group_id:
             group_obj = get_object_or_404(GroupCrm, id=group_id)
@@ -544,7 +569,7 @@ class GroupCrmManager(APIView):
                         group_objs.append(group)
                 
 
-        group_data = GroupCrmSerializer(group_objs,many=True).data
+        group_data = self.paginate_queryset(page_number=page,queryset=group_objs)
 
         return Response(
             status=status.HTTP_200_OK,
