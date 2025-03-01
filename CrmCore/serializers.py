@@ -382,3 +382,19 @@ class CampaignFormSerializer(serializers.ModelSerializer):
             "fullname",
         ]
 
+
+
+class GroupCrmSerializer(serializers.ModelSerializer):
+    members= MemberSerializer(many=True,read_only=True)
+    department = CrmDepartmentSerializer(read_only=True)
+    class Meta:
+        model = GroupCrm
+        fields =[
+            "id",
+            "title",
+            "avatar_url",
+            "members",
+            "profit_price",
+            "department",
+
+        ]

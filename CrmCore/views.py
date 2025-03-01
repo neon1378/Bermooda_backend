@@ -16,6 +16,7 @@ from core.permission import IsAccess
 from dotenv import load_dotenv
 import os
 from django.db import transaction
+from core.widgets import  ReusablePaginationMixin
 load_dotenv()
 
 
@@ -427,7 +428,7 @@ class ReportManager(APIView):
                  "id":report_obj.id,
                  "description":report_obj.description,
                  "self":request.user == report_obj.author,
-             
+
 
                  }
  
@@ -500,6 +501,7 @@ class ReportManager(APIView):
 class GroupCrmManager(APIView):
     permission_classes = [IsAuthenticated,IsWorkSpaceMemberAccess]
 
+
     def get(self, request, group_id=None):
 
         workspace_id = request.GET.get("workspace_id")
@@ -510,8 +512,9 @@ class GroupCrmManager(APIView):
             group_obj = get_object_or_404(GroupCrm, id=group_id)
             if request.user == workspace_obj.owner or request.user in group_obj.members.all():
 
+                serializer_data =GroupCrmSerializer(group_obj)
 
-                group_data = self.serialize_group(group_obj,workspace_obj)
+                group_data = serializer_data.data
                 return Response(
                     status=status.HTTP_200_OK,
                     data={
@@ -541,7 +544,8 @@ class GroupCrmManager(APIView):
                         group_objs.append(group)
                 
 
-        group_data = [self.serialize_group(group,workspace_obj) for group in group_objs]
+        group_data = GroupCrmSerializer(group_objs,many=True).data
+
         return Response(
             status=status.HTTP_200_OK,
             data={
@@ -561,7 +565,7 @@ class GroupCrmManager(APIView):
         department_id = data.get("department_id",None)
 
         avatar_id = data.get("avatar_id",None)
-        print(members)
+
         # Create new group
         new_group_obj = GroupCrm.objects.create(title=title,workspace=workspace_obj)
         
@@ -616,8 +620,9 @@ class GroupCrmManager(APIView):
 
             new_label_obj.save()
             # order +=1
-        group_data = self.serialize_group(new_group_obj,workspace_obj)
-        print(group_data)
+        group_data = GroupCrmSerializer(new_group_obj).data
+
+
         return Response(
             status=status.HTTP_201_CREATED,
             data={
@@ -627,54 +632,13 @@ class GroupCrmManager(APIView):
             },
         )
 
-    def serialize_group(self, group_obj,workspace_obj):
-        """Helper method to serialize a GroupCrm object."""
-        label_objs = Label.objects.filter(group_crm=group_obj)
-        users = []
-        users.append(workspace_obj.owner)
-        for member in WorkspaceMember.objects.filter(workspace=workspace_obj):
-            if member.user_account != workspace_obj.owner:
-                if member.is_accepted:
-                    users.append(member.user_account)
-        label_data =[]
-        base_url = os.getenv("BASE_URL")
-        for label in label_objs:
-            label_data.append(
-                    {
-                           
-                            "id":label.id,
-                            "title":label.title,
-                            "color":label.color,
-                            "count":label.customer_label.filter(group_crm=group_obj).count()
-                    }
-                )
 
-        return {
-            "id": group_obj.id,
-            
-            "department":{
-                "id":group_obj.department.id,
-                "title":group_obj.department.id
-            },
-            "title": group_obj.title,
-            "avatar_url": group_obj.avatar_url(),
-            "label_data":label_data,
-            "profit_price":group_obj.profit_price(),
-            "members": [
-                {
-                    "id": member.id,
-                    "fullname": member.full_name(),
-                    "avatar_url": member.avatar_url(),
-                    "selected":member in group_obj.members.all()
-                }
-                for member in  users 
-            ],
-        }
-    
+
     def put(self,request,group_id):
         data = request.data
         group_obj = get_object_or_404(GroupCrm,id=group_id)
         workspace_id = data.get("workspace_id")
+
      
 
         workspace_obj = get_object_or_404(WorkSpace, id=workspace_id)
@@ -706,7 +670,7 @@ class GroupCrmManager(APIView):
         return Response(status=status.HTTP_202_ACCEPTED,data={
             "status":True,
             "message":"success",
-            "data":self.serialize_group(group_obj,workspace_obj)
+            "data":GroupCrmSerializer(group_obj).data
         })
     def delete (self,request,group_id):
         data =request.data
