@@ -837,6 +837,7 @@ class ProjectTask(AsyncWebsocketConsumer):
 
     async def handle_subtask_status(self, data):
         """Handle subtask status changes"""
+        print("yes")
         subtask = await sync_to_async(get_object_or_404)(
             CheckList,
             id=data['sub_task_id']
@@ -847,7 +848,7 @@ class ProjectTask(AsyncWebsocketConsumer):
 
         subtask.status = data['status']
         await sync_to_async(subtask.save)()
-
+        print("no")
         await self.broadcast_event({
             "type": "send_data",
             **data,
