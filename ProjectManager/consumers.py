@@ -837,7 +837,6 @@ class ProjectTask(AsyncWebsocketConsumer):
 
     async def handle_subtask_status(self, data):
         """Handle subtask status changes"""
-        print("yes")
 
         # Fetch subtask synchronously
         subtask = await sync_to_async(
@@ -846,7 +845,6 @@ class ProjectTask(AsyncWebsocketConsumer):
 
         # Fetch user synchronously
         responsible_user = await sync_to_async(lambda: subtask.responsible_for_doing, thread_sensitive=True)()
-        print("yes")
 
         if responsible_user != self.user:
             raise PermissionDenied("Access denied")

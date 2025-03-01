@@ -734,6 +734,11 @@ class LabelTaskManager(APIView):
             order+=1
         
         serializer_data= self.label_serializer(label_obj=new_label_obj)
+        channel_layer = get_channel_layer()
+        event = {
+            "type": "send_data"
+        }
+        async_to_sync(channel_layer.group_send)(f"{new_label_obj.project.id}_admin", event)
         return Response(status=status.HTTP_201_CREATED,data={
             "status":True,
             "message":"success",
@@ -747,6 +752,11 @@ class LabelTaskManager(APIView):
   
         label_obj.save()
         serializer_data= self.label_serializer(label_obj=label_obj)
+        channel_layer = get_channel_layer()
+        event = {
+            "type": "send_data"
+        }
+        async_to_sync(channel_layer.group_send)(f"{label_obj.project.id}_admin", event)
         return Response(status=status.HTTP_202_ACCEPTED,data={
             "status":True,
             "message":"success",
