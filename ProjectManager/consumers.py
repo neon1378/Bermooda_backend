@@ -765,8 +765,8 @@ class ProjectTask(AsyncWebsocketConsumer):
                     "title": category.title,
                     "task_list": []
                 }
-
-        return list(categories.values())
+        sorted_categories = sorted(categories.values(), key=lambda x: x['category_id'])
+        return sorted_categories
 
     def _get_filtered_tasks(self):
         """Get tasks based on user permissions"""
