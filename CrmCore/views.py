@@ -16,6 +16,7 @@ from rest_framework.permissions import BasePermission
 from core.permission import IsAccess
 from dotenv import load_dotenv
 import os
+from channels.layers import get_channel_layer
 from django.db import transaction
 from core.widgets import  ReusablePaginationMixin
 load_dotenv()
@@ -200,6 +201,11 @@ class LabelMangaer(APIView):
             label_obj = serializer_data.create(validated_data=request.data)
             label_obj.group_crm= group_obj
             label_obj.save()
+            channel_layer = get_channel_layer()
+            event = {
+                "type": "send_data"
+            }
+            async_to_sync(channel_layer.group_send)(f"{label_obj.group_crm.id}_crm", event)
             return Response(status=status.HTTP_201_CREATED,data={
                 "status":True,
                 "message":"با موفقیت ثبت شد",
@@ -219,6 +225,11 @@ class LabelMangaer(APIView):
 
         label_obj.save()
         serializer_data = LabelSerializer(label_obj)
+        channel_layer = get_channel_layer()
+        event = {
+            "type": "send_data"
+        }
+        async_to_sync(channel_layer.group_send)(f"{label_obj.group_crm.id}_crm", event)
         return Response(status=status.HTTP_200_OK,data={
             "status":True,
             "message":"با موفقیت بروزرسانی شد",
@@ -233,7 +244,13 @@ class LabelMangaer(APIView):
                 "message":"لیست پیشفرض را نمیتوانید حذف کنید",
                 "data":{}
             })
+        group_crm_id = label_obj.group_crm.id
         label_obj.delete()
+        channel_layer = get_channel_layer()
+        event = {
+            "type": "send_data"
+        }
+        async_to_sync(channel_layer.group_send)(f"{group_crm_id}_crm", event)
         return Response(status=status.HTTP_204_NO_CONTENT)
     
 
@@ -326,6 +343,12 @@ class CustomerUserManager(APIView):
             new_customer_obj.workspace =workspace_obj
             new_customer_obj.group_crm =group_obj
             new_customer_obj.save()
+
+            channel_layer = get_channel_layer()
+            event = {
+                "type": "send_data"
+            }
+            async_to_sync(channel_layer.group_send)(f"{new_customer_obj.group_crm.id}_crm", event)
             return Response(status=status.HTTP_200_OK,data={
                 "status":True,
                 "message":"موفق",
@@ -348,7 +371,11 @@ class CustomerUserManager(APIView):
                 customer_obj.category = get_object_or_404(Category, id=category['id'])
 
             customer_obj.save()
-            
+            channel_layer = get_channel_layer()
+            event = {
+                "type": "send_data"
+            }
+            async_to_sync(channel_layer.group_send)(f"{customer_obj.group_crm.id}_crm", event)
           
             return Response( status=status.HTTP_200_OK,data={
                 "status":True,
@@ -361,7 +388,13 @@ class CustomerUserManager(APIView):
         }, status=status.HTTP_400_BAD_REQUEST)
     def delete(self,request,customer_id):
         customer_obj = get_object_or_404(CustomerUser,id=customer_id)
+        group_crm_id = customer_obj.group_crm.id
         customer_obj.delete()
+        channel_layer = get_channel_layer()
+        event = {
+            "type": "send_data"
+        }
+        async_to_sync(channel_layer.group_send)(f"{group_crm_id}_crm", event)
         return Response (status=status.HTTP_204_NO_CONTENT)
 
 
