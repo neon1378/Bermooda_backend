@@ -55,6 +55,11 @@ class CategoryProjectManager(APIView):
 
         new_category_project.project=project_obj
         new_category_project.save()
+        channel_layer = get_channel_layer()
+        event = {
+            "type": "send_data"
+        }
+        async_to_sync(channel_layer.group_send)(f"{new_category_project.project.id}_admin", event)
         return Response(status =status.HTTP_201_CREATED,data={
             "status":True,
             "message":"succses",
@@ -70,6 +75,11 @@ class CategoryProjectManager(APIView):
         category_project_obj.title=data['title']
         category_project_obj.color_code=data['color_code']
         category_project_obj.save()
+        channel_layer = get_channel_layer()
+        event = {
+            "type": "send_data"
+        }
+        async_to_sync(channel_layer.group_send)(f"{category_project_obj.project.id}_admin", event)
         return Response(status=status.HTTP_202_ACCEPTED,data={
             "status":True,
             "message":"succses",
@@ -90,8 +100,14 @@ class CategoryProjectManager(APIView):
                     "message":"امکان حذف وجود ندارد",
                     "data":{}
                 })
-            category_obj.delete()
 
+            project_id = category_obj.project.id
+            category_obj.delete()
+            channel_layer = get_channel_layer()
+            event = {
+                "type": "send_data"
+            }
+            async_to_sync(channel_layer.group_send)(f"{project_id}_admin", event)
             return Response(status=status.HTTP_204_NO_CONTENT)
         else:
             if CategoryProject.objects.filter(project=category_obj.project).count() == 1:
@@ -734,11 +750,6 @@ class LabelTaskManager(APIView):
             order+=1
         
         serializer_data= self.label_serializer(label_obj=new_label_obj)
-        channel_layer = get_channel_layer()
-        event = {
-            "type": "send_data"
-        }
-        async_to_sync(channel_layer.group_send)(f"{new_label_obj.project.id}_admin", event)
         return Response(status=status.HTTP_201_CREATED,data={
             "status":True,
             "message":"success",
@@ -752,11 +763,6 @@ class LabelTaskManager(APIView):
   
         label_obj.save()
         serializer_data= self.label_serializer(label_obj=label_obj)
-        channel_layer = get_channel_layer()
-        event = {
-            "type": "send_data"
-        }
-        async_to_sync(channel_layer.group_send)(f"{label_obj.project.id}_admin", event)
         return Response(status=status.HTTP_202_ACCEPTED,data={
             "status":True,
             "message":"success",
