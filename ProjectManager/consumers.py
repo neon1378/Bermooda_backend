@@ -837,16 +837,18 @@ class ProjectTask(AsyncWebsocketConsumer):
 
     async def handle_subtask_status(self, data):
         """Handle subtask status changes"""
-        print("yes")
         subtask = await sync_to_async(get_object_or_404)(
             CheckList,
             id=data['sub_task_id']
         )
 
+        print("yes")
         if subtask.responsible_for_doing != self.user:
             raise PermissionDenied("Access denied")
+        print("yes")
 
         subtask.status = data['status']
+        print("yes")
         await sync_to_async(subtask.save, thread_sensitive=True)()
         print("no")
         await self.broadcast_event({
