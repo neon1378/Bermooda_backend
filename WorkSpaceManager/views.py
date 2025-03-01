@@ -760,3 +760,15 @@ def get_text_workspace_invite(request):
             }
         }
     )
+from WorkSpaceChat.models import  GroupMessage
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def create_group_message(request):
+    workspace_objs = WorkSpace.objects.all()
+    for workspace_obj  in workspace_objs:
+        for member in WorkspaceMember.objects.filter(workspace=workspace_obj):
+            for other_member in WorkspaceMember.objects.filter(workspace=workspace_obj):
+                if other_member.user_account != member.user_account:
+                    group_message =GroupMessage.objects.create(workspace=workspace_obj)
+                    group_message.members.set([other_member.user_account, member.user_account])
+    return Response(status=status.HTTP_200_OK)
