@@ -53,6 +53,7 @@ class GroupMessageWs(AsyncWebsocketConsumer):
         group_messages = await sync_to_async(GroupMessage.objects.filter)(
             workspace=self.workspace_obj, members__in=[self.user]
         )
+        print(group_messages)
         serializer_data = await sync_to_async(lambda: GroupSerializer(group_messages, many=True).data)()
 
         for group in serializer_data:
