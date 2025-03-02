@@ -148,7 +148,7 @@ class WorkSpaceMemberSerializer(serializers.ModelSerializer):
                             new_workspace_member.workspace.title)
         from .views import  create_permission_for_member
         create_permission_for_member(member_id=new_workspace_member.id, permissions=permissions)
-        workspace_obj.wallet.balance += 30000
+
         new_workspace_member.user_account.current_workspace_id=workspace_obj.id
         new_workspace_member.user_account.save()
         # create group messages
@@ -172,6 +172,5 @@ class WorkSpaceMemberSerializer(serializers.ModelSerializer):
                 if group_message_member.is_valid():
                     group_message_member.save()
 
-        workspace_obj.wallet.save()
 
         return new_workspace_member

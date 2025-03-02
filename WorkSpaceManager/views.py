@@ -512,6 +512,10 @@ def accept_workspace_invitation (request):
     if is_accepted:
         member_obj.is_accepted= is_accepted
         member_obj.save()
+        if workspace_obj.is_team_bonos:
+            workspace_obj.wallet.balance += 30000
+            workspace_obj.wallet.save()
+
 
         return Response(status=status.HTTP_200_OK,data={
             "status":True,
@@ -640,7 +644,10 @@ class WorkSpaceMemberManger(APIView):
 
 
         for member in workspace_member:
-            member_data.append(WorkSpaceMemberSerializer(member).data)
+            is_register= member.is_accepted
+            main_data =WorkSpaceMemberSerializer(member).data
+            main_data['user_account']['is_register']  = is_register
+            member_data.append(main_data)
 
 
         return Response(status=status.HTTP_200_OK,data={
