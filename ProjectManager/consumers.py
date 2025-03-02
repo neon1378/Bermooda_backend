@@ -780,6 +780,7 @@ class ProjectTask(AsyncWebsocketConsumer):
         ]
 
     def _has_admin_access(self):
+        print(self._get_permission_type(),"@@@@")
         """Check if user has admin-level permissions"""
         return (
                 self.workspace_obj.owner == self.user or
@@ -794,6 +795,7 @@ class ProjectTask(AsyncWebsocketConsumer):
                 user_account=self.user,
                 workspace=self.workspace_obj
             )
+
             return next(
                 (p.permission_type for p in member.permissions.all()
                  if p.permission_name == "project board"),
