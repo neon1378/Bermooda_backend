@@ -1,6 +1,7 @@
 import json 
 import django
 django.setup()
+from django.db.models import Prefetch
 from channels.generic.websocket import WebsocketConsumer
 from .models import *
 from django.core.exceptions import PermissionDenied, ObjectDoesNotExist
