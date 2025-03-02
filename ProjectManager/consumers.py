@@ -779,6 +779,7 @@ class ProjectTask(AsyncWebsocketConsumer):
                    for check in task.check_list.all())
         ]
 
+    @sync_to_async
     def _has_admin_access(self):
         print(self._get_permission_type()  == "manager")
         """Check if user has admin-level permissions"""
