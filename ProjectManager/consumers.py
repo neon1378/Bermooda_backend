@@ -781,7 +781,7 @@ class ProjectTask(AsyncWebsocketConsumer):
 
     @sync_to_async
     def _has_admin_access(self):
-        print(self._get_permission_type()  == "manager")
+        print(self._get_permission_type()  == "manager","!@#!@#!@#")
         """Check if user has admin-level permissions"""
         return (
                 self.workspace_obj.owner == self.user or
