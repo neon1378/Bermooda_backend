@@ -795,12 +795,14 @@ class ProjectTask(AsyncWebsocketConsumer):
                 user_account=self.user,
                 workspace=self.workspace_obj
             )
-
-            return next(
-                (p.permission_type for p in member.permissions.all()
-                 if p.permission_name == "project board"),
-                None
-            )
+            for permission in member.permissions.all():
+                if permission.permission_name == "project board":
+                    return  permission.permission_type
+            # return next(
+            #     (p.permission_type for p in member.permissions.all()
+            #      if p.permission_name == "project board"),
+            #     None
+            # )
         except ObjectDoesNotExist:
             return None
 
