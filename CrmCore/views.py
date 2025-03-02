@@ -1188,7 +1188,7 @@ class CustomerArchive(APIView):
 
         # Get the page
         page = paginator.get_page(page_number)
-        serializer_data = CustomerSmallSerializer(customer_objs,many=True)
+        serializer_data = CustomerSmallSerializer(page.object_list,many=True)
         return Response(status=status.HTTP_200_OK,data={
             "status":True,
             "message":"موفق",
@@ -1221,6 +1221,7 @@ def my_customers(request):
     paginator = Paginator(customer_objs.order_by("-id"), 20)  # Set items per page
 
     # Check if the requested page exists
+    print()
     if int(page_number) > paginator.num_pages:
         return {
             "count": paginator.count,
@@ -1231,7 +1232,7 @@ def my_customers(request):
 
     # Get the page
     page = paginator.get_page(page_number)
-    serializer_data = CustomerSmallSerializer(customer_objs, many=True)
+    serializer_data = CustomerSmallSerializer(page.object_list, many=True)
 
 
 
