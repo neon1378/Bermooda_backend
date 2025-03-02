@@ -1173,6 +1173,22 @@ class CustomerArchive(APIView):
         group_crm_id = request.GET.get("group_crm_id")
         customer_objs = CustomerUser.all_objects.filter(is_deleted=True,group_crm_id=group_crm_id)
         serializer_data = CustomerSmallSerializer(customer_objs,many=True)
+        page_number = request.GET.get("page", 1)
+
+        paginator = Paginator(customer_objs.order_by("-id"), 20)  # Set items per page
+
+        # Check if the requested page exists
+        if int(page_number) > paginator.num_pages:
+            return {
+                "count": paginator.count,
+                "next": None,
+                "previous": None,
+                "data": []
+            }
+
+        # Get the page
+        page = paginator.get_page(page_number)
+        serializer_data = CustomerSmallSerializer(customer_objs,many=True)
         return Response(status=status.HTTP_200_OK,data={
             "status":True,
             "message":"موفق",
@@ -1185,7 +1201,12 @@ class CustomerArchive(APIView):
         return Response(status=status.HTTP_202_ACCEPTED,data={
             "status":True,
             "message":"با موفقیت بازیابی شد",
-            "data":CustomerSmallSerializer(customer_obj).data
+            "data": {
+                "count": paginator.count,
+                "next": page.next_page_number() if page.has_next() else None,
+                "previous": page.previous_page_number() if page.has_previous() else None,
+                "list": serializer_data.data
+            }
         })
 
 
@@ -1195,11 +1216,34 @@ class CustomerArchive(APIView):
 def my_customers(request):
     group_crm_id = request.GET.get("group_crm_id")
     customer_objs = CustomerUser.objects.filter(group_crm_id=group_crm_id,user_account=request.user)
+    page_number = request.GET.get("page",1)
+
+    paginator = Paginator(customer_objs.order_by("-id"), 20)  # Set items per page
+
+    # Check if the requested page exists
+    if int(page_number) > paginator.num_pages:
+        return {
+            "count": paginator.count,
+            "next": None,
+            "previous": None,
+            "data": []
+        }
+
+    # Get the page
+    page = paginator.get_page(page_number)
     serializer_data = CustomerSmallSerializer(customer_objs, many=True)
+
+
 
 
     return Response(status=status.HTTP_200_OK, data={
         "status": True,
         "message": "موفق",
-        "data": serializer_data.data
+        "data": {
+            "count": paginator.count,
+            "next": page.next_page_number() if page.has_next() else None,
+            "previous": page.previous_page_number() if page.has_previous() else None,
+            "list": serializer_data.data
+        }
     })
+
