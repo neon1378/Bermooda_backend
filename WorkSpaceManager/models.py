@@ -41,7 +41,7 @@ class WorkSpace (SoftDeleteModel):
     city = models.ForeignKey(City,on_delete=models.SET_NULL,null=True)
     state = models.ForeignKey(State,on_delete=models.SET_NULL,null=True)
     is_active = models.BooleanField(default=True)
-
+    is_team_bonos = models.BooleanField(default=False)
     def avatar_url (self):
         try:
             base_url = os.getenv("BASE_URL")

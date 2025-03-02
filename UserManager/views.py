@@ -987,6 +987,9 @@ def create_workspace(request):
     new_workspace_obj.save()
     
     if BonosPhone.objects.filter(phone=request.user.phone_number).count() <3:
+        if BonosPhone.objects.filter(phone=request.user.phone_number).count() ==1 :
+            new_workspace_obj.is_team_bonos=True
+            new_workspace_obj.save()
         BonosPhone.objects.create(phone=request.user.phone_number)
 
         new_wallet = Wallet(workspace=new_workspace_obj,balance=50000)
