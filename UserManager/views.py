@@ -1041,7 +1041,7 @@ def create_workspace(request):
     )
     new_project.members.add(request.user)
     new_project.save()
-    new_crm_department = CrmDepartment.objects.create(title="بازاریابی",workspace=new_project_department,manager=request.user)
+    new_crm_department = CrmDepartment.objects.create(title="بازاریابی",workspace=new_workspace_obj,manager=request.user)
     new_group_crm = GroupCrm.objects(
         title="پیشفرض",
         workspace = new_workspace_obj,
