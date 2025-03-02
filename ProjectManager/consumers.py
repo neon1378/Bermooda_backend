@@ -15,6 +15,7 @@ from dotenv import load_dotenv
 from WorkSpaceManager.models import  WorkspaceMember
 from .serializers import TaskSerializer,ProjectChatSerializer
 import os
+from collections import defaultdict
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
@@ -735,27 +736,29 @@ class ProjectTask(AsyncWebsocketConsumer):
             "data": data
         })
 
+
+
     @sync_to_async
     def _main_serializer_data(self):
         """Generate structured task data with categories"""
-        # Get base task queryset
-        task_objs = self._get_filtered_tasks()
-        serializer_data = TaskSerializer(task_objs, many=True).data
+        task_objs = self._get_filtered_tasks().select_related("category_task").values(
+            "id", "title", "category_task_id", "category_task__color_code", "category_task__title"
+        )
 
-        # Organize tasks by category
-        categories = {}
-        for task in serializer_data:
-            category_id = task['category_task_id']
-            if category_id not in categories:
-                categories[category_id] = {
+        categories = defaultdict(lambda: {"task_list": []})
+
+        # دسته‌بندی تسک‌ها
+        for task in task_objs:
+            category_id = task["category_task_id"]
+            if "category_id" not in categories[category_id]:
+                categories[category_id].update({
                     "category_id": category_id,
-                    "color": task["category_task"]['color_code'],
-                    "title": task["category_task"]['title'],
-                    "task_list": []
-                }
-            categories[category_id]['task_list'].append(task)
+                    "color": task["category_task__color_code"],
+                    "title": task["category_task__title"]
+                })
+            categories[category_id]["task_list"].append(task)
 
-        # Add empty categories
+        # اضافه کردن دسته‌های خالی
         category_objs = CategoryProject.objects.filter(project=self.project_obj).order_by("-id")
         for category in category_objs:
             if category.id not in categories:
@@ -765,8 +768,10 @@ class ProjectTask(AsyncWebsocketConsumer):
                     "title": category.title,
                     "task_list": []
                 }
-        sorted_categories = sorted(categories.values(), key=lambda x: x['category_id'])
-        return sorted_categories
+
+        return sorted(categories.values(), key=lambda x: x["category_id"])
+
+
 
     def _get_filtered_tasks(self):
         """Get tasks based on user permissions"""
