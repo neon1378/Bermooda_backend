@@ -1036,16 +1036,19 @@ def create_workspace(request):
     new_project= Project.objects.create(
         title="پیشفرض",
         workspace = new_workspace_obj,
-        members = [request.user],
+
         department = new_project_department
     )
+    new_project.members.add(request.user)
+    new_project.save()
     new_crm_department = CrmDepartment.objects.create(title="بازاریابی",workspace=new_project_department,manager=request.user)
     new_group_crm = GroupCrm.objects(
         title="پیشفرض",
         workspace = new_workspace_obj,
-        members = [request.user],
+
         department = new_crm_department
     )
+    new_group_crm.members.add(request.user)
     return Response(status=status.HTTP_201_CREATED,data={
         "status":True,
         "message":"succsec",
