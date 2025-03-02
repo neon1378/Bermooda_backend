@@ -1192,7 +1192,12 @@ class CustomerArchive(APIView):
         return Response(status=status.HTTP_200_OK,data={
             "status":True,
             "message":"موفق",
-            "data":serializer_data.data
+            "data": {
+                "count": paginator.count,
+                "next": page.next_page_number() if page.has_next() else None,
+                "previous": page.previous_page_number() if page.has_previous() else None,
+                "list": serializer_data.data
+            }
         })
     def put(self,request,customer_id):
         customer_obj =CustomerUser.all_objects.get(id=customer_id)
@@ -1201,12 +1206,7 @@ class CustomerArchive(APIView):
         return Response(status=status.HTTP_202_ACCEPTED,data={
             "status":True,
             "message":"با موفقیت بازیابی شد",
-            "data": {
-                "count": paginator.count,
-                "next": page.next_page_number() if page.has_next() else None,
-                "previous": page.previous_page_number() if page.has_previous() else None,
-                "list": serializer_data.data
-            }
+            "data":CustomerSmallSerializer(customer_obj).data
         })
 
 
