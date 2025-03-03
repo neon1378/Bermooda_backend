@@ -908,16 +908,22 @@ class ProjectTask(AsyncWebsocketConsumer):
 
         task.done_status = data['done_status']
         await sync_to_async(task.save)()
+        event={
+            "type": "send_one_task",
+            "task_id": task.id
+        }
+
+        await self.channel_layer.group_send(
+            f"{self.project_id}_admin",
+            event
+        )
 
         await self.broadcast_event({
             "type": "send_data",
             **data,
             "project_id": self.project_id
         })
-        await self.broadcast_event({
-            "type":"send_one_task",
-            "task_id":task.id
-        })
+
     async def broadcast_event(self, event):
         """Helper method for broadcasting events to group"""
         await self.channel_layer.group_send(
