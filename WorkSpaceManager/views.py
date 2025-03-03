@@ -646,7 +646,7 @@ class WorkSpaceMemberManger(APIView):
         for member in workspace_member:
             is_register= member.is_accepted
             main_data =WorkSpaceMemberSerializer(member).data
-            main_data['user_account']['is_register']  = is_register
+            main_data['user_account']['is_register']  = member.is_accepted
             member_data.append(main_data)
 
 
@@ -779,3 +779,27 @@ def create_group_message(request):
                     group_message =GroupMessage.objects.create(workspace=workspace_obj)
                     group_message.members.set([other_member.user_account, member.user_account])
     return Response(status=status.HTTP_200_OK)
+
+
+
+class WorkSpaceMemberArchive(APIView):
+    def get(self,request):
+        workspace_id = request.user.current_workspace_id
+        workspace_obj = WorkSpace.objects.get(id=workspace_id)
+        workspace_member = WorkspaceMember.all_objects.filter(is_deleted=True,workspace=workspace_obj)
+        serializer_data = WorkSpaceMemberSerializer(workspace_member,many=True)
+        return Response(status=status.HTTP_200_OK,data={
+            "status":True,
+            "message":"با موفقیت انجام شد",
+            "data":serializer_data.data
+        })
+    def put(self,request,member_id):
+        member_obj= get_object_or_404(WorkspaceMember,id=member_id)
+        member_obj.restore()
+        member_obj.save()
+        serializer_data = WorkSpaceSerializer(member_obj)
+        return Response(status=status.HTTP_202_ACCEPTED,data={
+            "status":True,
+            "message":"با موفقیت انجام شد ",
+            "data":serializer_data.data
+        })

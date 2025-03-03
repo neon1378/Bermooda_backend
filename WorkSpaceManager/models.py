@@ -84,6 +84,7 @@ class WorkspaceMember(SoftDeleteModel):
     fullname=models.CharField(max_length=200,null=True)
     first_name = models.CharField(max_length=70,null=True)
     last_name = models.CharField(max_length=70,null=True)
+    jadoo_member_id = models.BigIntegerField(default=0)
 
     created = models.DateField(auto_now_add=True,null=True)
     is_accepted = models.BooleanField(default=True)
