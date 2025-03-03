@@ -736,21 +736,19 @@ class ProjectTask(AsyncWebsocketConsumer):
             "data": data
         })
 
-    @sync_to_async
-    def send_one_task(self,event):
-        task_obj = Task.objects.get(id=event['task_id'])
+    async def send_one_task(self, event):
+        task_obj = await sync_to_async(Task.objects.get)(id=event['task_id'])
 
-        self.send(json.dumps(
-            {
-                "data_type":"get_a_task",
-                "data":{
+        await self.send_json({
+                "data_type": "get_a_task",
+                "data": {
                     "category_id": task_obj.category_task.id,
                     "color": task_obj.category_task.color_code,
                     "title": task_obj.category_task.title,
                     "task_data": TaskSerializer(task_obj).data
                 }
-            }
-        ))
+            })
+
 
 
 
@@ -873,7 +871,11 @@ class ProjectTask(AsyncWebsocketConsumer):
             "type": "send_one_task",
             "task_id": data['task_id']
         })
-
+        await self.broadcast_event({
+            "type": "send_data",
+            **data,
+            "project_id": self.project_id
+        })
 
     async def handle_subtask_status(self, data):
         """Handle subtask status changes"""
