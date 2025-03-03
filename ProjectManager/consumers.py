@@ -898,9 +898,8 @@ class ProjectTask(AsyncWebsocketConsumer):
 
         # Broadcast the event
         await self.broadcast_event({
-            "type": "send_data",
-            **data,
-            "project_id": self.project_id
+            "type": "send_one_task",
+            "task_id": subtask.task.id
         })
 
     async def handle_task_status(self, data):
@@ -915,9 +914,8 @@ class ProjectTask(AsyncWebsocketConsumer):
 
 
         await self.broadcast_event({
-            "type": "send_data",
-            **data,
-            "project_id": self.project_id
+            "type": "send_one_task",
+            "task_id": data['task_id']
         })
 
     async def broadcast_event(self, event):
