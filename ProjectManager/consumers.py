@@ -875,11 +875,7 @@ class ProjectTask(AsyncWebsocketConsumer):
             "type": "send_one_task",
             "task_id": data['task_id']
         })
-        await self.broadcast_event({
-            "type": "send_data",
-            **data,
-            "project_id": self.project_id
-        })
+
 
     async def handle_subtask_status(self, data):
         """Handle subtask status changes"""
