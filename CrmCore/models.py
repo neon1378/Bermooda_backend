@@ -14,7 +14,8 @@ class CrmDepartment(SoftDeleteModel):
     title = models.CharField(max_length=200,null=True)
     workspace = models.ForeignKey(WorkSpace,on_delete=models.CASCADE,null=True,related_name="crm_departments")
     manager= models.ForeignKey(UserAccount,on_delete=models.CASCADE,null=True)
-    
+
+
 # Create your models here.
 class Label (SoftDeleteModel):
     # workspace = models.ForeignKey(WorkSpace,null=True,on_delete=models.CASCADE,related_name="label_customer")
@@ -23,6 +24,11 @@ class Label (SoftDeleteModel):
     group_crm = models.ForeignKey("GroupCrm",on_delete=models.CASCADE,null=True,related_name="label_customer")
 
     created = models.DateField(auto_now_add=True)
+
+
+
+# class Steps(SoftDeleteModel):
+
 class Category (SoftDeleteModel):
     workspace = models.ForeignKey(WorkSpace,null=True,on_delete=models.CASCADE,related_name="category_customer")
     title =models.CharField(max_length=50,null=True)

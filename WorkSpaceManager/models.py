@@ -29,7 +29,7 @@ class WorkSpace (SoftDeleteModel):
 
     jadoo_workspace_id = models.PositiveBigIntegerField(default=0)
     business_type=models.CharField(max_length=50, choices=BUSINESS_TYPE,null=True)
-
+    business_employer  = models.CharField(max_length=30,null=True,blank=True)
 
     reference_sub_category = models.PositiveBigIntegerField(default=0)
     reference_category = models.PositiveBigIntegerField(default=0)

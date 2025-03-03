@@ -34,6 +34,7 @@ class WorkSpaceSerializer(ModelSerializer):
             "state_name",
             "city_name",
             "main_category_data",
+            "business_employer",
             "sub_category_data"
         ]
     def update(self,instance,validated_data):
