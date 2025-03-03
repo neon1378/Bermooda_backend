@@ -737,7 +737,7 @@ class ProjectTask(AsyncWebsocketConsumer):
         })
 
     @sync_to_async
-    def _send_one_task(self,event):
+    def send_one_task(self,event):
         task_obj = Task.objects.get(id=event['id'])
 
         self.send(json.dumps(
@@ -915,7 +915,10 @@ class ProjectTask(AsyncWebsocketConsumer):
             **data,
             "project_id": self.project_id
         })
-
+        await self.broadcast_event({
+            "type":"send_one_task",
+            "task_id":task.id
+        })
     async def broadcast_event(self, event):
         """Helper method for broadcasting events to group"""
         await self.channel_layer.group_send(
