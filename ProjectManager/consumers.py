@@ -749,7 +749,7 @@ class ProjectTask(AsyncWebsocketConsumer):
     async def send_one_task(self, event):
 
 
-        task_data = self._one_task_serializer(task_id=event['task_id'])
+        task_data = await self._one_task_serializer(task_id=event['task_id'])
 
         await self.send_json({
             "data_type": "get_a_task",
