@@ -737,7 +737,7 @@ class ProjectTask(AsyncWebsocketConsumer):
         })
 
     async def send_one_task(self, event):
-        task_obj = await sync_to_async(Task.objects.get)(id=event['id'])
+        task_obj = await sync_to_async(Task.objects.get)(id=event['task_id'])
 
         await self.send(json.dumps(
             {
