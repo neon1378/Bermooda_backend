@@ -737,6 +737,24 @@ class ProjectTask(AsyncWebsocketConsumer):
         })
 
     @sync_to_async
+    def _send_one_task(self,event):
+        task_obj = Task.objects.get(id=event['id'])
+
+        self.send(json.dumps(
+            {
+                "data_type":"get_a_task",
+                "data":{
+                    "category_id": task_obj.category_task.id,
+                    "color": task_obj.category_task.color_code,
+                    "title": task_obj.category_task.title,
+                    "task_data": TaskSerializer(task_obj).data
+                }
+            }
+        ))
+
+
+
+    @sync_to_async
     def _main_serializer_data(self):
         """Generate structured task data with categories more efficiently."""
         # Fetch all categories in a single query
@@ -886,7 +904,7 @@ class ProjectTask(AsyncWebsocketConsumer):
         """Handle main task status changes"""
         task = await sync_to_async(get_object_or_404)(Task, id=data['task_id'])
 
-        if not (self.user == self.project_obj.creator or self.project_obj.creator is None):
+        if not self._has_admin_access():
             raise PermissionDenied("Access denied")
 
         task.done_status = data['done_status']
