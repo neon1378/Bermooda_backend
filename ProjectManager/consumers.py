@@ -737,20 +737,19 @@ class ProjectTask(AsyncWebsocketConsumer):
         })
 
     async def send_one_task(self, event):
-        task_obj = await sync_to_async(Task.objects.get)(id=event['task_id'])
+        task_obj = await sync_to_async(lambda: Task.objects.get(id=event['task_id']), thread_sensitive=True)()
+
+        task_data = {
+            "category_id": task_obj.category_task.id,
+            "color": task_obj.category_task.color_code,
+            "title": task_obj.category_task.title,
+            "task_data": TaskSerializer(task_obj).data
+        }
 
         await self.send_json({
-                "data_type": "get_a_task",
-                "data": {
-                    "category_id": task_obj.category_task.id,
-                    "color": task_obj.category_task.color_code,
-                    "title": task_obj.category_task.title,
-                    "task_data": TaskSerializer(task_obj).data
-                }
-            })
-
-
-
+            "data_type": "get_a_task",
+            "data": task_data
+        })
 
     @sync_to_async
     def _main_serializer_data(self):
