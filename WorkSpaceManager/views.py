@@ -794,7 +794,10 @@ class WorkSpaceMemberArchive(APIView):
             "data":serializer_data.data
         })
     def put(self,request,member_id):
-        member_obj= get_object_or_404(WorkspaceMember,id=member_id)
+        try:
+            member_obj= WorkspaceMember.all_objects.get(id=member_id)
+        except:
+            return Response(status=status.HTTP_404_NOT_FOUND)
         member_obj.restore()
         member_obj.save()
         serializer_data = WorkSpaceSerializer(member_obj)
