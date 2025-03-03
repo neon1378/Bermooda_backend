@@ -806,3 +806,67 @@ class WorkSpaceMemberArchive(APIView):
             "message":"با موفقیت انجام شد ",
             "data":serializer_data.data
         })
+
+
+
+
+@permission_classes([AllowAny])
+@api_view(["GET"])
+def create_users_to_jadoo(request):
+    user_objs = UserAccount.objects.all()
+    jadoo_base_url = os.getenv("JADOO_BASE_URL")
+    base_url = os.getenv("BASE_URL")
+    url = f"{jadoo_base_url}/user/auth/createBusinessUser"
+    for user in user_objs:
+        if user.refrence_id == 0:
+            payload = {
+                "mobile": user.phone_number,
+
+                "password": "w33r",
+
+            }
+            response_data = requests.post(url=url,data=payload).json()
+            user.refrence_id = int(response_data['data']['id'])
+            user.refrence_token = response_data['data']['token']
+
+            user.save()
+        pass
+
+    return Response(status=status.HTTP_200_OK)
+
+@permission_classes([AllowAny])
+@api_view(["GET"])
+def create_workspace_to_jadoo(request):
+    jadoo_base_url = os.getenv("JADOO_BASE_URL")
+    base_url = os.getenv("BASE_URL")
+    workspaces =WorkSpace.objects.all()
+    for workspace in workspaces:
+        if workspace.jadoo_workspace_id == 0:
+            url = f"{jadoo_base_url}/workspace/store"
+            headers = {
+                "content-type": "application/json",
+                "Authorization": f"Bearer {workspace.owner.refrence_token}"
+            }
+            payload = {
+
+                "cityId": workspace.city.refrence_id,
+                "stateId": workspace.state.refrence_id,
+                "workspaceId":workspace.id,
+                "industrialActivityId":workspaces.industrialactivity.refrence_id,
+                "bio":workspace.business_detail,
+                "avatar":"",
+                "name": workspace.title,
+                "username": workspace.jadoo_brand_name
+            }
+            if workspace.avatar:
+                payload['avatar'] = f"{base_url}{workspace.avatar.file.url}"
+
+
+
+            response_data = requests.post(url=url,headers=headers,data=payload).json()
+            response_data_main = response_data.json()['data']
+            workspace.jadoo_workspace_id = response_data_main['id']
+            workspace.save()
+    return Response(status=status.HTTP_200_OK)
+
+
