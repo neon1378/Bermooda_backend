@@ -193,15 +193,13 @@ class LabelMangaer(APIView):
             "data":serializer_data.data
         })
     def post (self,request):
-        group_crm_id =request.data.pop("group_crm_id")
-        # request.data.pop("order",None)
-        group_obj = get_object_or_404(GroupCrm,id=group_crm_id)
-        request.data.pop("workspace_id",None)
+
+
+
         serializer_data =LabelSerializer(data=request.data)
         if serializer_data.is_valid():
-            label_obj = serializer_data.create(validated_data=request.data)
-            label_obj.group_crm= group_obj
-            label_obj.save()
+            label_obj = serializer_data.save()
+
             channel_layer = get_channel_layer()
             event = {
                 "type": "send_data"
@@ -221,20 +219,23 @@ class LabelMangaer(APIView):
         data= request.data
         label_obj = get_object_or_404(Label,id=label_id)
         workspace_id = data.pop("workspace_id")
-        label_obj.title = data['title']
-        label_obj.color = data['color']
-
-        label_obj.save()
-        serializer_data = LabelSerializer(label_obj)
-        channel_layer = get_channel_layer()
-        event = {
-            "type": "send_data"
-        }
-        async_to_sync(channel_layer.group_send)(f"{label_obj.group_crm.id}_crm", event)
-        return Response(status=status.HTTP_200_OK,data={
-            "status":True,
-            "message":"با موفقیت بروزرسانی شد",
-            "data":serializer_data.data
+        serializer_data =LabelSerializer(data=request.data,instance=label_id)
+        if serializer_data.is_valid():
+            serializer_data.save()
+            channel_layer = get_channel_layer()
+            event = {
+                "type": "send_data"
+            }
+            async_to_sync(channel_layer.group_send)(f"{label_obj.group_crm.id}_crm", event)
+            return Response(status=status.HTTP_200_OK,data={
+                "status":True,
+                "message":"با موفقیت بروزرسانی شد",
+                "data":serializer_data.data
+            })
+        return Response(status=status.HTTP_400_BAD_REQUEST, data={
+            "status": True,
+            "message": "error ",
+            "data": serializer_data.errors
         })
     def delete(self,request,label_id):
         label_obj = get_object_or_404(Label,id=label_id)
@@ -1355,5 +1356,7 @@ class LabelStepManager(APIView):
             "message": "error",
             "data": serializer_data.errors
         })
+    # def post(self,request):
+
 
 

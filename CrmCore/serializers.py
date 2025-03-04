@@ -25,13 +25,35 @@ class CategorySerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 class LabelStepSerializer(serializers.ModelSerializer):
+    label_id = serializers.IntegerField(write_only=True,required=False)
     class Meta:
         model= Step
         fields =[
             "id",
             "title",
             "step",
+            "label_id",
         ]
+    def create(self, validated_data):
+        label_id = validated_data.pop("label_id")
+        label_obj = get_object_or_404(Label,id=label_id)
+        title = validated_data.get("title")
+
+        last_step_obj = label_obj.label_step.steps.all().order_by("step").last()
+        new_step_obj = Step.objects.create(
+            title =title,
+            step = last_step_obj.step +1,
+            label_step= label_obj.label_step
+        )
+        return new_step_obj
+
+
+
+    def update(self, instance, validated_data):
+        instance.title = validated_data.get("title")
+        instance.save()
+        return instance
+
 class LabelStepRelSerializer(serializers.ModelSerializer):
     steps = LabelStepSerializer(many=True)
     class Meta:
@@ -41,7 +63,9 @@ class LabelStepRelSerializer(serializers.ModelSerializer):
             "steps"
         ]
 class LabelSerializer(serializers.ModelSerializer):
-    label_step = LabelStepRelSerializer()
+    label_step = LabelStepRelSerializer(read_only=True)
+    group_crm_id = serializers.IntegerField(write_only=True)
+    step_list = serializers.ListField(write_only=True,required=False)
     class Meta:
         
         model = Label
@@ -50,7 +74,42 @@ class LabelSerializer(serializers.ModelSerializer):
             "title",
             "color",
             "label_step",
+            "group_crm_id",
+            "step_list",
         ]
+    def create(self, validated_data):
+        step_list = validated_data.pop("step_list")
+        group_crm_id = validated_data.pop("group_crm_id")
+        group_obj = get_object_or_404(GroupCrm,id=group_crm_id)
+        new_label = Label.objects.create(**validated_data)
+        new_label.group_crm = group_obj
+
+        label_step = LabelStep.objects.create(label=new_label)
+        label_step.save()
+
+        if len(step_list) <2 or len(step_list) > 5:
+            raise serializers.ValidationError(
+                {
+                    "status":False,
+                    "message":"مراحل نباید بیشتر از ۵ پ کمتر از ۲ آیتم باشند",
+                    "data":{}
+                }
+            )
+        count_step = 1
+        for step_data in step_list:
+            new_step_obj = Step.objects.create(
+                title = step_data['title'],
+                step =count_step ,
+                label_step = label_step,
+            )
+            count_step+=1
+        return new_label
+    def update(self, instance, validated_data):
+        instance.title = validated_data.get("title")
+        instance.color = validated_data.get("color")
+        instance.save()
+        return instance
+
 
 
 
