@@ -98,7 +98,7 @@ class LabelSerializer(serializers.ModelSerializer):
         count_step = 1
         for step_data in step_list:
             new_step_obj = Step.objects.create(
-                title = step_data['title'],
+                title = step_data,
                 step =count_step ,
                 label_step = label_step,
             )
