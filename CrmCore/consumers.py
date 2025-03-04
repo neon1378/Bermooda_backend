@@ -84,7 +84,7 @@ class CustomerTask(WebsocketConsumer):
             step = int(main_data['step'])
             customer_obj = CustomerUser.objects.get(id=main_data['customer_id'])
             step_obj = None
-            for step_item in custommer_objs.label_step.steps.all():
+            for step_item in customer_obj.label.label_step.steps.all():
                 if step_item.step == step:
                     step_obj = step_item
 
