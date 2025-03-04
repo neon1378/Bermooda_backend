@@ -115,6 +115,7 @@ class CustomerTask(WebsocketConsumer):
                         "label_id": custommer_obj.label.id,
                         "color": custommer_obj.label.color,
                         "title": custommer_obj.label.title,
+                        "steps": LabelStepSerializer(custommer_obj.label.label_step.steps.all(), many=True).data,
                         "customer_list": [CustomerSmallSerializer(custommer_obj).data]
                     })
             except:
@@ -132,6 +133,7 @@ class CustomerTask(WebsocketConsumer):
                     "label_id": label.id,
                     "color": label.color,
                     "title": label.title,
+                    "steps": LabelStepSerializer(label.label_step.steps.all(), many=True).data,
                     "customer_list": []
                 })
         data = sorted(data_list, key=lambda x: x["label_id"])
