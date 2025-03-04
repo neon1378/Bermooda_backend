@@ -4,6 +4,7 @@ from rest_framework.permissions import AllowAny,IsAuthenticated,DjangoModelPermi
 from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404
 from .models import *
+
 from rest_framework.response import Response
 from rest_framework.decorators import api_view,permission_classes
 from .serializers import *
@@ -613,6 +614,72 @@ class GroupCrmManager(APIView):
             },
         )
 
+    def create_crm_label(self,group_crm_obj):
+        label_list = [
+            {
+                "title": "سرنخ ها",
+                "color_code": "#E82BA3"
+
+            },
+            {
+                "title": "فرصت ها",
+                "color_code": "#DB4646"
+            },
+
+            {
+                "title": "مشتری",
+                "color_code": "#02C875"
+            },
+
+            {
+                "title": "فاکتور",
+                "color_code": "#04C4B7"
+            },
+
+            {
+                "title": "فروش",
+                "color_code": "#636D74"
+            },
+        ]
+        steps = [
+            {
+                "title":"مرحله 1",
+                "step":1,
+            },
+            {
+                "title":"مرحله 2",
+                "step":2,
+            },
+            {
+                "title":"مرحله 3",
+                "step":3,
+            },
+            {
+                "title":"مرحله 3",
+                "step":3,
+            },
+            {
+                "title":"مرحله 4",
+                "step":4,
+            },
+            {
+                "title": "مرحله 5",
+                "step": 5,
+            },
+        ]
+        for label in label_list:
+            new_label_obj = Label(title=label['title'], color=label['color_code'], group_crm=group_crm_obj)
+            new_label_obj.save()
+            new_label_step = LabelStep.objects.create(label=new_label_obj)
+            for step in steps:
+                new_step = Step.objects.create(
+                    title=step['title'],
+                    step=step['step'],
+                    label_step=new_label_step
+                )
+
+
+
     def post(self, request):
         data = request.data
         workspace_id = data.get("workspace_id")
@@ -645,38 +712,7 @@ class GroupCrmManager(APIView):
 
         new_group_obj.save()
         print(new_group_obj.members.all().count(),"@@@@")
-        label_list = [
-            {
-                "title":"سرنخ ها",
-                "color_code":"#E82BA3"
-                
-            },
-            {
-                "title":"فرصت ها",
-                "color_code":"#DB4646"
-            },
-
-            {
-                "title":"مشتری",
-                "color_code":"#02C875"
-            },
-
-            {
-                "title":"فاکتور",
-                "color_code":"#04C4B7"
-            },
-            
-
-            {
-                "title":"فروش",
-                "color_code":"#636D74"
-            },
-        ]
-        # order= 1
-        for label in label_list:
-            new_label_obj = Label(title=label['title'],color=label['color_code'],group_crm=new_group_obj)
-
-            new_label_obj.save()
+        self.create_crm_label(group_crm_obj=new_group_obj)
             # order +=1
         group_data = GroupCrmSerializer(new_group_obj).data
 
@@ -1247,4 +1283,77 @@ def my_customers(request):
             "list": serializer_data.data
         }
     })
+
+
+@permission_classes([AllowAny])
+@api_view(['GET'])
+def create_label_steps(request):
+    steps = [
+        {
+            "title": "مرحله 1",
+            "step": 1,
+        },
+        {
+            "title": "مرحله 2",
+            "step": 2,
+        },
+        {
+            "title": "مرحله 3",
+            "step": 3,
+        },
+        {
+            "title": "مرحله 3",
+            "step": 3,
+        },
+        {
+            "title": "مرحله 4",
+            "step": 4,
+        },
+        {
+            "title": "مرحله 5",
+            "step": 5,
+        },
+    ]
+    for label in Label.objects.all():
+
+
+
+        new_label_step = LabelStep.objects.create(label=label)
+        for step in steps:
+            new_step = Step.objects.create(
+                    title=step['title'],
+                    step=step['step'],
+                    label_step=new_label_step
+            )
+    return Response(status=status.HTTP_200_OK)
+
+
+class LabelStepManager(APIView):
+    permission_classes=[IsAuthenticated]
+    def get(self,request):
+        label_id = request.GET.get("label_id")
+        label_obj = get_object_or_404(Label,id=label_id)
+        step_objs =label_obj.label_step.steps.all()
+        serializer_data = LabelStepSerializer(step_objs,many=True)
+        return Response(status=status.HTTP_200_OK,data={
+            "status":True,
+            "message":"موفق",
+            "data":serializer_data.data
+        })
+    def put(self,request,step_id):
+        step_obj = get_object_or_404(Step,id=step_id)
+        serializer_data = LabelStepSerializer(data=request.data,instance=step_obj)
+        if serializer_data.is_valid():
+            serializer_data.save()
+            return Response(status=status.HTTP_200_OK,data={
+                "status":True,
+                "message":"با موفقیت به روزرسانی شد",
+                "data":serializer_data.data
+            })
+        return Response(status=status.HTTP_400_BAD_REQUEST, data={
+            "status": False,
+            "message": "error",
+            "data": serializer_data.errors
+        })
+
 

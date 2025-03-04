@@ -26,8 +26,19 @@ class Label (SoftDeleteModel):
     created = models.DateField(auto_now_add=True)
 
 
+class LabelStep(SoftDeleteModel):
+    label = models.OneToOneField(Label,on_delete=models.CASCADE,null=True,related_name="label_step")
+    created = models.DateTimeField(auto_now_add=True, null=True)
 
-# class Steps(SoftDeleteModel):
+class Step(SoftDeleteModel):
+    title =models.CharField(max_length=30,null=True)
+    step = models.IntegerField(default=0,blank=True,null=True)
+    label_step = models.ForeignKey(LabelStep,on_delete=models.CASCADE,null=True,related_name="steps")
+
+    created = models.DateTimeField(auto_now_add=True, null=True)
+
+
+
 
 class Category (SoftDeleteModel):
     workspace = models.ForeignKey(WorkSpace,null=True,on_delete=models.CASCADE,related_name="category_customer")
@@ -146,7 +157,7 @@ class GroupCrm (SoftDeleteModel):
     title = models.CharField(max_length=200,null=True)
     members = models.ManyToManyField(UserAccount,related_name="group_crm_user")
     avatar = models.ForeignKey(MainFile,on_delete=models.SET_NULL,null=True)
-  
+    created = models.DateTimeField(auto_now_add=True, null=True)
     department = models.ForeignKey(CrmDepartment,on_delete=models.CASCADE,null=True,related_name="group_crm")
 
 
@@ -205,7 +216,7 @@ class CustomerUser(SoftDeleteModel):
     website = models.CharField(max_length=200,null=True,blank=True)
     description = models.TextField(null=True,blank=True)
     legal_information =models.BooleanField(default=True)
-
+    created = models.DateTimeField(auto_now_add=True, null=True)
 
     possibility_of_sale = models.IntegerField(default=0)
     date_time_to_remember= models.CharField(max_length=100,null=True)
@@ -252,6 +263,13 @@ class CustomerUser(SoftDeleteModel):
         if self.state:  # Check if the state exists
             return self.state.name
         return None
+
+
+class CustomerStep(SoftDeleteModel):
+    customer = models.ForeignKey(CustomerUser,on_delete=models.CASCADE,null=True,related_name="customer_step")
+    label = models.ForeignKey(Label,on_delete=models.CASCADE,null=True)
+    step= models.ForeignKey(Step,on_delete=models.CASCADE,null=True)
+    created = models.DateTimeField(auto_now_add=True,null=True)
 
 
 

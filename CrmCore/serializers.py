@@ -24,8 +24,24 @@ class CategorySerializer(serializers.ModelSerializer):
         model = Category
         fields = "__all__"
 
-
+class LabelStepSerializer(serializers.ModelSerializer):
+    class Meta:
+        model= Step
+        fields =[
+            "id",
+            "title",
+            "step",
+        ]
+class LabelStepRelSerializer(serializers.ModelSerializer):
+    steps = LabelStepSerializer(many=True)
+    class Meta:
+        model = LabelStep
+        fields =[
+            "id",
+            "steps"
+        ]
 class LabelSerializer(serializers.ModelSerializer):
+    label_step = LabelStepRelSerializer()
     class Meta:
         
         model = Label
@@ -33,6 +49,7 @@ class LabelSerializer(serializers.ModelSerializer):
             "id",
             "title",
             "color",
+            "label_step",
         ]
 
 
@@ -398,3 +415,11 @@ class GroupCrmSerializer(serializers.ModelSerializer):
             "department",
 
         ]
+
+
+
+    def update(self, instance, validated_data):
+        title = validated_data.get("title")
+        instance.title = title
+        instance.save()
+        return instance
