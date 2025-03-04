@@ -1285,8 +1285,8 @@ def my_customers(request):
     })
 
 
-@permission_classes([AllowAny])
 @api_view(['GET'])
+@permission_classes([AllowAny])
 def create_label_steps(request):
     steps = [
         {
