@@ -1,6 +1,6 @@
 import json
 
-from .serializers import CustomerSmallSerializer
+from .serializers import CustomerSmallSerializer,LabelStepSerializer
 from channels.generic.websocket import WebsocketConsumer
 from asgiref.sync import async_to_sync
 from UserManager.models import UserAccount
@@ -46,6 +46,9 @@ class CustomerTask(WebsocketConsumer):
                             "label_id": custommer_obj.label.id,
                             "color": custommer_obj.label.color,
                             "title": custommer_obj.label.title,
+                            "steps":LabelStepSerializer(custommer_obj.label.label_step.steps.all(),many=True),
+
+
 
                             "customer_list": [CustomerSmallSerializer(custommer_obj).data]
                         })
@@ -66,6 +69,7 @@ class CustomerTask(WebsocketConsumer):
                         "label_id": label.id,
                         "color": label.color,
                         "title": label.title,
+                        "steps": LabelStepSerializer(label.label_step.steps.all(), many=True),
                         "customer_list": []
                     })
             data = sorted(data_list, key=lambda x: x["label_id"])

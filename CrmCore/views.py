@@ -1345,7 +1345,7 @@ class LabelStepManager(APIView):
         serializer_data = LabelStepSerializer(data=request.data,instance=step_obj)
         if serializer_data.is_valid():
             serializer_data.save()
-            return Response(status=status.HTTP_200_OK,data={
+            return Response(status=status.HTTP_202_ACCEPTED,data={
                 "status":True,
                 "message":"با موفقیت به روزرسانی شد",
                 "data":serializer_data.data
