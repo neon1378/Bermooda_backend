@@ -81,7 +81,7 @@ class CustomerTask(WebsocketConsumer):
             ))
         elif command == "change_step_status":
             main_data = data['data']
-            step = int(data['step'])
+            step = int(main_data['step'])
             customer_obj = CustomerUser.objects.get(id=main_data['customer_id'])
             step_obj = None
             for step_item in custommer_objs.label_step.steps.all():
