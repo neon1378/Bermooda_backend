@@ -1356,7 +1356,30 @@ class LabelStepManager(APIView):
             "message": "error",
             "data": serializer_data.errors
         })
-    # def post(self,request):
+    def post(self,request):
+        serializer_data = LabelStepSerializer(data=request.data)
+        if serializer_data.is_valid():
+            serializer_data.save()
+            return Response(status=status.HTTP_201_CREATED, data={
+                "status": True,
+                "message": "با موفقیت به ثبت شد",
+                "data": serializer_data.data
+            })
+        return Response(status=status.HTTP_400_BAD_REQUEST, data={
+            "status": False,
+            "message": "errror",
+            "data": serializer_data.errors
+        })
 
 
+
+    def delete(self,request,step_id):
+        order_step = request.data.get("order_step",[])
+        step_obj_deleted = get_object_or_404(Step,id=step_id)
+        step_obj_deleted.delete()
+        for order in order_step :
+            step_obj = Step.objects.get(id=order['id'])
+            step_obj.step = order['step']
+            step_obj.save()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 

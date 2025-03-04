@@ -103,6 +103,7 @@ class LabelSerializer(serializers.ModelSerializer):
                 label_step = label_step,
             )
             count_step+=1
+        new_label.save()
         return new_label
     def update(self, instance, validated_data):
         instance.title = validated_data.get("title")
