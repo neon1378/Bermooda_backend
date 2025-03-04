@@ -174,6 +174,7 @@ class CustomerSmallSerializer(serializers.ModelSerializer):
             "avatar_url",
             "workspace_id",
             "id",
+            "step_status",
             "order",
             "label",
             "label_id",

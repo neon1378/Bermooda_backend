@@ -4,7 +4,7 @@ from .serializers import CustomerSmallSerializer,LabelStepSerializer
 from channels.generic.websocket import WebsocketConsumer
 from asgiref.sync import async_to_sync
 from UserManager.models import UserAccount
-from .models import CustomerUser, GroupCrm, Label
+from .models import CustomerUser, GroupCrm, Label, CustomerStep
 from dotenv import load_dotenv
 import  os
 
@@ -79,7 +79,27 @@ class CustomerTask(WebsocketConsumer):
                     "data":data
                 }
             ))
+        elif command == "change_step_status":
+            main_data = data['data']
+            step = int(data['step'])
+            customer_obj = CustomerUser.objects.get(id=main_data['customer_id'])
+            step_obj = None
+            for step_item in custommer_objs.label_step.steps.all():
+                if step_item.step == step:
+                    step_obj = step_item
 
+            new_step_customer =CustomerStep.objects.create(
+                customer =customer_obj,
+                label= customer_obj.label,
+                step=step_obj
+            )
+            event = {
+                "type":"send_data"
+            }
+            async_to_sync(self.channel_layer.group_send)(
+                f"{self.group_crm_id}_crm",event
+
+            )
         elif command == "move_a_customer":
             main_data = data['data']
             customer_obj = CustomerUser.objects.get(id=main_data['customer_id'])

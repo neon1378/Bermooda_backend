@@ -5,6 +5,7 @@ from UserManager.models import UserAccount
 import jdatetime
 from WorkSpaceManager.models import WorkSpace
 import uuid
+from django.db.models import Max
 import os 
 from dotenv import load_dotenv
 load_dotenv()
@@ -263,6 +264,18 @@ class CustomerUser(SoftDeleteModel):
         if self.state:  # Check if the state exists
             return self.state.name
         return None
+    def step_status(self):
+        customer_step_objs = self.customer_step.filter(label=self.label)
+        step_count  = 0
+        if customer_step_objs.exists():
+            step_list = []
+            for step in customer_step_objs:
+                step_list.append({"id":step.id,"step":step.step})
+            max_step_obj = max(step_list, key=lambda x: x["step"])
+            step_count= max_step_obj['step']
+        return step_count
+
+
 
 
 class CustomerStep(SoftDeleteModel):
