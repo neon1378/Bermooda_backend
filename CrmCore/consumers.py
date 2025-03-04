@@ -73,6 +73,7 @@ class CustomerTask(WebsocketConsumer):
                         "customer_list": []
                     })
             data = sorted(data_list, key=lambda x: x["label_id"])
+            print(data)
             self.send(json.dumps(
                 {
                     "data_type":"customer_list",
