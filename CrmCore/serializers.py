@@ -64,7 +64,7 @@ class LabelStepRelSerializer(serializers.ModelSerializer):
         ]
 class LabelSerializer(serializers.ModelSerializer):
     label_step = LabelStepRelSerializer(read_only=True)
-    group_crm_id = serializers.IntegerField(write_only=True)
+    group_crm_id = serializers.IntegerField(write_only=True,required=False)
     step_list = serializers.ListField(write_only=True,required=False)
     class Meta:
         
