@@ -273,8 +273,9 @@ class CustomerUser(SoftDeleteModel):
             for step in customer_step_objs:
                 if step.step is not None:
                     step_list.append({"id":step.id,"step":step.step})
-            max_step_obj = max(step_list, key=lambda x: x["step"].step)
-            step_count= max_step_obj['step'].step
+            if step_list:
+                max_step_obj = max(step_list, key=lambda x: x["step"].step)
+                step_count= max_step_obj['step'].step
         return step_count
 
 
