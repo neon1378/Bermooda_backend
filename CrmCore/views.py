@@ -219,7 +219,7 @@ class LabelMangaer(APIView):
         data= request.data
         label_obj = get_object_or_404(Label,id=label_id)
         workspace_id = data.pop("workspace_id")
-        serializer_data =LabelSerializer(data=request.data,instance=label_id)
+        serializer_data =LabelSerializer(data=request.data,instance=label_obj)
         if serializer_data.is_valid():
             serializer_data.save()
             channel_layer = get_channel_layer()
