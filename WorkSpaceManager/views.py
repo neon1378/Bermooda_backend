@@ -88,75 +88,93 @@ class WorkspaceManager(APIView):
         return Response(status=status.HTTP_200_OK,data=serializer_data)
     def put(self,request,workspace_id):
         workspace_obj = get_object_or_404(WorkSpace,id=workspace_id)
-        data=request.data
+        if workspace_obj.owner == request.user:
+            data=request.data
 
-        avatar_id = data.get("avatar_id",None)
+            avatar_id = data.get("avatar_id",None)
 
-        serializer_data =WorkSpaceSerializer(workspace_obj,data=request.data)
-        if serializer_data.is_valid():
-            serializer_data.save()
+            serializer_data =WorkSpaceSerializer(workspace_obj,data=request.data)
+            if serializer_data.is_valid():
+                serializer_data.save()
 
 
 
-            if avatar_id:
-                avatar_obj = MainFile.objects.get(id=avatar_id)
-                avatar_obj.its_blong=True
-                avatar_obj.save()
-                workspace_obj.avatar=avatar_obj
+                if avatar_id:
+                    avatar_obj = MainFile.objects.get(id=avatar_id)
+                    avatar_obj.its_blong=True
+                    avatar_obj.save()
+                    workspace_obj.avatar=avatar_obj
+                    workspace_obj.save()
                 workspace_obj.save()
-            workspace_obj.save()
-            try:
-                Wallet.objects.get(workspace=workspace_obj)
-            except:
-                new_wallet = Wallet(balance=50000,workspace=workspace_obj)
-                new_wallet.save()
-
-            if workspace_obj.is_authenticated == False:
                 try:
-                    url = f"{self.jadoo_base_url}/workspace/store"
-                    headers = {
-                                "content-type":"application/json",
-                                "Authorization":f"Bearer {request.user.refrence_token}"
-                    }
-                    base_url = os.getenv("BASE_URL")
-                    print(workspace_obj.state.refrence_id,workspace_obj.city.refrence_id,"@@#!3")
-                    payload = {
-
-                                "cityId":workspace_obj.city.refrence_id,
-                                "stateId":workspace_obj.state.refrence_id,
-                                "name":workspace_obj.title,
-                                "username":workspace_obj.jadoo_brand_name,
-                                "workspaceId":workspace_obj.id,
-                                "bio":workspace_obj.business_detail,
-                                "avatar":"",
-                                "industrialActivityId":workspace_obj.industrialactivity.refrence_id
-
-                    }
-                    if workspace_obj.avatar:
-                        payload['avatar'] = f"{base_url}{workspace_obj.avatar.file.url}"
-
-                    response = requests.post(url=url,json=payload,headers=headers)
-
-                    response_data_main = response.json()['data']
-                    workspace_obj.jadoo_workspace_id= response_data_main['id']
+                    Wallet.objects.get(workspace=workspace_obj)
                 except:
-                    pass
+                    new_wallet = Wallet(balance=50000,workspace=workspace_obj)
+                    new_wallet.save()
 
-            workspace_obj.is_authenticated = True
-            workspace_obj.save()
-            # print(response.json())
-            print(serializer_data.data)
-            serializer_data.data['avatar_url'] = workspace_obj.avatar_url()
-            if workspace_obj.wallet.balance <= 0 :
-                workspace_obj.is_active =False
+                if workspace_obj.is_authenticated == False:
+                    try:
+                        url = f"{self.jadoo_base_url}/workspace/store"
+                        headers = {
+                                    "content-type":"application/json",
+                                    "Authorization":f"Bearer {request.user.refrence_token}"
+                        }
+                        base_url = os.getenv("BASE_URL")
+                        print(workspace_obj.state.refrence_id,workspace_obj.city.refrence_id,"@@#!3")
+                        payload = {
+
+                                    "cityId":workspace_obj.city.refrence_id,
+                                    "stateId":workspace_obj.state.refrence_id,
+                                    "name":workspace_obj.title,
+                                    "username":workspace_obj.jadoo_brand_name,
+                                    "workspaceId":workspace_obj.id,
+                                    "bio":workspace_obj.business_detail,
+                                    "avatar":"",
+                                    "industrialActivityId":workspace_obj.industrialactivity.refrence_id
+
+                        }
+                        if workspace_obj.avatar:
+                            payload['avatar'] = f"{base_url}{workspace_obj.avatar.file.url}"
+
+                        response = requests.post(url=url,json=payload,headers=headers)
+
+                        response_data_main = response.json()['data']
+                        workspace_obj.jadoo_workspace_id= response_data_main['id']
+                    except:
+                        pass
+
+                workspace_obj.is_authenticated = True
                 workspace_obj.save()
-            return Response(status=status.HTTP_202_ACCEPTED,data={
-                 "status":True,
-                 "message":"success",
-                 "data":serializer_data.data
-            })
-        return Response(status=status.HTTP_400_BAD_REQUEST,data=serializer_data.errors)
+                # print(response.json())
+                print(serializer_data.data)
+                serializer_data.data['avatar_url'] = workspace_obj.avatar_url()
+                if workspace_obj.wallet.balance <= 0 :
+                    workspace_obj.is_active =False
+                    workspace_obj.save()
+                return Response(status=status.HTTP_202_ACCEPTED,data={
+                     "status":True,
+                     "message":"success",
+                     "data":serializer_data.data
+                })
+            return Response(status=status.HTTP_400_BAD_REQUEST,data=serializer_data.errors)
 
+        return Response(status=status.HTTP_403_FORBIDDEN,data={
+            "status":False,
+            "message":"Access Denied "
+        })
+
+
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def update_workspace_information(request,workspace_id):
+    workspace_obj = get_object_or_404(WorkSpace,id=workspace_id)
+
+    if not request.user == workspace_obj.owner:
+        return Response(status=status.HTTP_403_FORBIDDEN,data={
+            "status":False,
+            "message":"Access Denied "
+        })
 
 
 

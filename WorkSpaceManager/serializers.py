@@ -1,9 +1,10 @@
+import os
 from multiprocessing.util import is_exiting
 
 from rest_framework.serializers import ModelSerializer
 from rest_framework import serializers
 from .models import *
-
+import requests
 from django.shortcuts import get_object_or_404
 from core.views import  send_invite_link
 from WorkSpaceChat.serializers import  GroupSerializer
@@ -15,6 +16,55 @@ class IndustrialActivitySerializer(ModelSerializer):
             "title"
         ]
 
+
+class UpdateWorkSpaceSerializer(ModelSerializer):
+    class Meta:
+        model = WorkSpace
+        fields =[
+            "id",
+            "title",
+            "business_detail",
+            "personal_information_status",
+
+            # personal and  legal fields
+            "national_code",
+            "email",
+            "postal_code",
+            "bank_number",
+            "phone_number",
+            # Legal Fields
+            "tel_number",
+            "fax_number",
+            "economic_number",
+            "address",
+
+        ]
+
+    def update(self, instance, validated_data):
+        request = self.context.get('request')
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        jadoo_base_url = os.getenv("JADOO_BASE_URL")
+        url = f"{jadoo_base_url}/workspace/update/{instance.jadoo_workspace_id}"
+        headers = {
+            "content-type": "application/json",
+            "Authorization": f"Bearer {request.user.refrence_token}"
+        }
+        payload = {
+            "name":instance.title ,
+            "bio":instance.business_detail ,
+            "username":instance.business_detail,
+        }
+
+        try:
+            requests.put(url=url,data=payload,headers=headers)
+        except:
+            pass
+        return instance
+
+
+
 class WorkSpaceSerializer(ModelSerializer):
     industrialactivity_id = serializers.IntegerField(write_only=True,required=True)
     class Meta:
@@ -22,11 +72,10 @@ class WorkSpaceSerializer(ModelSerializer):
         fields =[
             "id",
             "industrialactivity_id",
-
+            "personal_information_status",
             "business_type",
 
-            "reference_sub_category",
-            "reference_category",
+
             "jadoo_brand_name",
             "business_detail",
             "city",
@@ -35,7 +84,18 @@ class WorkSpaceSerializer(ModelSerializer):
             "city_name",
             "main_category_data",
             "business_employer",
-            "sub_category_data"
+            "sub_category_data",
+            # personal and  legal fields
+            "national_code",
+            "email",
+            "postal_code",
+            "bank_number",
+            "phone_number",
+            # Legal Fields
+            "tel_number",
+            "fax_number",
+            "economic_number",
+            "address",
         ]
     def update(self,instance,validated_data):
         

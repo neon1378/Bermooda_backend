@@ -1,3 +1,5 @@
+from random import choices
+
 from django.db import models
 
 
@@ -26,7 +28,14 @@ class WorkSpace (SoftDeleteModel):
         ("کسب کار آفلاین","کسب کار آفلاین "),
         ("هر دو","هر دو")
     )
+    PERSONAL_TYPE = (
+        ("person","PERSON"),
+        ("legal","LEGAL"),
 
+    )
+
+
+    person_type = models.CharField(max_length=6,choices=PERSONAL_TYPE,null=True)
     jadoo_workspace_id = models.PositiveBigIntegerField(default=0)
     business_type=models.CharField(max_length=50, choices=BUSINESS_TYPE,null=True)
     business_employer  = models.CharField(max_length=30,null=True,blank=True)
@@ -42,6 +51,26 @@ class WorkSpace (SoftDeleteModel):
     state = models.ForeignKey(State,on_delete=models.SET_NULL,null=True)
     is_active = models.BooleanField(default=True)
     is_team_bonos = models.BooleanField(default=False)
+    personal_information_status= models.BooleanField(default=False)
+    #personal and  legal fields
+
+    national_code = models.CharField(max_length=11,null=True)
+    email = models.EmailField(null=True)
+    postal_code = models.CharField(max_length=11,null=True)
+    bank_number = models.CharField(max_length=24,null=True)
+    phone_number= models.CharField(max_length=11,null=True)
+
+
+    # Legal Fields
+    tel_number = models.CharField(max_length=13,null=True)
+    fax_number = models.CharField(max_length=20,null=True)
+    economic_number = models.CharField(max_length=14,null=True)
+    address = models.TextField(null=True)
+
+
+
+
+
     def avatar_url (self):
         try:
             base_url = os.getenv("BASE_URL")
