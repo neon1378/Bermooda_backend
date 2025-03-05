@@ -25,7 +25,7 @@ class UpdateWorkSpaceSerializer(ModelSerializer):
             "title",
             "business_detail",
             "personal_information_status",
-
+            "person_type",
             # personal and  legal fields
             "national_code",
             "email",
@@ -86,6 +86,7 @@ class WorkSpaceSerializer(ModelSerializer):
             "business_employer",
             "sub_category_data",
             # personal and  legal fields
+            "person_type",
             "national_code",
             "email",
             "postal_code",
