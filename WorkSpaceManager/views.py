@@ -170,7 +170,7 @@ class WorkspaceManager(APIView):
 @permission_classes([IsAuthenticated])
 def update_workspace_information(request,workspace_id):
     workspace_obj = get_object_or_404(WorkSpace,id=workspace_id)
-
+    request.data['user_id'] = request.user.id
     if not request.user == workspace_obj.owner:
         return Response(status=status.HTTP_403_FORBIDDEN,data={
             "status":False,

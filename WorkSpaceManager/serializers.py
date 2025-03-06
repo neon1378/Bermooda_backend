@@ -18,6 +18,7 @@ class IndustrialActivitySerializer(ModelSerializer):
 
 
 class UpdateWorkSpaceSerializer(ModelSerializer):
+    user_id = serializers.IntegerField(write_only=True,required=False)
     class Meta:
         model = WorkSpace
         fields =[
@@ -41,7 +42,8 @@ class UpdateWorkSpaceSerializer(ModelSerializer):
         ]
 
     def update(self, instance, validated_data):
-        request = self.context.get('request')
+        user_id = validated_data.pop("user_id")
+        user = UserAccount.objects.get(id=user_id)
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         instance.save()
