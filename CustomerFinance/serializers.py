@@ -1,3 +1,5 @@
+from celery.bin.worker import worker
+from django.utils.text import normalize_newlines
 from rest_framework.serializers import ModelSerializer
 from .models import *
 from rest_framework import serializers
@@ -9,7 +11,17 @@ from django.shortcuts import get_object_or_404
 #Invoice
 import random
 
+from WorkSpaceManager.models import WorkSpace
 
+class ProductInvoiceSerializer(ModelSerializer):
+    class Meta:
+        model =ProductInvoice
+        fields = [
+            "id",
+            "title",
+            "count",
+            "price",
+        ]
 
 class InformationSerializer(ModelSerializer):
     class Meta:
@@ -23,23 +35,30 @@ class InformationSerializer(ModelSerializer):
             "phone_number",
             "city_name",
             "state_name",
+
         ]
     
 
-class ProductInvoiceSerializer(ModelSerializer):
-    class Meta:
-        model = ProductInvoice
-        fields = "__all__"
+
 
 
 class InvoiceSerializer(ModelSerializer):
-    seller_information = InformationSerializer()
-    buyer_information = InformationSerializer()
-    product= ProductInvoiceSerializer(many=True)
+    seller_information = InformationSerializer(read_only=True)
+    buyer_information = InformationSerializer(read_only=True)
+    product= ProductInvoiceSerializer(many=True,read_only=True)
+    workspace_id= serializers.IntegerField(read_only=True)
+    signature_id =serializers.IntegerField(write_only=True,required=False)
+    product_list= serializers.ListField(write_only=True,required=True)
+    sller_state=serializers.IntegerField(write_only=True,required=True)
+    sller_city= serializers.IntegerField(write_only=True,required=True)
+    seller_information_data =serializers.JSONField(write_only=True,required=True)
+
     class Meta:
         model = Invoice
         fields = [
             "id",
+            "signature_url",
+            "logo_url",
             "title",
             "seller_information",
             "buyer_information",
@@ -51,6 +70,12 @@ class InvoiceSerializer(ModelSerializer):
             "invoice_code",
             "factor_price",
             "invoice_date",
+            "workspace_id",
+            "signature_id",
+            "product_list",
+            "sller_state",
+            "sller_city",
+            "seller_information_data",
       
         ]
 
@@ -58,22 +83,33 @@ class InvoiceSerializer(ModelSerializer):
 
     def create(self,validated_data):
         workspace_id =validated_data.pop("workspace_id")
-        products = validated_data.pop("product")
-        signature_file = validated_data.pop("signature_file",None)
-        logo_file = validated_data.pop("logo_file",None)
-        buyer_information = validated_data.pop("buyer_information")
-        seller_information = validated_data.pop("seller_information")
-        buyer_city = buyer_information.pop("city")
-        buyer_state = buyer_information.pop("state")
+        workspace_obj = get_object_or_404(WorkSpace,id=workspace_id)
+        products = validated_data.pop("product_list",[])
+        signature_id = validated_data.pop("signature_id",None)
+
+
+        seller_information = validated_data.pop("seller_information_data")
+
 
         sller_state = seller_information.pop("state")
         sller_city = seller_information.pop("city")
    
         customer_id= validated_data.pop("customer_id")
+
+        if not workspace_obj.personal_information_status:
+            raise serializers.ValidationError({
+                "status":False,
+                "message":"not_information",
+                "data":{},
+            })
+
         buyer_information_obj = Information(
-            **buyer_information,
-            city_id =buyer_city,
-            state_id = buyer_state
+            fullname_or_company_name =workspace_obj.jadoo_brand_name,
+            email = workspace_obj.email,
+            address = workspace_obj.address,
+            city = workspace_obj.city,
+            state = workspace_obj.state,
+            phone_number = workspace_obj.phone_number,
         )
         buyer_information_obj.save()
         seller_information_obj = Information(
@@ -89,18 +125,17 @@ class InvoiceSerializer(ModelSerializer):
             buyer_information=buyer_information_obj,
             seller_information=seller_information_obj,
             invoice_code = f"#{random.randint(1,100000)}",
-            signature_main_id = signature_file,
-            logo_main_id = logo_file,          
+
+
         )
-        try:
-            signature_file_main_file = MainFile.objects.get(id=signature_file)
-            logo_file_main_file = MainFile.objects.get(id=logo_file)
+        if workspace_obj.avatar:
+            new_invoice.logo_main= workspace_obj.avatar
+        if signature_id:
+            signature_file_main_file = MainFile.objects.get(id=signature_id)
             signature_file_main_file.its_blong=True
-            logo_file_main_file.its_blong=True
             signature_file_main_file.save()
-            logo_file_main_file.save()
-        except:
-            pass
+            new_invoice.signature_main_id= signature_file_main_file
+
         new_invoice.save()
         for product in products:
             new_product = ProductInvoice(**product)

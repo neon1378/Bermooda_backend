@@ -34,7 +34,7 @@ class InvoiceManager(APIView):
         except:
             return {
                 "signature_file":"",
-                "logo_file":"s"
+                "logo_file":""
 
             }
     
@@ -88,19 +88,8 @@ class InvoiceManager(APIView):
             response_data = InvoiceSerializer(invoice_obj).data
             
             customer_obj = CustomerUser.objects.get(id=customer_id)
-            new_acction = ActionData(
-                action_type="invoice",
-                object_id = invoice_obj.id,
-                user_author=request.user.id,
 
-            )
-            new_acction.save()
-            new_report = Report(
-                report_type =True,
-                action_data =new_acction,
-            )
-            new_report.save()
-            customer_obj.report.add(new_report)
+
             
             return Response(status=status.HTTP_201_CREATED,data={
                 "status":True,
