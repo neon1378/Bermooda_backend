@@ -199,7 +199,7 @@ class CustomerUser(SoftDeleteModel):
     personal_type = models.CharField(max_length=9, choices=PERSONAL_TYPE,null=True)
     conection_type = models.CharField(max_length=30,choices=CONECTION_TYPE,default="phone")
 
-
+    is_followed = models.BooleanField(default=False)
     group_crm = models.ForeignKey(GroupCrm,on_delete=models.CASCADE,null=True,related_name="customer_group")
     workspace = models.ForeignKey(WorkSpace,null=True,on_delete=models.CASCADE,related_name="customer")
     user_account = models.ForeignKey(UserAccount,null=True,blank=True,on_delete=models.CASCADE,related_name="customer_user_acc")
@@ -212,7 +212,7 @@ class CustomerUser(SoftDeleteModel):
     phone_number_static = models.CharField(max_length=50,null=True,blank=True)
     city = models.ForeignKey(City, on_delete=models.SET_NULL, null=True)
     state = models.ForeignKey(State, on_delete=models.SET_NULL, null=True)
-    address = models.TextField(null=True,blank=True) 
+    address = models.TextField(null=True,blank=True)
     email = models.EmailField(null=True,blank=True)
     website = models.CharField(max_length=200,null=True,blank=True)
     description = models.TextField(null=True,blank=True)

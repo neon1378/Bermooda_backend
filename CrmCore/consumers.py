@@ -6,6 +6,7 @@ from asgiref.sync import async_to_sync
 from UserManager.models import UserAccount
 from .models import CustomerUser, GroupCrm, Label, CustomerStep
 from dotenv import load_dotenv
+from django.shortcuts import get_object_or_404
 import  os
 
 
@@ -29,8 +30,9 @@ class CustomerTask(WebsocketConsumer):
     def receive(self, text_data=None, bytes_data=None):
         data = json.loads(text_data)
         command= data['command']
-        custommer_objs = CustomerUser.objects.filter(group_crm=self.group_crm_obj)
+
         if command == "customer_list":
+            custommer_objs = CustomerUser.objects.filter(group_crm=self.group_crm_obj,is_followed=False)
             data_list = []
 
             for custommer_obj in custommer_objs:
@@ -120,8 +122,22 @@ class CustomerTask(WebsocketConsumer):
                 f"{self.group_crm_id}_crm",event
 
             )
+        elif command == "change_is_followed":
+            main_data = data['data']
+            customer_id = data['customer_id']
+            customer_obj = get_object_or_404(CustomerUser,id=customer_id)
+            customer_obj.is_followed = main_data['is_followed']
+            customer_obj.save()
+            event = {
+                "type":"send_data"
+            }
+            async_to_sync(self.channel_layer.group_send)(
+                f"{self.group_crm_id}_crm",event
+
+            )
+
     def send_data(self,event):
-        custommer_objs = CustomerUser.objects.filter(group_crm=self.group_crm_obj)
+        custommer_objs = CustomerUser.objects.filter(group_crm=self.group_crm_obj,is_followed=False)
         data_list = []
         for custommer_obj in custommer_objs:
             not_exsit = True

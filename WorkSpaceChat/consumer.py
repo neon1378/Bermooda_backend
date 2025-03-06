@@ -57,11 +57,11 @@ class GroupMessageWs(AsyncWebsocketConsumer):
         )
         data_list =[]
         for gp in group_messages :
-
+            for user in gp.members.all():
+                print(user.id,"!@#!")
             if self.user in gp.members.all():
                 data_list.append(gp)
-        print(self.user.id)
-        print(data_list)
+
         serializer_data = GroupSerializer(data_list, many=True)
 
         for group in serializer_data.data:
