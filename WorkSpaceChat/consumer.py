@@ -1,7 +1,7 @@
 import json
 
 from channels.generic.websocket import AsyncWebsocketConsumer
-from asgiref.sync import sync_to_async
+from asgiref.sync import sync_to_async, async_to_sync
 from WorkSpaceManager.models import WorkSpace
 from .models import GroupMessage,TextMessage
 from .serializers import GroupSerializer,TextMessageSerializer
@@ -49,18 +49,22 @@ class GroupMessageWs(AsyncWebsocketConsumer):
         elif command == "new_message":
             await self.new_message(data["data"].get("text"))
 
-    async def get_group_messages(self):
-        group_messages = await sync_to_async(GroupMessage.objects.filter)(
+    @sync_to_async
+    def _group_message_serialize(self):
+        group_messages = GroupMessage.objects.filter(
             workspace=self.workspace_obj, members__in=[self.user]
         )
-        print(group_messages)
-        serializer_data = await sync_to_async(lambda: GroupSerializer(group_messages, many=True).data)()
+
+        serializer_data = GroupSerializer(group_messages, many=True).data
 
         for group in serializer_data:
             for member in group.get("members", []):
                 member["self"] = member["id"] == self.user.id
+        return serializer_data
+    async def get_group_messages(self):
 
-        await self.send(json.dumps({"data_type": "group_messages", "data": serializer_data}))
+
+        await self.send(json.dumps({"data_type": "group_messages", "data": self._group_message_serialize}))
 
     async def open_group_message(self, group_id):
         if not group_id:
