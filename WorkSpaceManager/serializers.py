@@ -52,7 +52,7 @@ class UpdateWorkSpaceSerializer(ModelSerializer):
         url = f"{jadoo_base_url}/workspace/update/{instance.jadoo_workspace_id}"
         headers = {
             "content-type": "application/json",
-            "Authorization": f"Bearer {request.user.refrence_token}"
+            "Authorization": f"Bearer {user.refrence_token}"
         }
         payload = {
             "name":instance.title ,
