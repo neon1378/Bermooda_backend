@@ -64,7 +64,7 @@ class GroupMessageWs(AsyncWebsocketConsumer):
     async def get_group_messages(self):
 
 
-        await self.send(json.dumps({"data_type": "group_messages", "data": self._group_message_serialize}))
+        await self.send(json.dumps({"data_type": "group_messages", "data": self._group_message_serialize()}))
 
     async def open_group_message(self, group_id):
         if not group_id:
