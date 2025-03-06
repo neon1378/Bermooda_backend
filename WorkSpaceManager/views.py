@@ -834,6 +834,8 @@ def create_group_message(request):
     workspace_objs = WorkSpace.objects.all()
     for workspace_obj  in workspace_objs:
         for member in WorkspaceMember.objects.filter(workspace=workspace_obj):
+            group_message = GroupMessage.objects.create(workspace=workspace_obj)
+            group_message.members.set([workspace_obj.owner, member.user_account])
             for other_member in WorkspaceMember.objects.filter(workspace=workspace_obj):
                 if other_member.user_account != member.user_account:
                     group_message =GroupMessage.objects.create(workspace=workspace_obj)
