@@ -22,6 +22,7 @@ class UpdateWorkSpaceSerializer(ModelSerializer):
     class Meta:
         model = WorkSpace
         fields =[
+            "user_id",
             "id",
             "title",
             "business_detail",
