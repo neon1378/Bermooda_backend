@@ -49,8 +49,7 @@ class InvoiceSerializer(ModelSerializer):
     workspace_id= serializers.IntegerField(read_only=True)
     signature_id =serializers.IntegerField(write_only=True,required=False)
     product_list= serializers.ListField(write_only=True,required=True)
-    sller_state=serializers.IntegerField(write_only=True,required=True)
-    sller_city= serializers.IntegerField(write_only=True,required=True)
+
     seller_information_data =serializers.JSONField(write_only=True,required=True)
 
     class Meta:
@@ -91,8 +90,7 @@ class InvoiceSerializer(ModelSerializer):
         seller_information = validated_data.pop("seller_information_data")
 
 
-        sller_state = seller_information.pop("state")
-        sller_city = seller_information.pop("city")
+
    
         customer_id= validated_data.pop("customer_id")
 
@@ -115,8 +113,8 @@ class InvoiceSerializer(ModelSerializer):
         seller_information_obj = Information(
             
             **seller_information,
-            city_id =sller_state,
-            state_id =sller_city
+            city_id =seller_information['state'],
+            state_id =seller_information['city']
             
         )
         seller_information_obj.save()
