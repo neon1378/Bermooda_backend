@@ -31,7 +31,7 @@ class GroupMessageWs(AsyncWebsocketConsumer):
         await self.accept()
 
     async def disconnect(self, code=None):
-        await self.channel_layer.group_discard(self.workspace_group_name, self.channel_name)
+        await self.channel_layer.group_discard(f"group_ws_{self.workspace_obj.id}", self.channel_name)
 
     async def receive(self, text_data=None, bytes_data=None):
         if not text_data:
