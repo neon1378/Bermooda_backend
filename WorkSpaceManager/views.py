@@ -11,7 +11,8 @@ from django.shortcuts import get_object_or_404
 import os 
 import json
 from Notification.models import Notification
-from .serializers import WorkSpaceSerializer, IndustrialActivitySerializer, WorkSpaceMemberSerializer, UserSerializer
+from .serializers import WorkSpaceSerializer, IndustrialActivitySerializer, WorkSpaceMemberSerializer, UserSerializer, \
+    UpdateWorkSpaceSerializer
 import requests
 from dotenv import load_dotenv
 from core.permission import IsAccess,IsWorkSpaceUser
@@ -176,7 +177,21 @@ def update_workspace_information(request,workspace_id):
             "message":"Access Denied "
         })
 
+    serializer_data = UpdateWorkSpaceSerializer(data=request.data,instance=workspace_obj)
+    if serializer_data.is_valid():
+        serializer_data.save()
+        return Response(status=status.HTTP_202_ACCEPTED,data={
+            "status":True,
+            "message":"با موفقیت به روز رسانی شد",
+            "data":serializer_data.data
 
+        })
+    return Response(status=status.HTTP_400_BAD_REQUEST, data={
+        "status": False,
+        "message": "error",
+        "data": serializer_data.errors
+
+    })
 
 
 @api_view(['PUT'])

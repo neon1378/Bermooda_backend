@@ -26,6 +26,7 @@ urlpatterns = [
     path("GetTextInvite",views.get_text_workspace_invite),
     path("create_group_message",views.create_group_message),
 
+    path("UpdateWorkSpaceInfo/<int:workspace_id>",views.update_workspace_information),
 
 ]
 
