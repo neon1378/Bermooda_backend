@@ -57,7 +57,7 @@ class GroupMessageWs(AsyncWebsocketConsumer):
         )
         data_list =[]
         for gp in group_messages :
-            print(members)
+            print(gp.members)
             if self.user in gp.members.all():
                 data_list.append(gp)
         serializer_data = GroupSerializer(group_messages, many=True)
