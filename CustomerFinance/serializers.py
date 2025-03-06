@@ -72,8 +72,7 @@ class InvoiceSerializer(ModelSerializer):
             "workspace_id",
             "signature_id",
             "product_list",
-            "sller_state",
-            "sller_city",
+
             "seller_information_data",
       
         ]
