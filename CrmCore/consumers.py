@@ -124,8 +124,8 @@ class CustomerTask(WebsocketConsumer):
             )
         elif command == "change_is_followed":
             main_data = data['data']
-            print(main_data)
-            customer_id = data['customer_id']
+
+            customer_id = main_data['customer_id']
             customer_obj = get_object_or_404(CustomerUser,id=customer_id)
             customer_obj.is_followed = main_data['is_followed']
             customer_obj.save()
