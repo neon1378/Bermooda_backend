@@ -66,7 +66,10 @@ class GroupMessageWs(AsyncWebsocketConsumer):
 
         for group in serializer_data.data:
             for member in group.get("members", []):
+                if member['id'] != self.user.id:
+                    group['user'] = member
                 member["self"] = member["id"] == self.user.id
+
         print(serializer_data.data)
         return serializer_data.data
     async def get_group_messages(self):
