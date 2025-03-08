@@ -4,7 +4,7 @@ from rest_framework.permissions import AllowAny,IsAuthenticated,DjangoModelPermi
 from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404
 from .models import *
-
+from datetime import datetime
 from rest_framework.response import Response
 from rest_framework.decorators import api_view,permission_classes
 from .serializers import *
@@ -1229,6 +1229,16 @@ class CustomerArchive(APIView):
         })
 
 
+def persian_to_datetime(persian_date_time):
+    if not persian_date_time:  # Handle None or empty string
+        return None
+    date, time = persian_date_time.split()
+    year, month, day = map(int, date.split('/'))
+    hour, minute = map(int, time.split(':'))
+    # Convert Persian date to Gregorian date
+    gregorian_date = jdatetime.JalaliToGregorian(year, month, day).getGregorianList()
+    return datetime(gregorian_date[0], gregorian_date[1], gregorian_date[2], hour, minute)
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -1251,11 +1261,13 @@ def my_customers(request):
 
     # Get the page
     page = paginator.get_page(page_number)
-    serializer_data = CustomerSmallSerializer(page.object_list, many=True)
+    serializer_data = CustomerSmallSerializer(page.object_list, many=True).data
+    for customer in serializer_data:
+        customer['sortable_date'] = persian_to_datetime(customer['date_time_to_remember'])
+    sorted_data = sorted(serializer_data, key=lambda x: x['sortable_date'] or datetime.max)
 
-
-
-
+    for customer in serializer_data:
+        del customer['sortable_date']
     return Response(status=status.HTTP_200_OK, data={
         "status": True,
         "message": "موفق",
@@ -1263,7 +1275,7 @@ def my_customers(request):
             "count": paginator.count,
             "next": page.next_page_number() if page.has_next() else None,
             "previous": page.previous_page_number() if page.has_previous() else None,
-            "list": serializer_data.data
+            "list": serializer_data
         }
     })
 
