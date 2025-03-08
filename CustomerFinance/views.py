@@ -100,43 +100,29 @@ class InvoiceManager(APIView):
         return Response(status=status.HTTP_400_BAD_REQUEST,data=serializer_data.errors)
 
 
-class InvoiceStatusManager(viewsets.ModelViewSet):
-    queryset = InvoiceStatus.objects.all()
-    serializer_class = InvoiceStatusSerializer
+class InvoiceStatusManager(APIView):
     permission_classes = [IsAuthenticated]
 
-    def list(self, request, *args, **kwargs):
+    def get(self, request, *args, **kwargs):
         group_crm_id = request.GET.get("group_crm_id")
-        if group_crm_id:
-            group_crm_obj = get_object_or_404(GroupCrm, id=group_crm_id)
-            queryset = InvoiceStatus.objects.filter(group_crm=group_crm_obj)
-        else:
+        if not group_crm_id:
             return Response({
                 "status": False,
                 "message": "validation error",
-                "data": {
-                    "group_crm_id":["this field its required"]
-                }
+                "data": {"group_crm_id": ["this field is required"]}
             }, status=status.HTTP_400_BAD_REQUEST)
 
-        serializer = self.get_serializer(queryset, many=True)
+        group_crm_obj = get_object_or_404(GroupCrm, id=group_crm_id)
+        queryset = InvoiceStatus.objects.filter(group_crm=group_crm_obj)
+        serializer = InvoiceStatusSerializer(queryset, many=True)
         return Response({
             "status": True,
             "message": "موفق",
             "data": serializer.data
         }, status=status.HTTP_200_OK)
 
-    def retrieve(self, request, status_id=None, *args, **kwargs):
-        invoice_status_obj = get_object_or_404(InvoiceStatus, id=status_id)
-        serializer = self.get_serializer(invoice_status_obj)
-        return Response({
-            "status": True,
-            "message": "موفق",
-            "data": serializer.data
-        }, status=status.HTTP_200_OK)
-
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
+    def post(self, request, *args, **kwargs):
+        serializer = InvoiceStatusSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response({
@@ -150,9 +136,22 @@ class InvoiceStatusManager(viewsets.ModelViewSet):
             "data": serializer.errors
         }, status=status.HTTP_400_BAD_REQUEST)
 
-    def update(self, request, status_id=None, *args, **kwargs):
+
+class InvoiceStatusDetailManager(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, status_id, *args, **kwargs):
         invoice_status_obj = get_object_or_404(InvoiceStatus, id=status_id)
-        serializer = self.get_serializer(instance=invoice_status_obj, data=request.data)
+        serializer = InvoiceStatusSerializer(invoice_status_obj)
+        return Response({
+            "status": True,
+            "message": "موفق",
+            "data": serializer.data
+        }, status=status.HTTP_200_OK)
+
+    def put(self, request, status_id, *args, **kwargs):
+        invoice_status_obj = get_object_or_404(InvoiceStatus, id=status_id)
+        serializer = InvoiceStatusSerializer(instance=invoice_status_obj, data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response({
@@ -165,7 +164,8 @@ class InvoiceStatusManager(viewsets.ModelViewSet):
             "message": "validation error",
             "data": serializer.errors
         }, status=status.HTTP_400_BAD_REQUEST)
-    def destroy(self, request, status_id=None, *args, **kwargs):
+
+    def delete(self, request, status_id, *args, **kwargs):
         invoice_status_obj = get_object_or_404(InvoiceStatus, id=status_id)
         invoice_status_obj.delete()
         return Response({
