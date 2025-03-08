@@ -100,7 +100,7 @@ class InvoiceManager(APIView):
         return Response(status=status.HTTP_400_BAD_REQUEST,data=serializer_data.errors)
 
 
-class InvoiceStatusViewSet(viewsets.ModelViewSet):
+class InvoiceStatusManager(viewsets.ModelViewSet):
     queryset = InvoiceStatus.objects.all()
     serializer_class = InvoiceStatusSerializer
     permission_classes = [IsAuthenticated]
@@ -165,3 +165,10 @@ class InvoiceStatusViewSet(viewsets.ModelViewSet):
             "message": "validation error",
             "data": serializer.errors
         }, status=status.HTTP_400_BAD_REQUEST)
+    def destroy(self, request, status_id=None, *args, **kwargs):
+        invoice_status_obj = get_object_or_404(InvoiceStatus, id=status_id)
+        invoice_status_obj.delete()
+        return Response({
+            "status": True,
+            "message": "با موفقیت حذف شد"
+        }, status=status.HTTP_204_NO_CONTENT)
