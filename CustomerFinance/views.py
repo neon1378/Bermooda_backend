@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status,viewsets
 from rest_framework.views import APIView
 from rest_framework.authtoken.models import Token
 from .models import *
@@ -98,7 +98,70 @@ class InvoiceManager(APIView):
             })
 
         return Response(status=status.HTTP_400_BAD_REQUEST,data=serializer_data.errors)
-            
 
 
+class InvoiceStatusViewSet(viewsets.ModelViewSet):
+    queryset = InvoiceStatus.objects.all()
+    serializer_class = InvoiceStatusSerializer
+    permission_classes = [IsAuthenticated]
 
+    def list(self, request, *args, **kwargs):
+        group_crm_id = request.GET.get("group_crm_id")
+        if group_crm_id:
+            group_crm_obj = get_object_or_404(GroupCrm, id=group_crm_id)
+            queryset = InvoiceStatus.objects.filter(group_crm=group_crm_obj)
+        else:
+            return Response({
+                "status": False,
+                "message": "validation error",
+                "data": {
+                    "group_crm_id":["this field its required"]
+                }
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response({
+            "status": True,
+            "message": "موفق",
+            "data": serializer.data
+        }, status=status.HTTP_200_OK)
+
+    def retrieve(self, request, status_id=None, *args, **kwargs):
+        invoice_status_obj = get_object_or_404(InvoiceStatus, id=status_id)
+        serializer = self.get_serializer(invoice_status_obj)
+        return Response({
+            "status": True,
+            "message": "موفق",
+            "data": serializer.data
+        }, status=status.HTTP_200_OK)
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({
+                "status": True,
+                "message": "با موفقیت ثبت شد ",
+                "data": serializer.data
+            }, status=status.HTTP_201_CREATED)
+        return Response({
+            "status": False,
+            "message": "validation error",
+            "data": serializer.errors
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+    def update(self, request, status_id=None, *args, **kwargs):
+        invoice_status_obj = get_object_or_404(InvoiceStatus, id=status_id)
+        serializer = self.get_serializer(instance=invoice_status_obj, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({
+                "status": True,
+                "message": "با موفقیت بروزرسانی شد",
+                "data": serializer.data
+            }, status=status.HTTP_202_ACCEPTED)
+        return Response({
+            "status": False,
+            "message": "validation error",
+            "data": serializer.errors
+        }, status=status.HTTP_400_BAD_REQUEST)

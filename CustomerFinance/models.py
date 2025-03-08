@@ -3,12 +3,17 @@ from dotenv import load_dotenv
 
 from extensions.utils import costum_date
 import os
-
-from core.models import City,State,MainFile
+from core.models import City,State,MainFile,SoftDeleteModel
 import uuid
+
 load_dotenv()
 
-class Information(models.Model):
+class InvoiceStatus(SoftDeleteModel):
+    group_crm = models.ForeignKey("CrmCore.GroupCrm",on_delete=models.CASCADE,null=True,related_name="invoice_statuses")
+    title= models.CharField(max_length=30,null=True)
+    color_code = models.CharField(max_length=30,null=True,blank=True)
+
+class Information(SoftDeleteModel):
 
     fullname_or_company_name = models.CharField(max_length=50,null=True)
     email = models.EmailField(null=True,blank=True)
@@ -24,7 +29,7 @@ class Information(models.Model):
     def state_name (self):
         return self.state.name
 
-class ProductInvoice(models.Model):
+class ProductInvoice(SoftDeleteModel):
     title = models.CharField(max_length=50,null=True)
     count = models.PositiveIntegerField(default=0)
     price = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="تومان",null=True)
@@ -40,7 +45,8 @@ class ProductInvoice(models.Model):
         
 
 
-class Invoice(models.Model):
+class Invoice(SoftDeleteModel):
+    status = models.ForeignKey(InvoiceStatus,on_delete=models.SET_NULL,null=True)
     models.UUIDField(unique=True, default=uuid.uuid4, editable=False)
     title = models.CharField(max_length=60,null=True)
     seller_information = models.OneToOneField(Information,on_delete=models.CASCADE,null=True,related_name="information_seller")

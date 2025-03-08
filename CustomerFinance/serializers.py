@@ -42,6 +42,29 @@ class InformationSerializer(ModelSerializer):
 
 
 
+class InvoiceStatusSerializer(ModelSerializer):
+    group_crm_id = serializers.IntegerField(write_only=True,required=False)
+    class Meta:
+        model = InvoiceStatus
+        fields =[
+            "id",
+            "title",
+            "color_code",
+            "group_crm_id"
+        ]
+
+    def create(self, validated_data):
+        new_invoice_status =InvoiceStatus.objects.create(**validated_data)
+        return new_invoice_status
+    def update(self, instance, validated_data):
+        validated_data.pop("group_crm_id")
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        return instance
+
+
+
 class InvoiceSerializer(ModelSerializer):
     seller_information = InformationSerializer(read_only=True)
     buyer_information = InformationSerializer(read_only=True)
@@ -49,12 +72,15 @@ class InvoiceSerializer(ModelSerializer):
     workspace_id= serializers.IntegerField(read_only=True)
     signature_id =serializers.IntegerField(write_only=True,required=False)
     product_list= serializers.ListField(write_only=True,required=True)
-
+    status = InvoiceStatusSerializer(read_only=True)
+    status_id = serializers.IntegerField(write_only=True,required=False)
     seller_information_data =serializers.JSONField(write_only=True,required=True)
 
     class Meta:
         model = Invoice
         fields = [
+            "status",
+            "status_id",
             "id",
             "signature_url",
             "logo_url",
