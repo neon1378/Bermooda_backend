@@ -1232,28 +1232,18 @@ class CustomerArchive(APIView):
 import jdatetime
 from datetime import datetime
 
-def persian_to_datetime(persian_date_time):
-    # Handle None or empty string
-    if not persian_date_time or not persian_date_time.strip():
-        return None
+
+def _convert_jalali_to_datetime(self, date_str, time_str):
+    """ Convert Jalali date and time string to a datetime object. """
+    if date_str is None or time_str is None:
+        return None  # Return None if date or time is missing
 
     try:
-        # Split the date and time
-        date, time = persian_date_time.strip().split()
-    except ValueError:
-        # Handle malformed input (e.g., missing time part)
-        return None
-
-    try:
-        # Parse the Persian date and time
-        year, month, day = map(int, date.split('/'))
-        hour, minute = map(int, time.split(':'))
-        # Convert Persian date to Gregorian date
-        gregorian_date = jdatetime.JalaliToGregorian(year, month, day).getGregorianList()
-        return datetime(gregorian_date[0], gregorian_date[1], gregorian_date[2], hour, minute)
-    except (ValueError, IndexError):
-        # Handle invalid date or time format
-        return None
+        year, month, day = map(int, date_str.split("/"))
+        hour, minute = map(int, time_str.split(":"))
+        return jdatetime.datetime(year, month, day, hour, minute).togregorian()
+    except (ValueError, AttributeError):
+        return None  # Return None if date or time format is invalid
 
 
 @api_view(['GET'])
