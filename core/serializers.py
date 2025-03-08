@@ -44,3 +44,11 @@ class CitySerializer(serializers.ModelSerializer):
             "name"
         ]
 
+
+class MainFileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MainFile
+        fields = [
+            "id",
+            "file_url"
+        ]

@@ -3,7 +3,7 @@ from .models import *
 from rest_framework import serializers
 from django.shortcuts import get_object_or_404
 from core.models import MainFile
-
+from core.serializers import  MainFileSerializer
 from MailManager.serializers import MemberSerializer
 
 class ProjectDepartmentSerializer(ModelSerializer):
@@ -46,11 +46,13 @@ class LabelSerializer(ModelSerializer):
 
 class CheckListSerializer(ModelSerializer):
     label = LabelSerializer()
+    file = MainFileSerializer(read_only=True,many=True)
     responsible_for_doing = MemberSerializer(read_only=True)
     label = LabelSerializer(read_only=True)
     class Meta:
         model = CheckList
         fields = [
+            "file",
             "label",
             "id",
             "task_data",
