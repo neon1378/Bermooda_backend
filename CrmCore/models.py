@@ -261,8 +261,8 @@ class CustomerUser(SoftDeleteModel):
             persian_month_name = persian_months[jalali_date.month]
 
             # فرمت نهایی با ساعت و دقیقه
-            formatted_date = f"{jalali_date.year} {persian_month_name} {jalali_date.day} {jalali_date.strftime('%H:%M')}"
-            formatted_date_persian = to_persian_number(formatted_date)
+            # formatted_date = f"{jalali_date.year} {persian_month_name} {jalali_date.day} {jalali_date.strftime('%H:%M')}"
+            formatted_date_persian = jalali_date.strptime("%Y/%B/%d %H:%M")
             return formatted_date_persian
 
         except:
