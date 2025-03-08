@@ -58,7 +58,7 @@ class InvoiceSerializer(ModelSerializer):
             "id",
             "signature_url",
             "logo_url",
-            "title",
+
             "seller_information",
             "buyer_information",
             "product",
