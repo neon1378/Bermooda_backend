@@ -258,7 +258,7 @@ class CustomerUser(SoftDeleteModel):
             # فرمت نهایی با ساعت و دقیقه
             formatted_date = f"{jalali_date.year}/{persian_month_name}/{jalali_date.day} {jalali_date.strftime('%H:%M')}"
 
-            return formatted_date
+            return formatted_date.ljust(20)
 
         except:
             return  ""
