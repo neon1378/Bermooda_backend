@@ -61,13 +61,15 @@ class GroupMessageWs(AsyncWebsocketConsumer):
                 print(user.id,"!@#!")
             if self.user in gp.members.all():
                 data_list.append(gp)
-
+        print(data_list)
         serializer_data = GroupSerializer(data_list, many=True)
 
         for group in serializer_data.data:
             for member in group.get("members", []):
+
                 if member['id'] != self.user.id:
-                    group['user'] = member
+                    group['fullname'] = member['fullname']
+                    group['avatar_url'] = member['avatar_url']
                 member["self"] = member["id"] == self.user.id
 
         print(serializer_data.data)
