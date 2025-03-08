@@ -35,26 +35,11 @@ class CrmDepartmentManager(APIView):
                 "data":serializer_data.data
             })
         workspace_obj = WorkSpace.objects.get(id=request.user.current_workspace_id)
-        if workspace_obj.owner == request.user:
-            department_objs= CrmDepartment.objects.filter(workspace=workspace_obj)
-            serializer_data = CrmDepartmentSerializer(department_objs,many=True)
 
-        else:
+        department_objs= CrmDepartment.objects.filter(workspace=workspace_obj)
+        serializer_data = CrmDepartmentSerializer(department_objs,many=True)
 
-            department_list = CrmDepartment.objects.filter(workspace=workspace_obj)
-            department_objs = set()
 
-            for department in department_list:
-                if request.user == department.manager:
-                    department_objs.add(department)
-                else:
-                    for project in department.project_department.all():
-                        if request.user in project.members.all():
-                            department_objs.add(department)
-                            break
-                
-            department_objs=list(department_objs)
-            serializer_data = CrmDepartmentSerializer(department_objs,many=True)
         return Response(status=status.HTTP_200_OK,data={
                 "status":True,
                 "message":"success",
