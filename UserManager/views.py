@@ -3,7 +3,7 @@ from django.middleware.csrf import get_token
 from rest_framework import mixins
 from rest_framework import generics
 import re
-from ProjectManager.models import Project
+from ProjectManager.models import Project, CategoryProject
 from CrmCore.models import GroupCrm
 from django.views.decorators.csrf import csrf_protect
 
@@ -46,7 +46,8 @@ from django.contrib.auth.models import User, Group
 from core.permission import IsAccess
 from WorkSpaceManager.views import create_permission_for_member
 from cryptography.fernet import Fernet
-import os 
+import os
+
 from dotenv import load_dotenv
 load_dotenv()
 from rest_framework_simplejwt.views import TokenObtainPairView
@@ -1035,22 +1036,66 @@ def create_workspace(request):
     for statuss in default_statuses:
         mail_status_obj = MailStatus.objects.create(title=statuss['title'],workspace=new_workspace_obj)
                 
-    new_project_department = ProjectDepartment.objects.create(title="فنی",workspace=new_workspace_obj,manager=request.user)
+    new_project_department = ProjectDepartment.objects.create(title="بورد پروژه",workspace=new_workspace_obj,manager=request.user)
     new_project= Project.objects.create(
         title="پیشفرض",
         workspace = new_workspace_obj,
 
         department = new_project_department
     )
+    categories = [
+        {"title": "برای انجام", "order": 1, "color_code": "#DB4646"},
+        {"title": "در حال انجام", "order": 2, "color_code": "#02C875"},
+        {"title": "انجام شده", "order": 3, "color_code": "#9C00E8"},
+        {"title": "تست", "order": 4, "color_code": "#E82BA3"},
+    ]
+    category_objs = [
+        CategoryProject(
+            title=category['title'],
+            color_code=category['color_code'],
+            order=category['order'],
+            project=new_project
+        ) for category in categories
+    ]
     new_project.members.add(request.user)
     new_project.save()
-    new_crm_department = CrmDepartment.objects.create(title="بازاریابی",workspace=new_workspace_obj,manager=request.user)
+    new_crm_department = CrmDepartment.objects.create(title="بورد مشتری",workspace=new_workspace_obj,manager=request.user)
     new_group_crm = GroupCrm.objects.create(
         title="پیشفرض",
         workspace = new_workspace_obj,
 
         department = new_crm_department
     )
+    label_list = [
+        {
+            "title": "سرنخ ها",
+            "color_code": "#E82BA3"
+
+        },
+        {
+            "title": "فرصت ها",
+            "color_code": "#DB4646"
+        },
+
+        {
+            "title": "مشتری",
+            "color_code": "#02C875"
+        },
+
+        {
+            "title": "فاکتور",
+            "color_code": "#04C4B7"
+        },
+
+        {
+            "title": "فروش",
+            "color_code": "#636D74"
+        },
+    ]
+    for label in label_list:
+        new_label_obj = Label(title=label['title'], color=label['color_code'], group_crm=new_group_crm)
+        new_label_obj.save()
+        new_label_step = LabelStep.objects.create(label=new_label_obj)
     new_group_crm.members.add(request.user)
     new_group_crm.save()
     return Response(status=status.HTTP_201_CREATED,data={
