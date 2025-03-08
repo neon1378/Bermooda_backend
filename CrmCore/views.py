@@ -1230,6 +1230,7 @@ class CustomerArchive(APIView):
 
 
 def persian_to_datetime(persian_date_time):
+    print(persian_date_time)
     if not persian_date_time:  # Handle None or empty string
         return None
     date, time = persian_date_time.split()
