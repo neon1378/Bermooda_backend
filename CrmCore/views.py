@@ -50,7 +50,7 @@ class CrmDepartmentManager(APIView):
         request.data['manager_id'] = request.user.id
         serializer_data = CrmDepartmentSerializer(data=request.data)
         data= request.data
- 
+
        
 
 
@@ -640,10 +640,7 @@ class GroupCrmManager(APIView):
                 "title":"مرحله 3",
                 "step":3,
             },
-            {
-                "title":"مرحله 3",
-                "step":3,
-            },
+
             {
                 "title":"مرحله 4",
                 "step":4,
