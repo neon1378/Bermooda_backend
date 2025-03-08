@@ -1233,18 +1233,34 @@ import jdatetime
 from datetime import datetime
 
 
-def _convert_jalali_to_datetime(date_str):
-    """ Convert Jalali date and time string to a datetime object. """
-    if date_str is None:
-        return None  # Return None if date or time is missing
+import jdatetime
+from datetime import datetime
+
+def persian_to_datetime(persian_date_time):
+    # Handle None or empty string
+    if not persian_date_time or not persian_date_time.strip():
+        return None
 
     try:
-        year, month, day = map(int, date_str.split("/"))
-        hour, minute = map(int, date_str.split(":"))
-        return jdatetime.datetime(year, month, day, hour, minute).togregorian()
-    except (ValueError, AttributeError):
-        return None  # Return None if date or time format is invalid
+        # Split the date and time
+        date, time = persian_date_time.strip().split()
+    except ValueError:
+        # Handle malformed input (e.g., missing time part)
+        return None
 
+    try:
+        # Parse the Persian date
+        year, month, day = map(int, date.split('/'))
+        # Parse the time
+        hour, minute = map(int, time.split(':'))
+        # Create a jdatetime object
+        persian_datetime = jdatetime.datetime(year, month, day, hour, minute)
+        # Convert to Gregorian datetime
+        gregorian_datetime = persian_datetime.togregorian()
+        return gregorian_datetime
+    except (ValueError, IndexError, jdatetime.JalaliDateOutOfRangeError):
+        # Handle invalid date or time format
+        return None
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -1269,8 +1285,8 @@ def my_customers(request):
     page = paginator.get_page(page_number)
     serializer_data = CustomerSmallSerializer(page.object_list, many=True).data
     for customer in serializer_data:
-        print(_convert_jalali_to_datetime(customer['date_time_to_remember']))
-        customer['sortable_date'] = _convert_jalali_to_datetime(customer['date_time_to_remember'])
+        print(persian_to_datetime(customer['date_time_to_remember']))
+        customer['sortable_date'] = persian_to_datetime(customer['date_time_to_remember'])
     sorted_data = sorted(serializer_data, key=lambda x: x['sortable_date'] or datetime.max)
 
     for customer in serializer_data:
