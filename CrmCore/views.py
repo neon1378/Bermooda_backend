@@ -1269,6 +1269,7 @@ def my_customers(request):
     page = paginator.get_page(page_number)
     serializer_data = CustomerSmallSerializer(page.object_list, many=True).data
     for customer in serializer_data:
+        print(_convert_jalali_to_datetime(customer['date_time_to_remember']))
         customer['sortable_date'] = _convert_jalali_to_datetime(customer['date_time_to_remember'])
     sorted_data = sorted(serializer_data, key=lambda x: x['sortable_date'] or datetime.max)
 
