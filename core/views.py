@@ -57,7 +57,7 @@ def upload_file (request):
     file = request.FILES.get("file")
     new_file = MainFile(file=file)
     try:
-        new_file.workspace_id =request.data['workspace_id']
+        new_file.workspace_id =request.GET.get("workspace_id")
     except:
         pass
     new_file.save()
