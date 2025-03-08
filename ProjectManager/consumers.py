@@ -182,6 +182,7 @@ class ProjectChatMainWs(WebsocketConsumer):
         base_url = os.getenv("BASE_URL")
         data = json.loads(text_data)
 
+
         if data['command'] == "create_message":
             data['data']['creator_id'] = self.user.id
             data['data']['project_id'] = self.project_obj.id
