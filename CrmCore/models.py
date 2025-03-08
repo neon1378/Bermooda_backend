@@ -239,6 +239,11 @@ class CustomerUser(SoftDeleteModel):
 
     def date_time_formated(self):
         try:
+            def to_persian_number(input_string):
+                persian_digits = "۰۱۲۳۴۵۶۷۸۹"
+                arabic_digits = "0123456789"
+                translation_table = str.maketrans(arabic_digits, persian_digits)
+                return input_string.translate(translation_table)
             # Parse the Jalali date
             persian_months = {
                 1: "فروردین", 2: "اردیبهشت", 3: "خرداد", 4: "تیر",
@@ -257,8 +262,8 @@ class CustomerUser(SoftDeleteModel):
 
             # فرمت نهایی با ساعت و دقیقه
             formatted_date = f"{jalali_date.year}/{persian_month_name}/{jalali_date.day} {jalali_date.strftime('%H:%M')}"
-
-            return formatted_date.ljust(20)
+            formatted_date_persian = to_persian_number(formatted_date)
+            return formatted_date_persian
 
         except:
             return  ""
