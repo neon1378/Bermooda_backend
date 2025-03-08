@@ -239,32 +239,29 @@ class CustomerUser(SoftDeleteModel):
 
     def date_time_formated(self):
         try:
-            def to_persian_number(input_string):
-                persian_digits = "۰۱۲۳۴۵۶۷۸۹"
-                arabic_digits = "0123456789"
-                translation_table = str.maketrans(arabic_digits, persian_digits)
-                return input_string.translate(translation_table)
-            # Parse the Jalali date
-            persian_months = {
-                1: "فروردین", 2: "اردیبهشت", 3: "خرداد", 4: "تیر",
-                5: "مرداد", 6: "شهریور", 7: "مهر", 8: "آبان",
-                9: "آذر", 10: "دی", 11: "بهمن", 12: "اسفند"
-            }
-
-            # ورودی تاریخ
-
-
-            # تجزیه تاریخ جلالی
             jalali_date = jdatetime.datetime.strptime(self.date_time_to_remember, "%Y/%m/%d %H:%M")
 
-            # دریافت نام ماه به فارسی
-            persian_month_name = persian_months[jalali_date.month]
+            # Manually map English month names to Persian
+            month_names = {
+                "Farvardin": "فروردین",
+                "Ordibehesht": "اردیبهشت",
+                "Khordad": "خرداد",
+                "Tir": "تیر",
+                "Mordad": "مرداد",
+                "Shahrivar": "شهریور",
+                "Mehr": "مهر",
+                "Aban": "آبان",
+                "Azar": "آذر",
+                "Dey": "دی",
+                "Bahman": "بهمن",
+                "Esfand": "اسفند"
+            }
 
-            # فرمت نهایی با ساعت و دقیقه
-            # formatted_date = f"{jalali_date.year} {persian_month_name} {jalali_date.day} {jalali_date.strftime('%H:%M')}"
-            formatted_date_persian = jalali_date.strptime("%Y/%B/%d %H:%M")
-            return formatted_date_persian
-
+            # Format the date and replace the English month name with Persian
+            formatted_date = jalali_date.strftime("%Y/%B/%d %H:%M")
+            for eng, fa in month_names.items():
+                formatted_date = formatted_date.replace(eng, fa)
+            return formatted_date
         except:
             return  ""
 
