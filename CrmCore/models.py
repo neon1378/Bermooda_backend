@@ -246,7 +246,8 @@ class CustomerUser(SoftDeleteModel):
             jalali_date = jdatetime.datetime.strptime(self.date_time_to_remember, "%Y/%m/%d %H:%M")
 
             # Format the jdatetime.datetime object into the desired Persian format
-            formatted_date_persian = jalali_date.strftime("%Y/%H:%M/%d %B")
+            formatted_date_persian = jalali_date.strftime("%H:%M %d/%B/%Y ")
+            # formatted_date_persian = jalali_date.strftime("%H:%M %Y/%B/%d ")
             return  formatted_date_persian
         except:
             return  ""
