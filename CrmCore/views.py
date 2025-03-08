@@ -1298,7 +1298,7 @@ def my_customers(request):
             "count": paginator.count,
             "next": page.next_page_number() if page.has_next() else None,
             "previous": page.previous_page_number() if page.has_previous() else None,
-            "list": serializer_data
+            "list": sorted_data
         }
     })
 
