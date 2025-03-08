@@ -1233,14 +1233,14 @@ import jdatetime
 from datetime import datetime
 
 
-def _convert_jalali_to_datetime(self, date_str, time_str):
+def _convert_jalali_to_datetime(date_str):
     """ Convert Jalali date and time string to a datetime object. """
-    if date_str is None or time_str is None:
+    if date_str is None:
         return None  # Return None if date or time is missing
 
     try:
         year, month, day = map(int, date_str.split("/"))
-        hour, minute = map(int, time_str.split(":"))
+        hour, minute = map(int, date_str.split(":"))
         return jdatetime.datetime(year, month, day, hour, minute).togregorian()
     except (ValueError, AttributeError):
         return None  # Return None if date or time format is invalid
