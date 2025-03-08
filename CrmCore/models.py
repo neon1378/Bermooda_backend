@@ -3,6 +3,7 @@ from CustomerFinance.models import *
 from core.models import MainFile
 from UserManager.models import UserAccount
 import jdatetime
+import locale
 from WorkSpaceManager.models import WorkSpace
 import uuid
 from django.db.models import Max
@@ -239,29 +240,14 @@ class CustomerUser(SoftDeleteModel):
 
     def date_time_formated(self):
         try:
+            locale.setlocale(locale.LC_ALL, 'fa_IR')
+
+            # Parse the input string into a jdatetime.datetime object
             jalali_date = jdatetime.datetime.strptime(self.date_time_to_remember, "%Y/%m/%d %H:%M")
 
-            # Manually map English month names to Persian
-            month_names = {
-                "Farvardin": "فروردین",
-                "Ordibehesht": "اردیبهشت",
-                "Khordad": "خرداد",
-                "Tir": "تیر",
-                "Mordad": "مرداد",
-                "Shahrivar": "شهریور",
-                "Mehr": "مهر",
-                "Aban": "آبان",
-                "Azar": "آذر",
-                "Dey": "دی",
-                "Bahman": "بهمن",
-                "Esfand": "اسفند"
-            }
-
-            # Format the date and replace the English month name with Persian
-            formatted_date = jalali_date.strftime("%Y/%B/%d %H:%M")
-            for eng, fa in month_names.items():
-                formatted_date = formatted_date.replace(eng, fa)
-            return formatted_date
+            # Format the jdatetime.datetime object into the desired Persian format
+            formatted_date_persian = jalali_date.strftime("%Y/%B/%d %H:%M")
+            return  formatted_date_persian
         except:
             return  ""
 
