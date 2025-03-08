@@ -57,7 +57,7 @@ class InvoiceStatusSerializer(ModelSerializer):
         new_invoice_status =InvoiceStatus.objects.create(**validated_data)
         return new_invoice_status
     def update(self, instance, validated_data):
-        validated_data.pop("group_crm_id")
+        validated_data.pop("group_crm_id",None)
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         instance.save()

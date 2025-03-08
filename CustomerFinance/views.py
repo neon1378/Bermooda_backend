@@ -140,7 +140,7 @@ class InvoiceStatusManager(APIView):
 class InvoiceStatusDetailManager(APIView):
     permission_classes = [IsAuthenticated]
 
-    def get(self, request, status_id, *args, **kwargs):
+    def get(self, request, status_id):
         invoice_status_obj = get_object_or_404(InvoiceStatus, id=status_id)
         serializer = InvoiceStatusSerializer(invoice_status_obj)
         return Response({
@@ -149,7 +149,7 @@ class InvoiceStatusDetailManager(APIView):
             "data": serializer.data
         }, status=status.HTTP_200_OK)
 
-    def put(self, request, status_id, *args, **kwargs):
+    def put(self, request, status_id):
         invoice_status_obj = get_object_or_404(InvoiceStatus, id=status_id)
         serializer = InvoiceStatusSerializer(instance=invoice_status_obj, data=request.data)
         if serializer.is_valid():
