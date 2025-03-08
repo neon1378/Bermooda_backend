@@ -62,6 +62,8 @@ class InvoiceSerializer(ModelSerializer):
             "seller_information",
             "buyer_information",
             "product",
+            "created_date",
+            "validity_date",
             "description",
             "discount",
             "taxes",

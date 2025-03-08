@@ -6,6 +6,8 @@ import os
 
 from core.models import City,State,MainFile
 import uuid
+load_dotenv()
+
 class Information(models.Model):
 
     fullname_or_company_name = models.CharField(max_length=50,null=True)
@@ -21,7 +23,7 @@ class Information(models.Model):
         return self.city.name
     def state_name (self):
         return self.state.name
-    
+
 class ProductInvoice(models.Model):
     title = models.CharField(max_length=50,null=True)
     count = models.PositiveIntegerField(default=0)
@@ -37,7 +39,7 @@ class ProductInvoice(models.Model):
             return 0 
         
 
-load_dotenv()
+
 class Invoice(models.Model):
     models.UUIDField(unique=True, default=uuid.uuid4, editable=False)
     title = models.CharField(max_length=60,null=True)
@@ -52,7 +54,8 @@ class Invoice(models.Model):
     created = models.DateField(auto_now_add=True)
     invoice_code = models.CharField(max_length=90,null=True)
     qr_code = models.ForeignKey(MainFile,on_delete=models.SET_NULL,null=True)
-
+    created_date = models.CharField(max_length=20,null=True)
+    validity_date = models.CharField(max_length=20,null=True)
     def signature_url(self):
         base_url = os.getenv("BASE_URL")
         try:
