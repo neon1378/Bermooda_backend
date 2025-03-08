@@ -188,6 +188,7 @@ class CheckList (SoftDeleteModel):
     check_by_time =models.BooleanField(default=False)
     task= models.ForeignKey(Task,on_delete=models.CASCADE,null=True,related_name="check_list")
     label = models.ForeignKey(TaskLabel,on_delete=models.SET_NULL,null=True,blank=True)
+    file = models.ManyToManyField(MainFile,blank=True)
     def task_data (self):
         try:
             return {

@@ -364,6 +364,7 @@ class TaskManager(APIView):
             time_to_start = item.get("time_to_start",None)
             date_to_end = item.get("date_to_end",None)
             time_to_end = item.get("time_to_end",None)
+            file_id_list = item.get("file_id_list",[])
             new_check_list =CheckList.objects.create(
                 title=item["title"],
 
@@ -375,7 +376,11 @@ class TaskManager(APIView):
                 task=task,
         
             )
-
+            for file_id in file_id_list:
+                main_file = MainFile.objects.get(id=file_id)
+                main_file.its_blong=True
+                main_file.save()
+                new_check_list.file.add(main_file)
             if item["difficulty"]:
                 new_check_list.difficulty=item['difficulty']
             if item['label_id']:
@@ -517,6 +522,7 @@ class CheckListManager(APIView):
         responsible_for_doing = data.get("responsible_for_doing",None)
         date_to_start = data.get("date_to_start",None)
         time_to_start = data.get("time_to_start",None)
+        file_id_list = data.get("file_id_list",[])
         date_to_end = data.get("date_to_end",None)
         time_to_end = data.get("time_to_end",None)
         check_list_obj = CheckList.objects.create(
@@ -531,7 +537,11 @@ class CheckListManager(APIView):
             check_list_obj.label_id=label_id['id']
         if responsible_for_doing:
             check_list_obj.responsible_for_doing_id=responsible_for_doing
-        
+        for file_id in file_id_list:
+            main_file = MainFile.objects.get(id=file_id)
+            main_file.its_blong = True
+            main_file.save()
+            check_list_obj.file.add(main_file)
         check_list_obj.save()
 
         channel_layer = get_channel_layer()
@@ -554,8 +564,7 @@ class CheckListManager(APIView):
 
         checklist_obj = get_object_or_404(CheckList,id=checklist_id_or_task_id)
         if command == "change check list status":
-            print(request.user)
-            print(checklist_obj.responsible_for_doing)
+
             if checklist_obj.responsible_for_doing == request.user:
                 
                 if data['status']:
@@ -584,6 +593,7 @@ class CheckListManager(APIView):
             date_to_end = data.get("date_to_end",None)
             time_to_end = data.get("time_to_end",None)
             difficulty=data.get("difficulty",None)
+
             if label_id and label_id != {}:
                 checklist_obj.label_id=label_id['id']
             if responsible_for_doing:
@@ -595,6 +605,16 @@ class CheckListManager(APIView):
             checklist_obj.date_to_end =date_to_end
             checklist_obj.time_to_end =time_to_end
             checklist_obj.difficulty=difficulty
+            existing_file_ids = list(checklist_obj.file.values_list("id", flat=True))
+
+            # Update associated files
+            file_ids = data.get("file_id_list", [])
+            MainFile.objects.filter(id__in=file_ids).update(its_blong=True)
+            checklist_obj.file.set(MainFile.objects.filter(id__in=file_ids))
+
+            # Identify and delete files that are no longer associated with the task
+            removed_file_ids = set(existing_file_ids) - set(file_ids)
+            MainFile.objects.filter(id__in=removed_file_ids).delete()
             checklist_obj.save()
             channel_layer = get_channel_layer()
             event = {
@@ -1001,3 +1021,11 @@ def referral_task(request,task_id):
         "message":"با موفقیت ارجاع داده شد",
         "data":{}
     })
+
+
+class CalenderTaskManager(APIView):
+    def get(self,request):
+        data= request.GET
+        command =data.get("command")
+        if command == "":
+            pass

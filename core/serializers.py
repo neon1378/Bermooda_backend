@@ -43,3 +43,4 @@ class CitySerializer(serializers.ModelSerializer):
             "id",
             "name"
         ]
+

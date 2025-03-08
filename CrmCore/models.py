@@ -240,15 +240,26 @@ class CustomerUser(SoftDeleteModel):
     def date_time_formated(self):
         try:
             # Parse the Jalali date
+            persian_months = {
+                1: "فروردین", 2: "اردیبهشت", 3: "خرداد", 4: "تیر",
+                5: "مرداد", 6: "شهریور", 7: "مهر", 8: "آبان",
+                9: "آذر", 10: "دی", 11: "بهمن", 12: "اسفند"
+            }
+
+            # ورودی تاریخ
+
+
+            # تجزیه تاریخ جلالی
             jalali_date = jdatetime.datetime.strptime(self.date_time_to_remember, "%Y/%m/%d %H:%M")
 
-            # Convert the month number to Persian month name
-            persian_month_name = jdatetime.date(jalali_date.year, jalali_date.month, jalali_date.day).strftime("%B")
+            # دریافت نام ماه به فارسی
+            persian_month_name = persian_months[jalali_date.month]
 
-            # Format the final output including time
+            # فرمت نهایی با ساعت و دقیقه
             formatted_date = f"{jalali_date.year}/{persian_month_name}/{jalali_date.day} {jalali_date.strftime('%H:%M')}"
 
-            return formatted_date
+            print(formatted_date)
+
         except:
             return  ""
 
