@@ -61,13 +61,13 @@ def upload_file (request):
     except:
         pass
     new_file.save()
-    
+    base_url = os.getenv("BASE_URL")
     return Response(status=status.HTTP_201_CREATED,data={
         "status":True,
         "message":"succses",
         "data":{
             "file_id":new_file.id,
-            "url":new_file.file.url,
+            "url":f"{base_url}{new_file.file.url}",
             "file_name":new_file.file.name,
         }
     })
