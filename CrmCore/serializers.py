@@ -266,7 +266,7 @@ class CustomerSmallSerializer(serializers.ModelSerializer):
             "manager_national_code",
             "economic_code",
             "manager_phone_number",
-
+            "date_time_formated",
         ]
         def create(self,validated_data):
             workspace_id = validated_data.pop("workspace_id")
