@@ -236,6 +236,23 @@ class CustomerUser(SoftDeleteModel):
     agent_position = models.CharField(max_length=100,null=True,blank=True)
 
     order =models.IntegerField(default=0,blank=True)
+
+    def date_time_formated(self):
+        try:
+            # Parse the Jalali date
+            jalali_date = jdatetime.datetime.strptime(self.date_time_to_remember, "%Y/%m/%d %H:%M")
+
+            # Convert the month number to Persian month name
+            persian_month_name = jdatetime.date(jalali_date.year, jalali_date.month, jalali_date.day).strftime("%B")
+
+            # Format the final output including time
+            formatted_date = f"{jalali_date.year}/{persian_month_name}/{jalali_date.day} {jalali_date.strftime('%H:%M')}"
+
+            return formatted_date
+        except:
+            return  ""
+
+
     def category_data (self):
         try:
             return  {
