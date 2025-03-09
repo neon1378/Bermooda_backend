@@ -66,7 +66,7 @@ class Invoice(SoftDeleteModel):
     taxes = models.PositiveIntegerField(default=0)
     created = models.DateField(auto_now_add=True)
     invoice_code = models.CharField(max_length=90,null=True)
-    qr_code = models.ForeignKey(MainFile,on_delete=models.SET_NULL,null=True)
+    qr_code = models.ForeignKey(MainFile,on_delete=models.SET_NULL,null=True,blank=True)
     created_date = models.CharField(max_length=20,null=True)
     validity_date = models.CharField(max_length=20,null=True)
     def signature_url(self):

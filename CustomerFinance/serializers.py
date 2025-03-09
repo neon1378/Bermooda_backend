@@ -82,6 +82,7 @@ class InvoiceSerializer(ModelSerializer):
         fields = [
             "status",
             "status_id",
+            "qr_code",
             "id",
             "signature_url",
             "signature_buyer_id",
