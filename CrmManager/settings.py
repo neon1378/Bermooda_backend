@@ -63,6 +63,7 @@ INSTALLED_APPS = [
     'django_cleanup.apps.CleanupConfig',
     'Notification',
     "PlaningManager",
+    "WorkSpaceChat",
 ]
 
 
@@ -140,11 +141,13 @@ TIME_ZONE = 'Asia/Tehran'
 
 USE_I18N = True
 
-USE_TZ = False
+USE_TZ = True
 # settings.py
 
 CELERY_BROKER_URL = 'redis://localhost:6379/0'  # Replace with your broker URL
 CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'  # Use Redis for result backend (optional)
+CELERY_TIMEZONE = 'Asia/Tehran'
+CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True  # Add this line
 
 CELERY_BEAT_SCHEDULE = {
     # 'run-every-3-minutes': {
@@ -153,14 +156,14 @@ CELERY_BEAT_SCHEDULE = {
     # },
     'run-every-24-hours': {
         'task': 'WalletManager.tasks.decrease_wallet',
-        'schedule': crontab(hour=0, minute=0),  # Run at midnight every day
+        'schedule': crontab(hour=16, minute=10),  # Run at midnight every day
         # 'schedule': crontab(minute='*/1'),
     },
-    'run-every-24-hours': {
-        'task': 'core.tasks.delete_fake_files',
-        'schedule': crontab(hour=0, minute=20),  # Run at midnight every day
-        # 'schedule': crontab(minute='*/1'),
-    },
+    # 'run-every-24-hours': {
+    #     'task': 'core.tasks.delete_fake_files',
+    #     'schedule': crontab(hour=0, minute=20),  # Run at midnight every day
+    #     # 'schedule': crontab(minute='*/1'),
+    # },
 
     
     # 'run-every-24-hours': {
@@ -185,8 +188,8 @@ REST_FRAMEWORK = {
     ),
 }
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=20),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=3),
+    'REFRESH_TOKEN_LIFETIME': timedelta(minutes=7),
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
     'ALGORITHM': 'HS256',
@@ -202,6 +205,7 @@ SIMPLE_JWT = {
     "TOKEN_TYPE_CLAIM": "token_type",
 }
 
+# DATABASE_ROUTERS = ['core.db_router.MultiDBRouter']
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
@@ -222,7 +226,8 @@ DATABASES = {
         'PASSWORD': os.getenv("DB_PASSWORD"),
         'HOST': '127.0.0.1',  # or 'localhost'
         'PORT': '3306',
-    }
+    },
+
 }
 
 # Password validation
