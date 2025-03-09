@@ -2,6 +2,7 @@ from celery.bin.worker import worker
 from django.utils.text import normalize_newlines
 from rest_framework.serializers import ModelSerializer
 from .models import *
+from core.serializers import MainFileSerializer
 from rest_framework import serializers
 from CrmCore.models import CustomerUser
 from django.shortcuts import get_object_or_404
@@ -67,6 +68,7 @@ class InvoiceStatusSerializer(ModelSerializer):
 
 
 class InvoiceSerializer(ModelSerializer):
+    qr_code_url = MainFileSerializer(read_only=True)
     seller_information = InformationSerializer(read_only=True)
     buyer_information = InformationSerializer(read_only=True)
     product= ProductInvoiceSerializer(many=True,read_only=True)
@@ -82,7 +84,7 @@ class InvoiceSerializer(ModelSerializer):
         fields = [
             "status",
             "status_id",
-            "qr_code",
+            "qr_code_url",
             "id",
             "signature_url",
             "signature_buyer_id",
