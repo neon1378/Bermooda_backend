@@ -4,6 +4,7 @@ from rest_framework import status,viewsets
 from rest_framework.views import APIView
 from rest_framework.authtoken.models import Token
 from .models import *
+from rest_framework.decorators import  api_view,permission_classes
 from django.shortcuts import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from .serializers import *
@@ -178,3 +179,22 @@ class InvoiceStatusDetailManager(APIView):
             "status": True,
             "message": "با موفقیت حذف شد"
         }, status=status.HTTP_204_NO_CONTENT)
+
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def change_invoice_status(request,invoice_id):
+    data= request.data
+    invoice_obj = get_object_or_404(Invoice,id=invoice_id)
+    status_id = data['invoice_id']
+    status_obj = get_object_or_404(InvoiceStatus,id=status_id)
+    invoice_obj.status= status_obj
+    invoice_obj.save()
+    serializer_data =InvoiceSerializer(invoice_obj)
+    return Response(
+        status=status.HTTP_202_ACCEPTED,data={
+            "status":True,
+            "message":"با موفقیت انجام شد ",
+            "data":serializer_data.data
+        }
+    )
