@@ -95,7 +95,7 @@ def persian_to_gregorian(persian_date_str):
     if not persian_date_str:
         return None
 
-
+    persian_date_str = persian_date_str.strip()
     if len(persian_date_str) > 10:
         persian_datetime = datetime.strptime(persian_date_str, "%Y/%m/%d %H:%M")
         year, month, day = persian_datetime.year, persian_datetime.month, persian_datetime.day
