@@ -21,6 +21,7 @@ class ProductInvoiceSerializer(ModelSerializer):
             "title",
             "count",
             "price",
+            "code",
         ]
 
 class InformationSerializer(ModelSerializer):
@@ -84,7 +85,7 @@ class InvoiceSerializer(ModelSerializer):
             "id",
             "signature_url",
             "logo_url",
-
+            "payment_type",
             "seller_information",
             "buyer_information",
             "product",
