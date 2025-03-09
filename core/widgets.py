@@ -94,28 +94,26 @@ def persian_to_gregorian(persian_date_str):
     if not persian_date_str:
         return None
 
-    try:
-        if len(persian_date_str) > 10:
-            persian_datetime = datetime.strptime(persian_date_str, "%Y/%m/%d %H:%M")
-            year, month, day = persian_datetime.year, persian_datetime.month, persian_datetime.day
-            hour, minute = persian_datetime.hour, persian_datetime.minute
-        else:
-            persian_datetime = datetime.strptime(persian_date_str, "%Y/%m/%d")
-            year, month, day = persian_datetime.year, persian_datetime.month, persian_datetime.day
-            hour, minute = 0, 0
 
-        gregorian_date = jdatetime.date(year, month, day).togregorian()
-        datetime_obj = datetime(
+    if len(persian_date_str) > 10:
+        persian_datetime = datetime.strptime(persian_date_str, "%Y/%m/%d %H:%M")
+        year, month, day = persian_datetime.year, persian_datetime.month, persian_datetime.day
+        hour, minute = persian_datetime.hour, persian_datetime.minute
+    else:
+        persian_datetime = datetime.strptime(persian_date_str, "%Y/%m/%d")
+        year, month, day = persian_datetime.year, persian_datetime.month, persian_datetime.day
+        hour, minute = 0, 0
+
+    gregorian_date = jdatetime.date(year, month, day).togregorian()
+    datetime_obj = datetime(
             gregorian_date.year,
             gregorian_date.month,
             gregorian_date.day,
             hour,
             minute,
 
-        )
+    )
 
-        # اگر USE_TZ = False باشد، آن را timezone-naive کنید
-        return make_naive(datetime_obj)
+    # اگر USE_TZ = False باشد، آن را timezone-naive کنید
+    return make_naive(datetime_obj)
 
-    except ValueError:
-        return None
