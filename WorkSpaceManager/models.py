@@ -37,8 +37,7 @@ class WorkSpace (SoftDeleteModel):
 
     )
 
-
-
+    company_name = models.CharField(max_length=55, null=True)
     person_type = models.CharField(max_length=6,choices=PERSONAL_TYPE,null=True)
     jadoo_workspace_id = models.PositiveBigIntegerField(default=0)
     business_type=models.CharField(max_length=50, choices=BUSINESS_TYPE,null=True)
@@ -127,7 +126,7 @@ class Link(SoftDeleteModel):
 
     url = models.URLField(null=True)
 class WorkspaceMember(SoftDeleteModel):
-    company_name = models.CharField(max_length=55,null=True)
+
     workspace = models.ForeignKey(WorkSpace,on_delete=models.CASCADE,null=True,related_name="workspace_member")
     user_account = models.ForeignKey(UserAccount,on_delete=models.CASCADE,null=True,related_name="user_member")
     fullname=models.CharField(max_length=200,null=True)
