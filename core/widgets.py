@@ -96,13 +96,13 @@ def persian_to_gregorian(persian_date_str):
 
     try:
         if len(persian_date_str) > 10:
-            persian_datetime = datetime.strptime(persian_date_str, "%Y/%m/%d %H:%M:%S")
+            persian_datetime = datetime.strptime(persian_date_str, "%Y/%m/%d %H:%M")
             year, month, day = persian_datetime.year, persian_datetime.month, persian_datetime.day
-            hour, minute, second = persian_datetime.hour, persian_datetime.minute, persian_datetime.second
+            hour, minute = persian_datetime.hour, persian_datetime.minute
         else:
             persian_datetime = datetime.strptime(persian_date_str, "%Y/%m/%d")
             year, month, day = persian_datetime.year, persian_datetime.month, persian_datetime.day
-            hour, minute, second = 0, 0, 0
+            hour, minute = 0, 0
 
         gregorian_date = jdatetime.date(year, month, day).togregorian()
         datetime_obj = datetime(
