@@ -88,14 +88,22 @@ class ReusablePaginationMixin:
         return
 
 
+def convert_persian_to_latin_numbers(input_str):
+    """
+    اعداد فارسی را در یک رشته به اعداد لاتین تبدیل می‌کند.
+    """
+    persian_numbers = "۰۱۲۳۴۵۶۷۸۹"
+    latin_numbers = "0123456789"
 
+    translation_table = str.maketrans(persian_numbers, latin_numbers)
+    return input_str.translate(translation_table)
 
 
 def persian_to_gregorian(persian_date_str):
     if not persian_date_str:
         return None
 
-    persian_date_str = persian_date_str.strip()
+    persian_date_str = convert_persian_to_latin_numbers(persian_date_str.strip())
     if len(persian_date_str) > 10:
         persian_datetime = datetime.strptime(persian_date_str, "%Y/%m/%d %H:%M")
         year, month, day = persian_datetime.year, persian_datetime.month, persian_datetime.day
