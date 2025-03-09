@@ -932,20 +932,43 @@ def create_workspace_to_jadoo(request):
     return Response(status=status.HTTP_200_OK)
 
 
-@api_view(['PUT'])
-@permission_classes([IsAuthenticated])
-def change_workspace_permission_status(request,permission_id):
-    permission_obj = get_object_or_404(WorkSpacePermission,id=permission_id)
-    data =request.data
-    is_active = data.get("is_active")
-    permission_obj.is_active = is_active
-    permission_obj.save()
-    serializer_data =WorkSpacePermissionSerializer(permission_obj)
-    return Response(
-        status=status.HTTP_202_ACCEPTED,
-        data={
-            "status":True,
-            "message":"با موفقیت بروزرسانی شد ",
-            "data":serializer_data.data
-        }
-    )
+class WorkSpacePermissionManager(APIView):
+    def get(self,request,permission_id=None):
+        if permission_id:
+            permission_obj = get_object_or_404(WorkSpacePermission, id=permission_id)
+            serializer_data = WorkSpacePermissionSerializer(permission_obj)
+            return Response(
+                status=status.HTTP_202_ACCEPTED,
+                data={
+                    "status": True,
+                    "message": "موفق",
+                    "data": serializer_data.data
+                }
+            )
+        workspace_id = request.user.current_workspace_id
+        permission_objs = WorkSpacePermission.objects.filter(workspace_id=workspace_id)
+        serializer_data = WorkSpacePermissionSerializer(permission_objs,many=True)
+
+        return Response(
+            status=status.HTTP_202_ACCEPTED,
+            data={
+                "status": True,
+                "message": "موفق",
+                "data": serializer_data.data
+            }
+        )
+    def put(self,request,permission_id):
+        permission_obj = get_object_or_404(WorkSpacePermission, id=permission_id)
+        data = request.data
+        is_active = data.get("is_active")
+        permission_obj.is_active = is_active
+        permission_obj.save()
+        serializer_data = WorkSpacePermissionSerializer(permission_obj)
+        return Response(
+            status=status.HTTP_202_ACCEPTED,
+            data={
+                "status": True,
+                "message": "با موفقیت بروزرسانی شد ",
+                "data": serializer_data.data
+            }
+        )
