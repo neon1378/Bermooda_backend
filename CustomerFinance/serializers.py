@@ -76,7 +76,7 @@ class InvoiceSerializer(ModelSerializer):
     status = InvoiceStatusSerializer(read_only=True)
     status_id = serializers.IntegerField(write_only=True,required=False)
     seller_information_data =serializers.JSONField(write_only=True,required=True)
-
+    signature_buyer_id = serializers.IntegerField(write_only=True,required=False)
     class Meta:
         model = Invoice
         fields = [
@@ -84,6 +84,7 @@ class InvoiceSerializer(ModelSerializer):
             "status_id",
             "id",
             "signature_url",
+            "signature_buyer_id",
             "logo_url",
             "payment_type",
             "seller_information",
@@ -114,10 +115,11 @@ class InvoiceSerializer(ModelSerializer):
         products = validated_data.pop("product_list",[])
         signature_id = validated_data.pop("signature_id",None)
 
-
+        signature_buyer_id= validated_data.pop("signature_buyer_id",None)
         seller_information = validated_data.pop("seller_information_data")
 
-
+        state_seller = seller_information.pop("state",None)
+        city_seller = seller_information.pop("city",None)
 
    
         customer_id= validated_data.pop("customer_id")
@@ -145,10 +147,11 @@ class InvoiceSerializer(ModelSerializer):
 
             
         )
-        if seller_information['state']:
+        if state_seller:
+
             state= State.objects.get(id=seller_information['state'])
             buyer_information_obj.state =state
-        if seller_information['city']:
+        if city_seller:
             city= City.objects.get(id=seller_information['city'])
             buyer_information_obj.city =city
 
@@ -167,8 +170,12 @@ class InvoiceSerializer(ModelSerializer):
             signature_file_main_file = MainFile.objects.get(id=signature_id)
             signature_file_main_file.its_blong=True
             signature_file_main_file.save()
-            new_invoice.signature_main_id= signature_file_main_file
-
+            new_invoice.signature_main= signature_file_main_file
+        if signature_buyer_id:
+            signature_file_main_file = MainFile.objects.get(id=signature_buyer_id)
+            signature_file_main_file.its_blong=True
+            signature_file_main_file.save()
+            new_invoice.signature_buyer= signature_file_main_file
         new_invoice.save()
         for product in products:
             new_product = ProductInvoice(**product)

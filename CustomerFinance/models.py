@@ -77,12 +77,24 @@ class Invoice(SoftDeleteModel):
                 "url":f"{base_url}{self.signature_main.file.url}"
             }
         except:return {}
+
     def logo_url (self):
         base_url = os.getenv("BASE_URL")
         try :
             return {
                 "id":self.logo_main.id,
                 "url":f"{base_url}{self.logo_file.file.url}"
+
+            }
+        except:return {}
+
+
+    def signature_buyer_url (self):
+        base_url = os.getenv("BASE_URL")
+        try :
+            return {
+                "id":self.signature_buyer.id,
+                "url":f"{base_url}{self.signature_buyer.file.url}"
 
             }
         except:return {}
