@@ -1139,7 +1139,7 @@ def get_user_data (request):
             "is_authenticated":current_workspace_obj.is_authenticated,
             "jadoo_workspace_id":current_workspace_obj.jadoo_workspace_id,
             "is_active":current_workspace_obj.is_active,
-            "permissions":[
+            "workspace_permissions":[
                 {
                     "id":permission.id,
                     "permission_type":permission.permission_type,
