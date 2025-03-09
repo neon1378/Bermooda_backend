@@ -97,7 +97,7 @@ class WorkSpaceSerializer(ModelSerializer):
             "personal_information_status",
             "business_type",
             "permissions",
-
+            "company_name",
             "jadoo_brand_name",
             "business_detail",
             "city",
