@@ -60,6 +60,7 @@ class Invoice(SoftDeleteModel):
     product = models.ManyToManyField(ProductInvoice)
     description = models.TextField(null=True)
     signature_main = models.ForeignKey(MainFile,on_delete=models.SET_NULL,null=True,related_name="invoice_signature")
+    signature_buyer = models.ForeignKey(MainFile,on_delete=models.SET_NULL,null=True,related_name="invoice_signature_seller")
     logo_main = models.ForeignKey(MainFile,on_delete=models.SET_NULL,null=True,related_name="invoice_logo")
     discount = models.PositiveIntegerField(default=0)
     taxes = models.PositiveIntegerField(default=0)

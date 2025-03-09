@@ -129,7 +129,7 @@ class InvoiceSerializer(ModelSerializer):
                 "data":{},
             })
 
-        buyer_information_obj = Information(
+        seller_information_obj = Information(
             fullname_or_company_name =workspace_obj.jadoo_brand_name,
             email = workspace_obj.email,
             address = workspace_obj.address,
@@ -137,8 +137,9 @@ class InvoiceSerializer(ModelSerializer):
             state = workspace_obj.state,
             phone_number = workspace_obj.phone_number,
         )
-        buyer_information_obj.save()
-        seller_information_obj = Information(
+        seller_information_obj.save()
+
+        buyer_information_obj = Information(
             
             **seller_information,
 
@@ -146,12 +147,12 @@ class InvoiceSerializer(ModelSerializer):
         )
         if seller_information['state']:
             state= State.objects.get(id=seller_information['state'])
-            seller_information_obj.state =state
+            buyer_information_obj.state =state
         if seller_information['city']:
             city= City.objects.get(id=seller_information['city'])
-            seller_information_obj.city =city
+            buyer_information_obj.city =city
 
-        seller_information_obj.save()
+        buyer_information_obj.save()
         new_invoice = Invoice(
             **validated_data,
             buyer_information=buyer_information_obj,
