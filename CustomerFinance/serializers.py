@@ -140,10 +140,16 @@ class InvoiceSerializer(ModelSerializer):
         seller_information_obj = Information(
             
             **seller_information,
-            city_id =seller_information['state'],
-            state_id =seller_information['city']
+
             
         )
+        if seller_information['state']:
+            state= State.objects.get(id=seller_information['state'])
+            seller_information_obj.state =state
+        if seller_information['city']:
+            city= City.objects.get(id=seller_information['city'])
+            seller_information_obj.city =city
+
         seller_information_obj.save()
         new_invoice = Invoice(
             **validated_data,

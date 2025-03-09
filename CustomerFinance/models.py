@@ -33,6 +33,7 @@ class ProductInvoice(SoftDeleteModel):
     title = models.CharField(max_length=50,null=True)
     count = models.PositiveIntegerField(default=0)
     price = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="تومان",null=True)
+    code = models.CharField(max_length=55,null=True)
 
     def __str__(self):
         return f"{self.id}"
@@ -46,6 +47,11 @@ class ProductInvoice(SoftDeleteModel):
 
 
 class Invoice(SoftDeleteModel):
+    PAYMENT_TYPE = (
+        ("cash","CASH"),
+        ("installment","INSTALLMENT"),
+    )
+    payment_type = models.CharField(choices=PAYMENT_TYPE,null=True,default="cash",max_length=22)
     status = models.ForeignKey(InvoiceStatus,on_delete=models.SET_NULL,null=True)
     models.UUIDField(unique=True, default=uuid.uuid4, editable=False)
     title = models.CharField(max_length=60,null=True)
