@@ -88,23 +88,47 @@ class ReusablePaginationMixin:
 
 
 
-def convert_date_time(persian_datetime):
+import jdatetime
+from datetime import datetime
+from django.utils.timezone import make_aware
 
-        date_part, time_part = persian_datetime.split()
-        year, month, day = map(int, date_part.split('/'))
-        hour, minute, second = map(int, time_part.split(':'))
+def persian_to_gregorian(persian_date_str):
+    """
+    تبدیل رشته تاریخ شمسی به شیء datetime میلادی.
+    اگر رشته نال باشد یا فرمت اشتباه داشته باشد، None برمی‌گرداند.
+    """
+    if not persian_date_str:
+        return None
+
+    try:
+        # اگر زمان وجود داشته باشد (فرمت کامل تاریخ و زمان)
+        if len(persian_date_str) > 10:
+            persian_datetime = datetime.strptime(persian_date_str, "%Y/%m/%d %H:%M")
+            year, month, day = persian_datetime.year, persian_datetime.month, persian_datetime.day
+            hour, minute = persian_datetime.hour, persian_datetime.minute
+        else:
+            # اگر فقط تاریخ باشد (بدون زمان)
+            persian_datetime = datetime.strptime(persian_date_str, "%Y/%m/%d")
+            year, month, day = persian_datetime.year, persian_datetime.month, persian_datetime.day
+            hour, minute = 0, 0  # زمان پیش‌فرض
 
         # تبدیل تاریخ شمسی به میلادی
         gregorian_date = jdatetime.date(year, month, day).togregorian()
 
-        # ایجاد شیء datetime با زمان مشخص
+        # ایجاد شیء datetime با زمان
         datetime_obj = datetime(
             gregorian_date.year,
             gregorian_date.month,
             gregorian_date.day,
             hour,
             minute,
-            second
+
         )
-        return datetime_obj
+
+        # اگر از timezone استفاده می‌کنید، آن را aware کنید
+        return make_aware(datetime_obj)
+
+    except ValueError:
+        # اگر فرمت رشته اشتباه باشد
+        return None
 
