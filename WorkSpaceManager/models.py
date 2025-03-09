@@ -34,7 +34,10 @@ class WorkSpace (SoftDeleteModel):
 
     )
 
-
+    project_board_status = models.BooleanField(default=False)
+    crm_status =models.BooleanField(default=False)
+    marketing_status = models.BooleanField(default=False)
+    group_chat = models.BooleanField(default=False)
     person_type = models.CharField(max_length=6,choices=PERSONAL_TYPE,null=True)
     jadoo_workspace_id = models.PositiveBigIntegerField(default=0)
     business_type=models.CharField(max_length=50, choices=BUSINESS_TYPE,null=True)

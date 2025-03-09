@@ -100,6 +100,10 @@ class WorkSpaceSerializer(ModelSerializer):
             "fax_number",
             "economic_number",
             "address",
+            "project_board_status",
+            "crm_status",
+            "marketing_status",
+            "group_chat",
         ]
     def update(self,instance,validated_data):
         
