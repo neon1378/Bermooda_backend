@@ -6,7 +6,7 @@ from rest_framework.views import APIView
 from UserManager.models import UserAccount
 from rest_framework.permissions import IsAuthenticated
 from .models import *
-from core.widgets import  convert_date_time
+from core.widgets import  persian_to_gregorian
 from rest_framework.authtoken.models import Token
 import json
 from .serializers import *
@@ -375,8 +375,8 @@ class TaskManager(APIView):
                 time_to_end=time_to_end,
                 responsible_for_doing=responsible_user,
                 task=task,
-                date_time_to_start_main = convert_date_time(f"{date_to_start} {time_to_start}"),
-                date_time_to_end_main = convert_date_time(f"{date_to_end} {time_to_end}")
+                date_time_to_start_main = persian_to_gregorian(f"{date_to_start} {time_to_start}"),
+                date_time_to_end_main = persian_to_gregorian(f"{date_to_end} {time_to_end}")
         
             )
 

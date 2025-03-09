@@ -34,7 +34,7 @@ from rest_framework.permissions import IsAuthenticated
 import datetime
 from django.utils.timezone import datetime, make_aware
 from rest_framework_simplejwt.tokens import RefreshToken
-from WorkSpaceManager.models import WorkSpace,WorkspaceMember
+from WorkSpaceManager.models import WorkSpace,WorkspaceMember,WorkSpacePermission
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 import random
@@ -1139,7 +1139,12 @@ def get_user_data (request):
             "is_authenticated":current_workspace_obj.is_authenticated,
             "jadoo_workspace_id":current_workspace_obj.jadoo_workspace_id,
             "is_active":current_workspace_obj.is_active,
-
+            "permissions":[
+                {
+                    "id":permission.id,
+                    "permission_type":permission.permission_type,
+                } for permission in WorkSpacePermission.objects.filter(workspac=current_workspace_obj)
+            ],
             "unread_notifications":Notification.objects.filter(workspace=current_workspace_obj,user_account=request.user,is_read=False).count() + Notification.objects.filter(user_account=request.user,is_read=False).count() 
 
         }
