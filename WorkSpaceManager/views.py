@@ -12,7 +12,7 @@ import os
 import json
 from Notification.models import Notification
 from .serializers import WorkSpaceSerializer, IndustrialActivitySerializer, WorkSpaceMemberSerializer, UserSerializer, \
-    UpdateWorkSpaceSerializer
+    UpdateWorkSpaceSerializer, WorkSpacePermissionSerializer
 import requests
 from dotenv import load_dotenv
 from core.permission import IsAccess,IsWorkSpaceUser
@@ -932,3 +932,20 @@ def create_workspace_to_jadoo(request):
     return Response(status=status.HTTP_200_OK)
 
 
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def change_workspace_permission_status(request,permission_id):
+    permission_obj = get_object_or_404(WorkSpacePermission,id=permission_id)
+    data =request.data
+    is_active = data.get("is_active")
+    permission_obj.is_active = is_active
+    permission_obj.save()
+    serializer_data =WorkSpacePermissionSerializer(permission_obj)
+    return Response(
+        status=status.HTTP_202_ACCEPTED,
+        data={
+            "status":True,
+            "message":"با موفقیت بروزرسانی شد ",
+            "data":serializer_data.data
+        }
+    )
