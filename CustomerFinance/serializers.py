@@ -68,7 +68,7 @@ class InvoiceStatusSerializer(ModelSerializer):
 
 
 class InvoiceSerializer(ModelSerializer):
-    qr_code_url = MainFileSerializer(read_only=True)
+    qr_code = MainFileSerializer(read_only=True)
     seller_information = InformationSerializer(read_only=True)
     buyer_information = InformationSerializer(read_only=True)
     product= ProductInvoiceSerializer(many=True,read_only=True)
@@ -84,7 +84,7 @@ class InvoiceSerializer(ModelSerializer):
         fields = [
             "status",
             "status_id",
-            "qr_code_url",
+            "qr_code",
             "id",
             "signature_url",
             "signature_buyer_id",
