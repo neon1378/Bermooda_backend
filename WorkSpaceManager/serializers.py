@@ -66,10 +66,19 @@ class UpdateWorkSpaceSerializer(ModelSerializer):
             pass
         return instance
 
+class WorkSpacePermissionSerializer(ModelSerializer):
+    class Meta:
+        model = WorkSpacePermission
+        fields =[
+            "id",
+            "permission_type"
+        ]
 
 
 class WorkSpaceSerializer(ModelSerializer):
     industrialactivity_id = serializers.IntegerField(write_only=True,required=True)
+    permissions = WorkSpacePermissionSerializer(read_only=True,many=True)
+    permission_list = serializers.ListField(write_only=True,required=True)
     class Meta:
         model =WorkSpace
         fields =[
@@ -77,7 +86,7 @@ class WorkSpaceSerializer(ModelSerializer):
             "industrialactivity_id",
             "personal_information_status",
             "business_type",
-
+            "permissions",
 
             "jadoo_brand_name",
             "business_detail",
@@ -100,13 +109,12 @@ class WorkSpaceSerializer(ModelSerializer):
             "fax_number",
             "economic_number",
             "address",
-            "project_board_status",
-            "crm_status",
-            "marketing_status",
-            "group_chat",
+            "permission_list"
+
         ]
     def update(self,instance,validated_data):
-        
+        permission_list = validated_data.pop("permission_list")
+
         jadoo_brand_name= validated_data.get("jadoo_brand_name",None)
         if not jadoo_brand_name :
             raise serializers.ValidationError({
@@ -121,7 +129,11 @@ class WorkSpaceSerializer(ModelSerializer):
                 })
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
-        
+        for permission in permission_list:
+            workspace_permission =WorkSpacePermission.objects.create(
+                workspace = instance,
+                permission_type = permission
+            )
         instance.save()
         return instance
     

@@ -18,6 +18,9 @@ class IndustrialActivity(SoftDeleteModel):
     title = models.CharField(max_length=150,null=True)
     refrence_id = models.IntegerField(default=0)
 
+
+
+
 class WorkSpace (SoftDeleteModel):
     title = models.CharField(max_length=30,null=True)
     owner = models.ForeignKey(UserAccount,on_delete=models.CASCADE,null=True,related_name="workspace_owner",blank=True)
@@ -34,10 +37,8 @@ class WorkSpace (SoftDeleteModel):
 
     )
 
-    project_board_status = models.BooleanField(default=False)
-    crm_status =models.BooleanField(default=False)
-    marketing_status = models.BooleanField(default=False)
-    group_chat = models.BooleanField(default=False)
+
+
     person_type = models.CharField(max_length=6,choices=PERSONAL_TYPE,null=True)
     jadoo_workspace_id = models.PositiveBigIntegerField(default=0)
     business_type=models.CharField(max_length=50, choices=BUSINESS_TYPE,null=True)
@@ -69,6 +70,8 @@ class WorkSpace (SoftDeleteModel):
     fax_number = models.CharField(max_length=20,null=True)
     economic_number = models.CharField(max_length=14,null=True)
     address = models.TextField(null=True)
+
+
 
 
 
@@ -106,6 +109,19 @@ class WorkSpace (SoftDeleteModel):
             }
         except:
             return {}
+
+class WorkSpacePermission(SoftDeleteModel):
+        PERMISSION_TYPE = (
+            ("project_board","PROJECT_BOARD"),
+            ("crm","CRM"),
+            ("marketing_status","MARKETING_STATUS"),
+            ("group_chat","GROUP_CHAT"),
+        )
+
+
+
+        permission_type = models.CharField(max_length=50,null=True)
+        workspace = models.ForeignKey(WorkSpace,on_delete=models.CASCADE,null=True,related_name="permissions")
 class Link(SoftDeleteModel):
     workspace = models.ForeignKey(WorkSpace,on_delete=models.CASCADE,null=True,related_name="links")
 

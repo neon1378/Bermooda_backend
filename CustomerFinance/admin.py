@@ -5,3 +5,4 @@ from .models import *
 admin.site.register(Information)
 admin.site.register(ProductInvoice)
 admin.site.register(Invoice)
+
