@@ -83,7 +83,13 @@ class InvoiceManager(APIView):
             qr.save(buffer, format="PNG")
             random_number = random.randint(1,2312313)
             # Save QR code image
-            invoice_obj.qr_code.file.save(f"{random_number}_1s.png", ContentFile(buffer.getvalue()), save=True)
+            new_main_file = MainFile()
+            new_main_file.save()
+            new_main_file.file.save(f"{random_number}_1s.png", ContentFile(buffer.getvalue()), save=True)
+            new_main_file.its_blong=True
+            new_main_file.workspace_id=request.user.current_workspace_id
+            new_main_file.save()
+            invoice_obj.qr_code=new_main_file
             invoice_obj.save()
             response_data = InvoiceSerializer(invoice_obj).data
             
