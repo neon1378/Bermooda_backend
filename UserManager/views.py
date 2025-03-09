@@ -986,7 +986,21 @@ def create_workspace(request):
     new_workspace_obj = WorkSpace(title= data['title'])
     new_workspace_obj.owner=request.user
     new_workspace_obj.save()
-    
+    permission_list = [
+        "project_board",
+        "crm",
+        "marketing_status",
+        "group_chat",
+        "letters",
+        "planing",
+    ]
+    for permission in permission_list:
+        WorkSpacePermission.objects.create(
+            permission_type= permission,
+            workspace = new_workspace_obj,
+
+        )
+
     if BonosPhone.objects.filter(phone=request.user.phone_number).count() <3:
         if BonosPhone.objects.filter(phone=request.user.phone_number).count() ==1 :
             new_workspace_obj.is_team_bonos=True
@@ -1143,6 +1157,7 @@ def get_user_data (request):
                 {
                     "id":permission.id,
                     "permission_type":permission.permission_type,
+                    "is_active":permission.is_active
                 } for permission in WorkSpacePermission.objects.filter(workspace=current_workspace_obj)
             ],
             "unread_notifications":Notification.objects.filter(workspace=current_workspace_obj,user_account=request.user,is_read=False).count() + Notification.objects.filter(user_account=request.user,is_read=False).count() 

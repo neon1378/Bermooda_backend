@@ -19,7 +19,7 @@ class IndustrialActivitySerializer(ModelSerializer):
 
 class UpdateWorkSpaceSerializer(ModelSerializer):
     user_id = serializers.IntegerField(write_only=True,required=False)
-    permission_list = serializers.ListField(write_only=True,required=True)
+
     class Meta:
         model = WorkSpace
         fields =[
@@ -40,7 +40,7 @@ class UpdateWorkSpaceSerializer(ModelSerializer):
             "fax_number",
             "economic_number",
             "address",
-            "permission_list",
+
 
         ]
 
@@ -67,12 +67,7 @@ class UpdateWorkSpaceSerializer(ModelSerializer):
             requests.put(url=url,data=payload,headers=headers)
         except:
             pass
-        WorkSpacePermission.objects.filter(workspace=instance).delete()
-        for permission in permission_list:
-            workspace_permission =WorkSpacePermission.objects.create(
-                workspace = instance,
-                permission_type = permission
-            )
+
 
         return instance
 
@@ -81,14 +76,15 @@ class WorkSpacePermissionSerializer(ModelSerializer):
         model = WorkSpacePermission
         fields =[
             "id",
-            "permission_type"
+            "permission_type",
+            "is_active"
         ]
 
 
 class WorkSpaceSerializer(ModelSerializer):
     industrialactivity_id = serializers.IntegerField(write_only=True,required=True)
     permissions = WorkSpacePermissionSerializer(read_only=True,many=True)
-    permission_list = serializers.ListField(write_only=True,required=True)
+
     class Meta:
         model =WorkSpace
         fields =[
@@ -119,7 +115,7 @@ class WorkSpaceSerializer(ModelSerializer):
             "fax_number",
             "economic_number",
             "address",
-            "permission_list"
+
 
         ]
     def update(self,instance,validated_data):
@@ -139,11 +135,7 @@ class WorkSpaceSerializer(ModelSerializer):
                 })
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
-        for permission in permission_list:
-            workspace_permission =WorkSpacePermission.objects.create(
-                workspace = instance,
-                permission_type = permission
-            )
+
         instance.save()
         return instance
     

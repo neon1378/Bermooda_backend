@@ -222,7 +222,7 @@ class CustomerUser(SoftDeleteModel):
 
     possibility_of_sale = models.IntegerField(default=0)
     date_time_to_remember= models.CharField(max_length=100,null=True)
-
+    # main_date_time_
 
     fax = models.BigIntegerField(null=True,blank=True)
     manager_national_code = models.BigIntegerField(null=True,blank=True)

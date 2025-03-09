@@ -115,11 +115,15 @@ class WorkSpacePermission(SoftDeleteModel):
             ("crm","CRM"),
             ("marketing_status","MARKETING_STATUS"),
             ("group_chat","GROUP_CHAT"),
+            ("letters","LETTERS"),
+            ("planing","PLANING"),
         )
 
 
 
         permission_type = models.CharField(max_length=50,null=True)
+        is_active = models.BooleanField(default=True)
+
         workspace = models.ForeignKey(WorkSpace,on_delete=models.CASCADE,null=True,related_name="permissions")
 class Link(SoftDeleteModel):
     workspace = models.ForeignKey(WorkSpace,on_delete=models.CASCADE,null=True,related_name="links")
