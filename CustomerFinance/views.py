@@ -186,7 +186,7 @@ class InvoiceStatusDetailManager(APIView):
 def change_invoice_status(request,invoice_id):
     data= request.data
     invoice_obj = get_object_or_404(Invoice,id=invoice_id)
-    status_id = data['invoice_id']
+    status_id = data['status_id']
     status_obj = get_object_or_404(InvoiceStatus,id=status_id)
     invoice_obj.status= status_obj
     invoice_obj.save()
