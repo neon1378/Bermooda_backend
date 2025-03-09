@@ -19,7 +19,7 @@ class Information(SoftDeleteModel):
     email = models.EmailField(null=True,blank=True)
     address =models.TextField(null=True)
     city = models.ForeignKey(City,on_delete=models.CASCADE,null=True,related_name="city_buyer")
-    state = models.ForeignKey(City,on_delete=models.CASCADE,null=True,related_name="state_buyer")
+    state = models.ForeignKey(State,on_delete=models.CASCADE,null=True,related_name="state_buyer")
     phone_number = models.CharField(max_length=40,null=True)
 
     def __str__(self):
