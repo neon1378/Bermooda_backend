@@ -2,6 +2,7 @@
 from django.core.paginator import Paginator
 from rest_framework import status
 import jdatetime
+from django.utils.timezone import make_naive
 from datetime import datetime
 from rest_framework.response import Response
 class ReusablePaginationMixin:
@@ -88,47 +89,33 @@ class ReusablePaginationMixin:
 
 
 
-import jdatetime
-from datetime import datetime
-from django.utils.timezone import make_aware
 
 def persian_to_gregorian(persian_date_str):
-    """
-    تبدیل رشته تاریخ شمسی به شیء datetime میلادی.
-    اگر رشته نال باشد یا فرمت اشتباه داشته باشد، None برمی‌گرداند.
-    """
     if not persian_date_str:
         return None
 
     try:
-        # اگر زمان وجود داشته باشد (فرمت کامل تاریخ و زمان)
         if len(persian_date_str) > 10:
-            persian_datetime = datetime.strptime(persian_date_str, "%Y/%m/%d %H:%M")
+            persian_datetime = datetime.strptime(persian_date_str, "%Y/%m/%d %H:%M:%S")
             year, month, day = persian_datetime.year, persian_datetime.month, persian_datetime.day
-            hour, minute = persian_datetime.hour, persian_datetime.minute
+            hour, minute, second = persian_datetime.hour, persian_datetime.minute, persian_datetime.second
         else:
-            # اگر فقط تاریخ باشد (بدون زمان)
             persian_datetime = datetime.strptime(persian_date_str, "%Y/%m/%d")
             year, month, day = persian_datetime.year, persian_datetime.month, persian_datetime.day
-            hour, minute = 0, 0  # زمان پیش‌فرض
+            hour, minute, second = 0, 0, 0
 
-        # تبدیل تاریخ شمسی به میلادی
         gregorian_date = jdatetime.date(year, month, day).togregorian()
-
-        # ایجاد شیء datetime با زمان
         datetime_obj = datetime(
             gregorian_date.year,
             gregorian_date.month,
             gregorian_date.day,
             hour,
             minute,
-
+            second
         )
 
-        # اگر از timezone استفاده می‌کنید، آن را aware کنید
-        return make_aware(datetime_obj)
+        # اگر USE_TZ = False باشد، آن را timezone-naive کنید
+        return make_naive(datetime_obj)
 
     except ValueError:
-        # اگر فرمت رشته اشتباه باشد
         return None
-
