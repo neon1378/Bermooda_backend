@@ -1143,7 +1143,7 @@ def get_user_data (request):
                 {
                     "id":permission.id,
                     "permission_type":permission.permission_type,
-                } for permission in WorkSpacePermission.objects.filter(workspac=current_workspace_obj)
+                } for permission in WorkSpacePermission.objects.filter(workspace=current_workspace_obj)
             ],
             "unread_notifications":Notification.objects.filter(workspace=current_workspace_obj,user_account=request.user,is_read=False).count() + Notification.objects.filter(user_account=request.user,is_read=False).count() 
 
