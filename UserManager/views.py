@@ -1139,10 +1139,7 @@ def get_user_data (request):
             "is_authenticated":current_workspace_obj.is_authenticated,
             "jadoo_workspace_id":current_workspace_obj.jadoo_workspace_id,
             "is_active":current_workspace_obj.is_active,
-            "project_board_status":current_workspace_obj.project_board_status,
-            "crm_status":current_workspace_obj.crm_status,
-            "marketing_status":current_workspace_obj.marketing_status,
-            "group_chat":current_workspace_obj.group_chat,
+
             "unread_notifications":Notification.objects.filter(workspace=current_workspace_obj,user_account=request.user,is_read=False).count() + Notification.objects.filter(user_account=request.user,is_read=False).count() 
 
         }
