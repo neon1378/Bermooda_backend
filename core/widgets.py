@@ -2,7 +2,8 @@
 from django.core.paginator import Paginator
 from rest_framework import status
 import jdatetime
-from django.utils.timezone import make_naive
+from django.utils.timezone import is_aware, make_naive
+
 from datetime import datetime
 from rest_framework.response import Response
 class ReusablePaginationMixin:
@@ -115,5 +116,8 @@ def persian_to_gregorian(persian_date_str):
     )
 
     # اگر USE_TZ = False باشد، آن را timezone-naive کنید
-    return make_naive(datetime_obj)
+    if is_aware(datetime_obj):
+        return make_naive(datetime_obj)
+    else:
+        return datetime_obj  # اگر از قبل naive است، همان را برگردان
 
