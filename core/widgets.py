@@ -1,6 +1,8 @@
 
 from django.core.paginator import Paginator
 from rest_framework import status
+import jdatetime
+from datetime import datetime
 from rest_framework.response import Response
 class ReusablePaginationMixin:
     pagination_page_size = 20
@@ -81,4 +83,29 @@ class ReusablePaginationMixin:
         Override this method to modify paginated data before final response
         Example usage: Add user-specific flags to serialized data
         """
-        return data
+        return
+
+
+
+
+def convert_date_time(persian_datetime):
+    try:
+        date_part, time_part = persian_datetime.split()
+        year, month, day = map(int, date_part.split('/'))
+        hour, minute, second = map(int, time_part.split(':'))
+
+        # تبدیل تاریخ شمسی به میلادی
+        gregorian_date = jdatetime.date(year, month, day).togregorian()
+
+        # ایجاد شیء datetime با زمان مشخص
+        datetime_obj = datetime(
+            gregorian_date.year,
+            gregorian_date.month,
+            gregorian_date.day,
+            hour,
+            minute,
+            second
+        )
+        return datetime_obj
+    except:
+        return None
