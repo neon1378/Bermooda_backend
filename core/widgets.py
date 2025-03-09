@@ -111,7 +111,7 @@ def persian_to_gregorian(persian_date_str):
             gregorian_date.day,
             hour,
             minute,
-            second
+
         )
 
         # اگر USE_TZ = False باشد، آن را timezone-naive کنید
