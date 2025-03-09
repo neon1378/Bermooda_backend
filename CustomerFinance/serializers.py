@@ -121,7 +121,7 @@ class InvoiceSerializer(ModelSerializer):
         state_seller = seller_information.pop("state",None)
         city_seller = seller_information.pop("city",None)
 
-   
+
         customer_id= validated_data.pop("customer_id")
 
         if not workspace_obj.personal_information_status:
@@ -149,10 +149,10 @@ class InvoiceSerializer(ModelSerializer):
         )
         if state_seller:
 
-            state= State.objects.get(id=seller_information['state'])
+            state= State.objects.get(id=state_seller)
             buyer_information_obj.state =state
         if city_seller:
-            city= City.objects.get(id=seller_information['city'])
+            city= City.objects.get(id=city_seller)
             buyer_information_obj.city =city
 
         buyer_information_obj.save()
