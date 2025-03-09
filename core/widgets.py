@@ -89,7 +89,7 @@ class ReusablePaginationMixin:
 
 
 def convert_date_time(persian_datetime):
-    try:
+
         date_part, time_part = persian_datetime.split()
         year, month, day = map(int, date_part.split('/'))
         hour, minute, second = map(int, time_part.split(':'))
@@ -107,5 +107,4 @@ def convert_date_time(persian_datetime):
             second
         )
         return datetime_obj
-    except:
-        return None
+
