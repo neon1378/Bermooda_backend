@@ -124,16 +124,30 @@ class WorkspaceManager(APIView):
 
                         payload = {
 
-                                    "cityId":workspace_obj.city.refrence_id,
-                                    "stateId":workspace_obj.state.refrence_id,
+                                    "cityId":None,
+                                    "stateId":None,
                                     "name":workspace_obj.title,
                                     "username":workspace_obj.jadoo_brand_name,
                                     "workspaceId":workspace_obj.id,
                                     "bio":workspace_obj.business_detail,
                                     "avatar":"",
-                                    "industrialActivityId":workspace_obj.industrialactivity.refrence_id
+                                    "industrialActivityId":None
 
                         }
+
+
+                        if workspace_obj.city:
+                            payload['cityId']=workspace_obj.city.refrence_id
+
+                        if workspace_obj.industrialactivity:
+                            payload['industrialActivityId']= workspace_obj.industrialactivity.refrence_id
+
+
+                        if workspace_obj.state:
+                            payload['stateId']= workspace_obj.state.refrence_id
+
+
+
                         if workspace_obj.avatar:
                             payload['avatar'] = f"{base_url}{workspace_obj.avatar.file.url}"
 
