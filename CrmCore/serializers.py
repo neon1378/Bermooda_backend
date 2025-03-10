@@ -3,6 +3,7 @@ from channels.layers import get_channel_layer
 from rest_framework import serializers
 from .models import *
 from django.shortcuts import get_object_or_404
+from core.widgets import  persian_to_gregorian
 from UserManager.serializers import UserDetailSerializer
 from core.serializers import   StateSerializer,CitySerializer
 from MailManager.serializers import  MemberSerializer
@@ -308,6 +309,7 @@ class CustomerSmallSerializer(serializers.ModelSerializer):
             else:
                 new_customer.connection_type = "email"
                 new_customer.email = email
+            new_customer.main_date_time_to_remember = persian_to_gregorian(new_customer.date_time_to_remember)
 
             new_customer.save()
             channel_layer = get_channel_layer()
@@ -361,7 +363,7 @@ class CustomerSmallSerializer(serializers.ModelSerializer):
                 instance.phone_number = phone_number
             else:
                 instance.email = email
-
+            instance.main_date_time_to_remember = persian_to_gregorian(instance.date_time_to_remember)
             instance.save()
             channel_layer = get_channel_layer()
             event = {"type": "send_data"}

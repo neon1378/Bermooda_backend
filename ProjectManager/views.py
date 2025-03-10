@@ -537,6 +537,8 @@ class CheckListManager(APIView):
             time_to_start = time_to_start,
             date_to_end = date_to_end,
             time_to_end = time_to_end,
+            date_time_to_start_main=persian_to_gregorian(f"{date_to_start} {time_to_start}"),
+            date_time_to_end_main=persian_to_gregorian(f"{date_to_end} {time_to_end}")
         )
         if label_id and label_id != {}:
             check_list_obj.label_id=label_id['id']
@@ -609,6 +611,8 @@ class CheckListManager(APIView):
             checklist_obj.time_to_start =time_to_start
             checklist_obj.date_to_end =date_to_end
             checklist_obj.time_to_end =time_to_end
+            checklist_obj.date_time_to_start_main = persian_to_gregorian(f"{date_to_start} {time_to_start}"),
+            checklist_obj.date_time_to_end_main = persian_to_gregorian(f"{date_to_end} {time_to_end}")
             checklist_obj.difficulty=difficulty
             existing_file_ids = list(checklist_obj.file.values_list("id", flat=True))
 

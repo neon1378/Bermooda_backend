@@ -27,8 +27,8 @@ urlpatterns = [
     path("create_group_message",views.create_group_message),
 
     path("UpdateWorkSpaceInfo/<int:workspace_id>",views.update_workspace_information),
-    path("WorkSpacePermissionManager/<int:permission_id>",views.WorkSpacePermissionManager),
-    path("WorkSpacePermissionManager",views.WorkSpacePermissionManager),
+    path("WorkSpacePermissionManager/<int:permission_id>",views.WorkSpacePermissionManager.as_view()),
+    path("WorkSpacePermissionManager",views.WorkSpacePermissionManager.as_view()),
 
 ]
 
