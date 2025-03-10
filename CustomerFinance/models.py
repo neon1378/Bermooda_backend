@@ -69,7 +69,11 @@ class Invoice(SoftDeleteModel):
     qr_code = models.ForeignKey(MainFile,on_delete=models.SET_NULL,null=True,blank=True)
     created_date = models.CharField(max_length=20,null=True)
     validity_date = models.CharField(max_length=20,null=True)
-    main_id = models.UUIDField(unique=True, editable=False,null=True)
+    main_id = models.UUIDField(unique=True,null=True)
+    def save(self, *args, **kwargs):
+        if not self.main_id:  # اگر مقدار نداشته باشد
+            self.main_id = uuid.uuid4()  # مقدار یکتا تولید کن
+        super().save(*args, **kwargs)  #
     def signature_url(self):
         base_url = os.getenv("BASE_URL")
         try:
