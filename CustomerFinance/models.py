@@ -113,8 +113,8 @@ class Invoice(SoftDeleteModel):
                 total_price = product.total_price()
                 factor_price+=total_price
             final_price = (int(factor_price) - (int(factor_price) *   int(self.discount) / 100 )) + (int(factor_price) * (int(self.taxes) / 100))
-            discount_price = (100 - self.discount) * factor_price /100
-            taxes_price = (100 - self.taxes) * factor_price /100
+            discount_price = (100 - self.discount) * factor_price
+            taxes_price = (100 - self.taxes) * factor_price
             return {
                 "final_price":final_price,
                 "factor_price":factor_price,
