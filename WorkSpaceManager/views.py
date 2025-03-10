@@ -912,7 +912,7 @@ def create_workspace_to_jadoo(request):
         payload = {
 
             "workspaceId": workspace.id,
-            "industrialActivityId": workspace.industrialactivity.refrence_id,
+            # "industrialActivityId": workspace.industrialactivity.refrence_id,
             "bio": workspace.business_detail,
             "avatar": "",
             "name": workspace.title,
