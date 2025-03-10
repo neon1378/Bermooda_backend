@@ -955,6 +955,32 @@ class UserAccountManager(APIView):
 @permission_classes([IsAuthenticated])
 def get_workspaces (request):
     respnse_data = []
+    try :
+        current_workspace_obj = WorkSpace.objects.get(id=request.user.current_workspace_id)
+        dic = {
+
+
+        }
+        if request.user == current_workspace_obj.owner:
+            dic['type'] = "owner"
+        else:
+            try:
+                workspac_member = WorkspaceMember.objects.get(workspace=current_workspace_obj,user_account=request.user)
+                permissions = [
+                        {
+                            "id":permission.id,
+                            "permission_name":permission.permission_name,
+                            "permission_type":permission.permission_type
+                        } for permission in workspac_member.permissions.all()
+                    ]
+                dic['permissions']=permissions
+                dic['is_accepted']=workspac_member.is_accepted
+            except:
+                pass
+            dic['type'] = "member"
+        user_data['current_workspace'] = dic
+    except:
+        user_data['current_workspace'] = None
 
     try :
         workspace_objects = WorkSpace.objects.filter(owner=request.user)
@@ -962,17 +988,55 @@ def get_workspaces (request):
             respnse_data.append({
                 "id":workspace_object.id,
                 "title":workspace_object.title,
-                "type":"owner"
+                "type":"owner",
+
+                "is_authenticated":workspace_object.is_authenticated,
+                "jadoo_workspace_id":workspace_object.jadoo_workspace_id,
+                "is_active":workspace_object.is_active,
+                "workspace_permissions":[
+                    {
+                        "id":permission.id,
+                        "permission_type":permission.permission_type,
+                        "is_active":permission.is_active
+                    } for permission in WorkSpacePermission.objects.filter(workspace=workspace_object)
+                ],
+                "unread_notifications":Notification.objects.filter(workspace=workspace_object,user_account=request.user,is_read=False).count() + Notification.objects.filter(user_account=request.user,is_read=False).count()
             })
     except:
         pass
     for workspace_member in WorkspaceMember.objects.filter(user_account=request.user):
-        # if workspace_member.is_accepted:
-            respnse_data.append({
+        # if workspace_member.is_accepted:d
+            dic = {
                 "id":workspace_member.workspace.id,
                 "title":workspace_member.workspace.title,
-                "type":"member"
-            })
+                "type":"member",
+                "is_authenticated": workspace_member.is_authenticated,
+                "jadoo_workspace_id": workspace_member.jadoo_workspace_id,
+                "is_active": workspace_member.is_active,
+                "workspace_permissions": [
+                    {
+                        "id": permission.id,
+                        "permission_type": permission.permission_type,
+                        "is_active": permission.is_active
+                    } for permission in WorkSpacePermission.objects.filter(workspace=workspace_member)
+                ],
+                "unread_notifications": Notification.objects.filter(workspace=workspace_member,
+                                                                    user_account=request.user,
+                                                                    is_read=False).count() + Notification.objects.filter(
+                    user_account=request.user, is_read=False).count()
+            }
+
+            workspac_member = WorkspaceMember.objects.get(workspace=workspace_member, user_account=request.user)
+            permissions = [
+                {
+                    "id": permission.id,
+                    "permission_name": permission.permission_name,
+                    "permission_type": permission.permission_type
+                } for permission in workspac_member.permissions.all()
+            ]
+            dic['permissions'] = permissions
+            dic['is_accepted'] = workspac_member.is_accepted
+            respnse_data.append(dic)
     return Response(status=status.HTTP_200_OK,data= {
         "status":True,
         "message":"موفق",
