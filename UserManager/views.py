@@ -619,9 +619,9 @@ def create_username_pass(request):
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def login_user(request):
-    data= request.data
-    username = data['username']
-    password = data['password']
+        data= request.data
+        username = data['username']
+        password = data['password']
     # try :
         try:
             user_acc = UserAccount.objects.get(username = username)
