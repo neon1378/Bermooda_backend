@@ -872,8 +872,8 @@ class WorkSpaceMemberArchive(APIView):
 
 
 
-@permission_classes([AllowAny])
 @api_view(["GET"])
+@permission_classes([AllowAny])
 def create_users_to_jadoo(request):
     user_objs = UserAccount.objects.all()
     jadoo_base_url = os.getenv("JADOO_BASE_URL")
