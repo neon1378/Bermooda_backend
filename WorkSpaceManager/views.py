@@ -905,6 +905,7 @@ def create_workspace_to_jadoo(request):
     for workspace in workspaces:
 
         url = f"{jadoo_base_url}/workspace/store"
+        print(workspace.owner.refrence_token)
         headers = {
             "content-type": "application/json",
             "Authorization": f"Bearer {workspace.owner.refrence_token}"
