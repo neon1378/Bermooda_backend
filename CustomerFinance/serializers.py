@@ -23,9 +23,11 @@ class ProductInvoiceSerializer(ModelSerializer):
             "count",
             "price",
             "code",
+            "unit",
         ]
 
 class InformationSerializer(ModelSerializer):
+
     class Meta:
         model = Information
         fields = [

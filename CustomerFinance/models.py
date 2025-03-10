@@ -34,7 +34,7 @@ class ProductInvoice(SoftDeleteModel):
     count = models.PositiveIntegerField(default=0)
     price = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="تومان",null=True)
     code = models.CharField(max_length=55,null=True)
-
+    unit = models.CharField(max_length=25,null=True)
     def __str__(self):
         return f"{self.id}"
 
@@ -112,13 +112,13 @@ class Invoice(SoftDeleteModel):
             for product in self.product.all():
                 total_price = product.total_price()
                 factor_price+=total_price
-            factor_price = (int(factor_price) - (int(factor_price) *   int(self.discount) / 100 )) + (int(factor_price) * (int(self.taxes) / 100))
-            
-            return factor_price
-    
-        
-        
+            final_price = (int(factor_price) - (int(factor_price) *   int(self.discount) / 100 )) + (int(factor_price) * (int(self.taxes) / 100))
+            discount_price = (100 - self.discount) * factor_price /100
+            taxes_price = (100 - self.taxes) * factor_price /100
+            return {
+                "final_price":final_price,
+                "factor_price":factor_price,
+                "discount_price":discount_price,
+                "taxes_price":taxes_price,
 
-
-
-
+            }
