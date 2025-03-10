@@ -1,8 +1,13 @@
+from traceback import print_tb
 
 from django.core.paginator import Paginator
 from rest_framework import status
 import jdatetime
 from django.utils.timezone import is_aware, make_naive
+from dotenv import load_dotenv
+load_dotenv()
+import os
+import requests
 
 from datetime import datetime
 from rest_framework.response import Response
@@ -132,4 +137,21 @@ def persian_to_gregorian(persian_date_str):
     except ValueError:
         return None
 
+
+
+
+def change_current_workspace_jadoo(user_acc,workspace_obj):
+
+        jadoo_base_url =os.getenv("JADOO_BASE_URL")
+        url = f"{jadoo_base_url}/workspace/changeWorkSpace"
+        headers = {
+            "content-type": "application/json",
+            "Authorization": f"Bearer {user_acc.refrence_token}"
+
+        }
+        payload = {
+            "workspaceId":workspace_obj.jadoo_workspace_id
+        }
+        response = requests.post(url=url,json=payload,headers=headers)
+        print(response)
 

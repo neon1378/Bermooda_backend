@@ -3,6 +3,9 @@ from django.middleware.csrf import get_token
 from rest_framework import mixins
 from rest_framework import generics
 import re
+
+from core.widgets import change_current_workspace_jadoo
+
 from ProjectManager.models import Project, CategoryProject
 from CrmCore.models import GroupCrm
 from django.views.decorators.csrf import csrf_protect
@@ -1194,7 +1197,10 @@ def get_user_data (request):
 @permission_classes([IsAuthenticated])
 def change_current_worksapce (request):
     data = request.data
+    workspace_obj = get_object_or_404(WorkSpace,id=data.get("workspace_id"))
+    change_current_workspace_jadoo(user_acc=request.user,workspace_obj=workspace_obj)
     request.user.current_workspace_id= data.get("workspace_id")
+
     request.user.save()
     return Response(status=status.HTTP_202_ACCEPTED)
 
