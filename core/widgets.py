@@ -152,6 +152,7 @@ def change_current_workspace_jadoo(user_acc,workspace_obj):
         payload = {
             "workspaceId":workspace_obj.jadoo_workspace_id
         }
+        print(payload)
         response = requests.post(url=url,json=payload,headers=headers)
         print(response)
 
