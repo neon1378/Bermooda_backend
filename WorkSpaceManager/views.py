@@ -890,7 +890,7 @@ def create_users_to_jadoo(request):
             response_data = requests.post(url=url,data=payload).json()
             user.refrence_id = int(response_data['data']['id'])
             user.refrence_token = response_data['data']['token']
-
+            print(response_data)
             user.save()
 
 
