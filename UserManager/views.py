@@ -622,7 +622,7 @@ def login_user(request):
     data= request.data
     username = data['username']
     password = data['password']
-    try :
+    # try :
         try:
             user_acc = UserAccount.objects.get(username = username)
         except:
@@ -685,12 +685,12 @@ def login_user(request):
             "message":"نام کاربری یا رمز عبور اشتباه میباشد",
             "data":{}
         })
-    except:
-        return Response(status=status.HTTP_401_UNAUTHORIZED,data={
-            "status":False,
-            "message":"نام کاربری یا رمز عبور اشتباه میباشد",
-            "data":{}
-        })
+    # except:
+    #     return Response(status=status.HTTP_401_UNAUTHORIZED,data={
+    #         "status":False,
+    #         "message":"نام کاربری یا رمز عبور اشتباه میباشد",
+    #         "data":{}
+    #     })
 
 #User Login End 
 
