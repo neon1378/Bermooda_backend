@@ -874,6 +874,7 @@ def create_users_to_jadoo(request):
     base_url = os.getenv("BASE_URL")
     url = f"{jadoo_base_url}/user/auth/createBusinessUser"
     for user in user_objs:
+            print(user.phone_number)
 
             payload = {
                 "mobile": user.phone_number,
@@ -881,10 +882,12 @@ def create_users_to_jadoo(request):
                 "password": "w33rxss",
 
             }
-            response_data = requests.post(url=url,data=payload).json()
-            user.refrence_id = int(response_data['data']['id'])
-            user.refrence_token = response_data['data']['token']
+            response_data = requests.post(url=url,data=payload)
+            data =response_data.json()
             print(response_data)
+            user.refrence_id = int(data['data']['id'])
+            user.refrence_token = data['data']['token']
+            print(data)
             user.save()
 
 
