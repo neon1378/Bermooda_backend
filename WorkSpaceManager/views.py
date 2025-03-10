@@ -930,7 +930,8 @@ def create_workspace_to_jadoo(request):
         except:
             pass
         response_data = requests.post(url=url, headers=headers, data=payload)
-        print(response_data)
+        print(response_data.text)
+        break
         # response_data_main = response_data.json()['data']
         # workspace.jadoo_workspace_id = response_data_main['id']
         # workspace.save()
