@@ -79,12 +79,13 @@ def make_workspace_query(user_acc):
     response_data =[]
 
 
-    workspace_object = WorkSpace.objects.filter(owner=user_acc)
-    response_data.append({
-            "id":workspace_object.id,
-            "title":workspace_object.title,
-            "type":"owner"
-     })
+    workspace_objects = WorkSpace.objects.filter(owner=user_acc)
+    for workspace in workspace_objects:
+        response_data.append({
+                "id":workspace.id,
+                "title":workspace.title,
+                "type":"owner"
+         })
 
     for workspace in WorkspaceMember.objects.filter(user_account=user_acc):
         response_data.append({
@@ -619,10 +620,10 @@ def create_username_pass(request):
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def login_user(request):
-        data= request.data
-        username = data['username']
-        password = data['password']
-    # try :
+    data= request.data
+    username = data['username']
+    password = data['password']
+    try :
         try:
             user_acc = UserAccount.objects.get(username = username)
         except:
@@ -685,12 +686,12 @@ def login_user(request):
             "message":"نام کاربری یا رمز عبور اشتباه میباشد",
             "data":{}
         })
-    # except:
-    #     return Response(status=status.HTTP_401_UNAUTHORIZED,data={
-    #         "status":False,
-    #         "message":"نام کاربری یا رمز عبور اشتباه میباشد",
-    #         "data":{}
-    #     })
+    except:
+        return Response(status=status.HTTP_401_UNAUTHORIZED,data={
+            "status":False,
+            "message":"نام کاربری یا رمز عبور اشتباه میباشد",
+            "data":{}
+        })
 
 #User Login End 
 
