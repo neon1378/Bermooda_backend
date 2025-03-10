@@ -884,7 +884,7 @@ def create_users_to_jadoo(request):
             payload = {
                 "mobile": user.phone_number,
 
-                "password": "w33r",
+                "password": "w33rxss",
 
             }
             response_data = requests.post(url=url,data=payload).json()
