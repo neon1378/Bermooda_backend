@@ -611,8 +611,19 @@ class CheckListManager(APIView):
             checklist_obj.time_to_start =time_to_start
             checklist_obj.date_to_end =date_to_end
             checklist_obj.time_to_end =time_to_end
-            checklist_obj.date_time_to_start_main = persian_to_gregorian(f"{date_to_start} {time_to_start}"),
-            checklist_obj.date_time_to_end_main = persian_to_gregorian(f"{date_to_end} {time_to_end}")
+            try:
+                checklist_obj.date_time_to_start_main = persian_to_gregorian(f"{date_to_start} {time_to_start}")
+            except:
+                pass
+
+            try:
+                checklist_obj.date_time_to_end_main = persian_to_gregorian(f"{date_to_end} {time_to_end}")
+            except:
+                pass
+
+
+
+
             checklist_obj.difficulty=difficulty
             existing_file_ids = list(checklist_obj.file.values_list("id", flat=True))
 
