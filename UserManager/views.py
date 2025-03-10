@@ -76,23 +76,52 @@ def decrypt(encrypted_data: str) -> str:
 
 
 def make_workspace_query(user_acc):
-    response_data =[]
-
-
-    workspace_objects = WorkSpace.objects.filter(owner=user_acc)
-    for workspace in workspace_objects:
-        response_data.append({
-                "id":workspace.id,
-                "title":workspace.title,
-                "type":"owner"
-         })
-
-    for workspace in WorkspaceMember.objects.filter(user_account=user_acc):
-        response_data.append({
-            "id":workspace.workspace.id,
-            "title":workspace.workspace.title,
-            "type":"member"
-        })
+    response_data = []
+    workspace_owners = WorkSpace.objects.filter(owner=user_acc)
+    for workspace in workspace_owners:
+        dic = {
+            "id": workspace.id,
+            "title": workspace.title,
+            "is_authenticated": workspace.is_authenticated,
+            "jadoo_workspace_id": workspace.jadoo_workspace_id,
+            "is_active": workspace.is_active,
+            "type": "owner",
+            "workspace_permissions": [
+                {
+                    "id": permission.id,
+                    "permission_type": permission.permission_type,
+                    "is_active": permission.is_active
+                } for permission in WorkSpacePermission.objects.filter(workspace=workspace)
+            ],
+        }
+        response_data.append(dic)
+    workspace_members = WorkspaceMember.objects.filter(user_account=user_acc)
+    for member in workspace_members:
+        dic = {
+            "id": member.workspace.id,
+            "title": member.workspace.title,
+            "is_authenticated": member.workspace.is_authenticated,
+            "jadoo_workspace_id": member.workspace.jadoo_workspace_id,
+            "is_active": member.workspace.is_active,
+            "type": "member",
+            "workspace_permissions": [
+                {
+                    "id": permission.id,
+                    "permission_type": permission.permission_type,
+                    "is_active": permission.is_active
+                } for permission in WorkSpacePermission.objects.filter(workspace=member.workspace)
+            ],
+        }
+        permissions = [
+            {
+                "id": permission.id,
+                "permission_name": permission.permission_name,
+                "permission_type": permission.permission_type
+            } for permission in member.permissions.all()
+        ]
+        dic['permissions'] = permissions
+        dic['is_accepted'] = member.is_accepted
+        response_data.append(dic)
     return response_data
 
 @api_view(['GET'])
