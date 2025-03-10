@@ -875,20 +875,21 @@ def create_users_to_jadoo(request):
     url = f"{jadoo_base_url}/user/auth/createBusinessUser"
     for user in user_objs:
             print(user.phone_number)
+            if user.phone_number:
 
-            payload = {
-                "mobile": user.phone_number,
+                payload = {
+                    "mobile": user.phone_number,
 
-                "password": "w33rxss",
+                    "password": "w33rxss",
 
-            }
-            response_data = requests.post(url=url,data=payload)
-            data =response_data.json()
-            print(response_data)
-            user.refrence_id = int(data['data']['id'])
-            user.refrence_token = data['data']['token']
-            print(data)
-            user.save()
+                }
+                response_data = requests.post(url=url,data=payload)
+                data =response_data.json()
+                print(response_data)
+                user.refrence_id = int(data['data']['id'])
+                user.refrence_token = data['data']['token']
+                print(data)
+                user.save()
 
 
     return Response(status=status.HTTP_200_OK)
