@@ -86,6 +86,7 @@ class InvoiceSerializer(ModelSerializer):
             "status_id",
             "qr_code",
             "id",
+            "uuid",
             "signature_url",
             "signature_buyer_id",
             "logo_url",

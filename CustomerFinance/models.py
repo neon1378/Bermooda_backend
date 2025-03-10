@@ -53,7 +53,7 @@ class Invoice(SoftDeleteModel):
     )
     payment_type = models.CharField(choices=PAYMENT_TYPE,null=True,default="cash",max_length=22)
     status = models.ForeignKey(InvoiceStatus,on_delete=models.SET_NULL,null=True)
-    models.UUIDField(unique=True, default=uuid.uuid4, editable=False)
+
     title = models.CharField(max_length=60,null=True)
     seller_information = models.OneToOneField(Information,on_delete=models.CASCADE,null=True,related_name="information_seller")
     buyer_information = models.OneToOneField(Information,on_delete=models.CASCADE,null=True,related_name="information_buyer")
@@ -69,6 +69,7 @@ class Invoice(SoftDeleteModel):
     qr_code = models.ForeignKey(MainFile,on_delete=models.SET_NULL,null=True,blank=True)
     created_date = models.CharField(max_length=20,null=True)
     validity_date = models.CharField(max_length=20,null=True)
+    uuid = models.UUIDField(unique=True, default=uuid.uuid4, editable=False,null=True)
     def signature_url(self):
         base_url = os.getenv("BASE_URL")
         try:

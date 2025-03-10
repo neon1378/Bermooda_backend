@@ -6,7 +6,7 @@ from rest_framework.authtoken.models import Token
 from .models import *
 from rest_framework.decorators import  api_view,permission_classes
 from django.shortcuts import get_object_or_404
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from .serializers import *
 from CrmCore.models import *
 
@@ -197,4 +197,19 @@ def change_invoice_status(request,invoice_id):
             "message":"با موفقیت انجام شد ",
             "data":serializer_data.data
         }
+    )
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def invoice_preview(request,invoice_id):
+    invoice_obj = get_object_or_404(Invoice,uuid=invoice_id)
+    serializer_data =InvoiceSerializer(invoice_obj)
+    return Response(
+        status=status.HTTP_200_OK,data={
+            "status":True,
+            "message":"success",
+            "data":serializer_data.data
+        },
+
     )
