@@ -918,6 +918,8 @@ def create_workspace_to_jadoo(request):
             "name": workspace.title,
             "username": workspace.jadoo_brand_name
         }
+        if workspace.industrialactivity:
+            payload['industrialActivityId'] = workspace.industrialactivity.refrence_id
         if workspace.state:
             payload["stateId"]: workspace.state.refrence_id
         if workspace.city:
