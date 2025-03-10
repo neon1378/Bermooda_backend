@@ -78,16 +78,15 @@ def decrypt(encrypted_data: str) -> str:
 def make_workspace_query(user_acc):
     response_data =[]
 
-    try :
-        workspace_object = WorkSpace.objects.get(owner=user_acc)
-        response_data.append({
+
+    workspace_object = WorkSpace.objects.get(owner=user_acc)
+    response_data.append({
             "id":workspace_object.id,
             "title":workspace_object.title,
             "type":"owner"
-        })
-    except:
-        pass
-    for workspace in user_acc.user_member.all():
+     })
+
+    for workspace in WorkspaceMember.objects.filter(user_account=user_acc):
         response_data.append({
             "id":workspace.workspace.id,
             "title":workspace.workspace.title,
