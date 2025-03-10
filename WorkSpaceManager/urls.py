@@ -29,6 +29,9 @@ urlpatterns = [
     path("UpdateWorkSpaceInfo/<int:workspace_id>",views.update_workspace_information),
     path("WorkSpacePermissionManager/<int:permission_id>",views.WorkSpacePermissionManager.as_view()),
     path("WorkSpacePermissionManager",views.WorkSpacePermissionManager.as_view()),
+    path("create_workspace_to_jadoo",views.create_workspace_to_jadoo),
+
+
 
 ]
 
