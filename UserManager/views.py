@@ -79,7 +79,7 @@ def make_workspace_query(user_acc):
     response_data =[]
 
 
-    workspace_object = WorkSpace.objects.get(owner=user_acc)
+    workspace_object = WorkSpace.objects.filter(owner=user_acc)
     response_data.append({
             "id":workspace_object.id,
             "title":workspace_object.title,
