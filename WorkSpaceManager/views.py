@@ -651,31 +651,7 @@ def get_manager_users(request):
 
 class WorkSpaceMemberManger(APIView):
     permission_classes= [IsAuthenticated]
-    def paginate_queryset(self,page_number,queryset):
 
-
-        # Set up custom pagination
-        paginator = Paginator(queryset.order_by("-id"), 20)  # Set items per page
-
-        # Check if the requested page exists
-        if int(page_number) > paginator.num_pages:
-            return {
-                "count": paginator.count,
-                "next": None,
-                "previous": None,
-                "data": []
-            }
-
-        # Get the page
-        page = paginator.get_page(page_number)
-        serializer_data=GroupCrmSerializer(page.object_list,many=True)
-
-        return {
-            "count": paginator.count,
-            "next": page.next_page_number() if page.has_next() else None,
-            "previous": page.previous_page_number() if page.has_previous() else None,
-            "list": serializer_data.data
-        }
 
     def get(self,request,member_id=None):
         if member_id:
