@@ -930,7 +930,7 @@ def create_workspace_to_jadoo(request):
             payload['avatar'] = f"{base_url}{workspace.avatar.file.url}"
         except:
             pass
-        response_data = requests.post(url=url, headers=headers, data=payload)
+        response_data = requests.post(url=url, headers=headers, json=payload)
 
 
         response_data_main = response_data.json()['data']
