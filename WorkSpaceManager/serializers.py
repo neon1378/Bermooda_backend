@@ -3,6 +3,8 @@ from multiprocessing.util import is_exiting
 
 from rest_framework.serializers import ModelSerializer
 from rest_framework import serializers
+
+from core.widgets import change_current_workspace_jadoo
 from .models import *
 import requests
 from django.shortcuts import get_object_or_404
@@ -234,6 +236,7 @@ class WorkSpaceMemberSerializer(serializers.ModelSerializer):
         create_permission_for_member(member_id=new_workspace_member.id, permissions=permissions)
 
         new_workspace_member.user_account.current_workspace_id=workspace_obj.id
+        change_current_workspace_jadoo(user_acc=new_workspace_member.user_account,workspace_obj=workspace_obj)
         new_workspace_member.user_account.save()
         # create group messages
         group_message = GroupSerializer(data={

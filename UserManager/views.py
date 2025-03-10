@@ -553,6 +553,7 @@ def create_username_pass(request):
             })
     if WorkspaceMember.objects.filter(user_account=user_acc).exists():
         current_workspace=WorkspaceMember.objects.filter(user_account=user_acc).first()
+        change_current_workspace_jadoo(user_acc=user_acc, workspace_obj=current_workspace)
         user_acc.current_workspace_id=current_workspace.workspace.id
         user_acc.save()
             
@@ -645,6 +646,7 @@ def login_user(request):
             workspaces = WorkSpace.objects.filter(owner=user_acc).first()
             if user_acc.current_workspace_id == 0 or  not WorkSpace.objects.filter(id=user_acc.current_workspace_id).exists():
                 if workspaces:
+                    change_current_workspace_jadoo(user_acc=user_acc,workspace_obj=workspaces)
                     user_acc.current_workspace_id = workspaces.id
                     user_acc.save()
             workspace_member = WorkspaceMember.objects.filter(user_account=user_acc)
@@ -652,6 +654,7 @@ def login_user(request):
             for member in workspace_member:
                 if user_acc.current_workspace_id == 0 or not WorkSpace.objects.filter(id=user_acc.current_workspace_id).exists():
                     if member.is_accepted:
+                        change_current_workspace_jadoo(user_acc=user_acc, workspace_obj=member.workspaces)
                         user_acc.current_workspace_id=member.workspace.id
 
                         user_acc.save()

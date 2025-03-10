@@ -5,6 +5,8 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated,AllowAny
 from rest_framework.views import APIView
 from rest_framework.decorators import api_view,permission_classes
+
+from core.widgets import change_current_workspace_jadoo
 from .models import *
 from rest_framework.decorators import parser_classes
 from django.shortcuts import get_object_or_404
@@ -46,6 +48,7 @@ class WorkspaceManager(APIView):
                 if workspace_owner:
                     request.user.current_workspace_id=workspace_owner.id
                 elif workspace_member:
+                    change_current_workspace_jadoo(user_acc=request.user,workspace_obj=workspace_member.workspace)
 
                     request.user.current_workspace_id = workspace_member.workspace.id
                 request.user.save()
