@@ -896,8 +896,8 @@ def create_users_to_jadoo(request):
 
     return Response(status=status.HTTP_200_OK)
 
-@permission_classes([AllowAny])
 @api_view(["GET"])
+@permission_classes([AllowAny])
 def create_workspace_to_jadoo(request):
     jadoo_base_url = os.getenv("JADOO_BASE_URL")
     base_url = os.getenv("BASE_URL")
