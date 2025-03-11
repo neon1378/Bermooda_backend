@@ -249,7 +249,8 @@ class InvoiceSerializer(ModelSerializer):
             factor_price =new_invoice.factor_price()
             final_price = factor_price['final_price']
             installment_count = int(final_price) // installment_price
-            remaining = int(factor_price) % int(installment_price)
+
+            remaining = int(final_price) % int(installment_price)
             last_installment_date = new_invoice.created_date + timedelta(days=installment_period_day)
             for item in range(1,installment_count+1):
                 new_installment = Installment.objects.create(
