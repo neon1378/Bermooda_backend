@@ -455,7 +455,7 @@ def get_phone_number (request):
                 "message":"کاربر از قبل ثبت نام شده است",
                 "data":{}
             })
-        if user_acc.is_expired():
+        if not user_acc.is_expired():
             return Response(status=status.HTTP_400_BAD_REQUEST, data={
                 "status": False,
                 "message": "لطفا چند دقیقه دیگر امتحان کنید"
