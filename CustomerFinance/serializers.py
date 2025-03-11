@@ -254,7 +254,7 @@ class InvoiceSerializer(ModelSerializer):
             installment_count = int(final_price) // int(installment_price)
             print("yeas")
             print(installment_count)
-            print(nt(final_price))
+            print(int(final_price))
             remaining = int(final_price) % int(installment_price)
             last_installment_date = new_invoice.created_date + timedelta(days=installment_period_day)
             for item in range(1,installment_count+1):
