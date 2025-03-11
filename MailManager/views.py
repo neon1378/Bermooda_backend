@@ -97,13 +97,9 @@ class MailManager(APIView):
             else:
                 serializer_data.data['status'] = "دریافت شده"
 
-            try:
-                signature_obj = SignatureMail.objects.get(mail=mail_obj, owner=request.user)
-                sign_status = True
-            except SignatureMail.DoesNotExist:
-                sign_status = False
 
-            serializer_data.data['sign_status']=sign_status
+
+            serializer_data.data['sign_status']=False
 
             return Response(status=status.HTTP_200_OK,data={
                 "status":True,
@@ -142,10 +138,10 @@ class MailManager(APIView):
         mail_serializer= MailSerializer(data=request.data)
         if mail_serializer.is_valid():
             mail_obj = mail_serializer.save()
-            for member in mail_obj.members.all():
+            for member in MailRecipient.objects.filter(mail=mail_obj):
                 sub_title = f"نام جدیدی از طرف {mail_obj.creator.fullname} دریافت کردید"
                 title = "نامه اداری"
-                create_notification(related_instance=mail_obj,workspace=WorkSpace.objects.get(id=request.data['workspace_id']),user=member,title=title,sub_title=sub_title,side_type="recive_mail")
+                create_notification(related_instance=mail_obj,workspace=WorkSpace.objects.get(id=request.data['workspace_id']),user=member.user,title=title,sub_title=sub_title,side_type="recive_mail")
 
             return Response(status=status.HTTP_200_OK,data={
                 "status":True,

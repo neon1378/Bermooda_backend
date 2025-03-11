@@ -6,12 +6,12 @@ from extensions.utils import costum_date
 from django.utils.text import slugify
 from WorkSpaceManager.models import WorkSpace,WorkspaceMember
 import random
-
+from core.models import  SoftDeleteModel
 # Create your models here.
 
 
 
-class MailLabel(models.Model):
+class MailLabel(SoftDeleteModel):
     title= models.CharField(max_length=70,null=True)
     color_code = models.CharField(max_length=80,null=True)
     workspace = models.ForeignKey(WorkSpace,on_delete=models.CASCADE,null=True)
@@ -19,7 +19,7 @@ class MailLabel(models.Model):
 
 
     
-class MailStatus(models.Model):
+class MailStatus(SoftDeleteModel):
     workspace = models.ForeignKey(WorkSpace,on_delete=models.CASCADE,null=True)
     
     title = models.CharField(max_length=200,null=True)
@@ -28,7 +28,7 @@ class MailStatus(models.Model):
 
 
 
-class Mail (models.Model):
+class Mail (SoftDeleteModel):
     mail_image = models.ForeignKey(MainFile,on_delete=models.SET_NULL,null=True,related_name="mail_image_file",blank=True)
     creator = models.ForeignKey(UserAccount,on_delete=models.CASCADE,null=True)
     workspace =  models.ForeignKey(WorkSpace,on_delete=models.CASCADE,null=True)
@@ -81,12 +81,12 @@ class Mail (models.Model):
                 continue
         return status
 
-class FavoriteMail(models.Model):
+class FavoriteMail(SoftDeleteModel):
 
     mail = models.ForeignKey(Mail,on_delete=models.CASCADE,null=True)
     status = models.BooleanField(default=False)
     user_account = models.ForeignKey(UserAccount,on_delete=models.CASCADE)
-class MailReport(models.Model):
+class MailReport(SoftDeleteModel):
     creator =models.ForeignKey(UserAccount,on_delete=models.CASCADE,null=True)
     text = models.TextField(null=True)
     mail  = models.ForeignKey(Mail,on_delete=models.CASCADE,null=True,related_name="mail_reports")
@@ -109,7 +109,7 @@ class MailReport(models.Model):
 
 
         return jalali_datetime.strftime("%Y/%m/%d %H:%M")
-class SignatureMail(models.Model):
+class SignatureMail(SoftDeleteModel):
 
     signature = models.ForeignKey(MainFile,on_delete=models.SET_NULL,null=True)
     sign_status =models.BooleanField(default=False)
@@ -121,7 +121,7 @@ class SignatureMail(models.Model):
 
 
 
-class MailAction(models.Model):
+class MailAction(SoftDeleteModel):
     user_sender = models.ForeignKey(UserAccount,on_delete=models.SET_NULL,null=True,related_name="mail_actionZ")
     title = models.CharField(max_length=300,null=True)
     color_code = models.CharField(max_length=300,null=True)
@@ -131,14 +131,14 @@ class MailAction(models.Model):
 
 
 
-class CategoryDraft(models.Model):
+class CategoryDraft(SoftDeleteModel):
     title = models.CharField(max_length=100,null=True)
     color_code = models.CharField(max_length=200,null=True)
     workspace= models.ForeignKey(WorkSpace,on_delete=models.CASCADE,null=True)
 
     owner = models.ForeignKey(UserAccount,on_delete=models.CASCADE,null=True)
 
-class Draft (models.Model):
+class Draft (SoftDeleteModel):
     draft_name = models.CharField(max_length=200,null=True)
 
     workspace = models.ForeignKey(WorkSpace,on_delete=models.CASCADE,null=True)
@@ -151,3 +151,19 @@ class Draft (models.Model):
     signature_status = models.BooleanField(default=False)
     text = models.TextField(null=True)
     files = models.ManyToManyField(MainFile,related_name="draft_files")
+
+
+
+class MailRecipient(SoftDeleteModel):
+    RECIPIENT_TYPE =(
+        ("sign","SIGN"),
+        ("cc","CC"),
+        ("vcc","VCC"),
+
+    )
+    recipient_type = models.CharField(max_length=10,choices=RECIPIENT_TYPE,default="cc")
+    user = models.ForeignKey(UserAccount,on_delete=models.CASCADE,null=True)
+    mail = models.ForeignKey(Mail,on_delete=models.CASCADE,null=True,related_name="recipients")
+    signature_image = models.ForeignKey(MainFile,on_delete=models.SET_NULL,null=True)
+    signature_status =models.BooleanField(default=False)
+

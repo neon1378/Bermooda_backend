@@ -4,7 +4,7 @@ from .models import *
 from UserManager.models import UserAccount
 from django.shortcuts import get_object_or_404
 from core.models import MainFile
-
+from core.serializers import  MainFileSerializer
 class MemberSerializer(ModelSerializer):
     class Meta:
         model = UserAccount
@@ -83,10 +83,40 @@ class MaliLabelSerializer(ModelSerializer):
             "color_code"
         ]
 
+class MailRecipientSerializer(ModelSerializer):
+    user = MemberSerializer(read_only=True)
+    user_id = serializers.IntegerField(write_only=True,required=True)
+    signature_image = MainFileSerializer(read_only=True)
+    signature_image_id = serializers.IntegerField(write_only=True,required=False)
+    mail_id = serializers.IntegerField(write_only=True,required=False)
+    class Meta:
+        model = MailRecipient
+        fields = [
+            "id",
+            "recipient_type",
+            "user",
+            "user_id",
+            "signature_image",
+            "signature_status",
+            "signature_image_id",
+            "mail_id",
+
+
+        ]
+    def create(self, validated_data):
+        new_mail_recipient= MailRecipient.objects.create(
+            **validated_data
+        )
+
+        return new_mail_recipient
+
+
 class MailSerializer(ModelSerializer):
+    recipients =MailRecipientSerializer(read_only=True,many=True)
+    recipients_list =serializers.ListField(write_only=True,required=True)
     workspace_id = serializers.IntegerField()
     members = MemberSerializer(read_only=True,many=True)
-    member_list =serializers.ListField(write_only=True)
+
     file_id_list = serializers.ListField(write_only=True)
     files = FileDetail(read_only=True,many=True)
     creator_id = serializers.IntegerField(write_only=True)
@@ -95,14 +125,14 @@ class MailSerializer(ModelSerializer):
     mail_image_id=serializers.IntegerField(write_only=True,required=False)
     label = MaliLabelSerializer(read_only=True)
     label_id = serializers.IntegerField(write_only=True)
-    signatures = SignatureMailSerializer(read_only=True,many=True)
+
     status_mail=MailStatusSerializer(read_only=True)
     class Meta:
         model = Mail
         fields = [
             "id",
             "creator_id",
-            "signatures",
+
             "creator",
             "status_mail",
             "workspace_id",
@@ -111,24 +141,26 @@ class MailSerializer(ModelSerializer):
             "title",
             "label",
             "members",
-            "signature_status",
+
             "mail_text",
             "slug",
             "files",
             "label_id",
-            "member_list",
+
             "file_id_list",
             "jtime",
             "sign_completed",
             "mail_code",
             "sender_fullname",
             "mail_type",
+            "recipients",
+
            
         ]
     def create(self, validated_data):
-       
+        recipients_list =validated_data.pop("recipients_list",[])
         workspace_id = validated_data.pop("workspace_id")
-        member_list = validated_data.pop("member_list")
+
         
         file_id_list= validated_data.pop("file_id_list",[])
         label_id = validated_data.pop("label_id",None)
@@ -147,19 +179,22 @@ class MailSerializer(ModelSerializer):
             label_obj = get_object_or_404(MailLabel,id=label_id)
             new_mail.label=label_obj
 
-        if new_mail.signature_status == False:
+        for receiver in recipients_list:
+            receiver['mail_id']=new_mail.id
+            serializer_data = MailRecipientSerializer(data=receiver)
+            if serializer_data.is_valid():
+                serializer_data.save()
+            else:
+                raise serializers.ValidationError(
+                    {
+                        "status":False,
+                        "message":"Validation Error",
+                        "data":serializer_data.errors
+                    }
 
-            new_mail.members.set(member_list)
-        else:
-            for member in member_list:
-                new_signature = SignatureMail(
-                    mail = new_mail,
-                    owner_id=member['id'],
-                    order = member['order']
-                ) 
-                new_signature.save()
-                
-                new_mail.members.add(UserAccount.objects.get(id=member['id']))
+                )
+
+
         for file_id in file_id_list:
             main_file = MainFile.objects.get(id=file_id)
             
