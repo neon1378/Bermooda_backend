@@ -254,14 +254,14 @@ class InvoiceSerializer(ModelSerializer):
             last_installment_date = new_invoice.created_date + timedelta(days=installment_period_day)
             for item in range(1,installment_count+1):
                 new_installment = Installment.objects.create(
-                    price = installment_price,
+                    price = int(installment_price),
                     date_to_pay = last_installment_date,
                     invoice =new_invoice
                 )
                 last_installment_date = last_installment_date + timedelta(days=installment_period_day)
             if remaining > 0 :
                 new_installment = Installment.objects.create(
-                    price=installment_price,
+                    price=int(installment_price),
                     date_to_pay=last_installment_date,
                     invoice =new_invoice
                 )
