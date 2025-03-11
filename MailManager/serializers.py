@@ -202,7 +202,8 @@ class MailSerializer(ModelSerializer):
             new_receipt = MailRecipient(
                 recipient_type = "sign",
                 user_id = validated_data.get("creator_id"),
-                signature_image=new_main_file
+                signature_image=new_main_file,
+                signature_status=True
             )
             new_receipt.save()
 
