@@ -113,11 +113,13 @@ class Invoice(SoftDeleteModel):
 
 
     def is_over(self):
-        print(self.validity_date)
-        print(datetime.now().date)
-        if self.validity_date < datetime.now().date():
-            return True
-        return False
+
+        try:
+            if self.validity_date < datetime.now().date():
+                return True
+            return False
+        except:
+            return False
 
     def created_date_persian(self):
 
