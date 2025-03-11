@@ -167,7 +167,7 @@ class MailSerializer(ModelSerializer):
         label_id = validated_data.pop("label_id",None)
         mail_image_id= validated_data.pop("mail_image_id",None)
     
-     
+        print(label_id)
         new_mail= Mail.objects.create(**validated_data)
         new_mail.workspace = get_object_or_404(WorkSpace,id=workspace_id)
         new_mail.save()
