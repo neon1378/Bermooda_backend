@@ -1,11 +1,12 @@
 from django.db import models
 from dotenv import load_dotenv
-
+from django.utils import timezone
 from extensions.utils import costum_date
 import os
 from core.models import City,State,MainFile,SoftDeleteModel
 import uuid
-
+from core.widgets import persian_to_gregorian,gregorian_to_persian
+from CrmCore.models import CustomerUser
 load_dotenv()
 
 class InvoiceStatus(SoftDeleteModel):
@@ -53,7 +54,7 @@ class Invoice(SoftDeleteModel):
     )
     payment_type = models.CharField(choices=PAYMENT_TYPE,null=True,default="cash",max_length=22)
     status = models.ForeignKey(InvoiceStatus,on_delete=models.SET_NULL,null=True)
-
+    customer = models.ForeignKey(CustomerUser,on_delete=models.CASCADE,null=True)
     title = models.CharField(max_length=60,null=True)
     seller_information = models.OneToOneField(Information,on_delete=models.CASCADE,null=True,related_name="information_seller")
     buyer_information = models.OneToOneField(Information,on_delete=models.CASCADE,null=True,related_name="information_buyer")
@@ -67,9 +68,12 @@ class Invoice(SoftDeleteModel):
     created = models.DateField(auto_now_add=True)
     invoice_code = models.CharField(max_length=90,null=True)
     qr_code = models.ForeignKey(MainFile,on_delete=models.SET_NULL,null=True,blank=True)
-    created_date = models.CharField(max_length=20,null=True)
-    validity_date = models.CharField(max_length=20,null=True)
+    created_date = models.DateField(null=True)
+
+    validity_date = models.DateField(null=True)
     main_id = models.UUIDField(unique=True,null=True,blank=True)
+    installment_count = models.IntegerField(default=1)
+
     def save(self, *args, **kwargs):
         if not self.main_id:  # اگر مقدار نداشته باشد
             self.main_id = uuid.uuid4()  # مقدار یکتا تولید کن
@@ -113,8 +117,11 @@ class Invoice(SoftDeleteModel):
                 total_price = product.total_price()
                 factor_price+=total_price
             final_price = (int(factor_price) - (int(factor_price) *   int(self.discount) / 100 )) + (int(factor_price) * (int(self.taxes) / 100))
-            discount_price = (100 - self.discount) * factor_price
-            taxes_price = (100 - self.taxes) * factor_price
+            discount_price = factor_price *( self.discount / 100)
+
+
+
+            taxes_price =factor_price *  (self.taxes/100)
             return {
                 "final_price":final_price,
                 "factor_price":factor_price,
@@ -122,3 +129,54 @@ class Invoice(SoftDeleteModel):
                 "taxes_price":taxes_price,
 
             }
+
+
+
+
+class Installment(SoftDeleteModel):
+    price = models.DecimalField(max_digits=20, decimal_places=0, help_text="Price in Tomans")
+    date_to_pay = models.DateField(null=True)
+
+    created = models.DateField(auto_now_add=True)
+
+    invoice = models.ForeignKey(Invoice,on_delete=models.CASCADE,null=True,related_name="installments")
+    is_paid = models.BooleanField(default=False)
+    date_payed =models.DateField(null=True)
+    document_of_payment= models.ForeignKey(MainFile,on_delete=models.SET_NULL,null=True)
+    is_delayed= models.BooleanField(default=False)
+
+
+
+    def days_passed (self):
+        try:
+
+
+
+            now = timezone.now()
+            days_passed = (now - self.date_time_to_pay).days
+            return days_passed
+        except:
+            return None
+
+    def created_persian (self):
+        try:
+            return gregorian_to_persian(self.created)
+        except:
+            return None
+
+
+    def date_to_pay_persian(self):
+        try:
+            return gregorian_to_persian(self.date_to_pay)
+        except:
+            return None
+
+
+
+
+    def date_payed_persian(self):
+
+        try:
+            return gregorian_to_persian(self.date_payed)
+        except:
+            return None

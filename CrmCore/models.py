@@ -1,5 +1,5 @@
 from django.db import models
-from CustomerFinance.models import *
+
 from core.models import MainFile
 from UserManager.models import UserAccount
 import jdatetime
@@ -10,7 +10,7 @@ from django.db.models import Max
 import os 
 from dotenv import load_dotenv
 load_dotenv()
-from core.models import SoftDeleteModel
+from core.models import SoftDeleteModel,City,State
 from django.utils.formats import number_format
 class CrmDepartment(SoftDeleteModel):
     title = models.CharField(max_length=200,null=True)
@@ -207,7 +207,7 @@ class CustomerUser(SoftDeleteModel):
     label = models.ForeignKey(Label,on_delete=models.SET_NULL,null=True,related_name="customer_label")
     category =models.ForeignKey(Category,on_delete=models.SET_NULL,null=True)
     report =models.ManyToManyField(Report,blank=True,related_name="customer_user")
-    invoice = models.ManyToManyField(Invoice,related_name="customer_invoice",blank=True)
+
     fullname_or_company_name = models.CharField(max_length=100,null=True)
     phone_number = models.CharField(max_length=40,null=True)
     phone_number_static = models.CharField(max_length=50,null=True,blank=True)

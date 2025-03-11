@@ -158,3 +158,16 @@ def change_current_workspace_jadoo(user_acc,workspace_obj):
 
     except:
         pass
+
+
+def gregorian_to_persian(date_time):
+    try:
+        jalali_date = jdatetime.datetime.fromgregorian(datetime=date_time)
+        formatted_date_persian = jalali_date.strftime("%d %B %Y | %H:%M ")
+        return formatted_date_persian
+    except:
+
+        jalali_date = jdatetime.datetime.fromgregorian(datetime=date_time)
+        formatted_date_persian = jalali_date.strftime("%d %B %Y")
+        return formatted_date_persian
+

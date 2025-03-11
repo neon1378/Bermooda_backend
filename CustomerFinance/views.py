@@ -57,7 +57,7 @@ class InvoiceManager(APIView):
         # Retrieve all invoices for a specific customer
         customer_id = request.GET.get("customer_id")
         customer_obj = get_object_or_404(CustomerUser, id=customer_id)
-        invoice_objs = customer_obj.invoice.all().order_by("-id")
+        invoice_objs =Invoice.objects.filter(customer=customer_obj).order_by("-id")
         invoice_data_list = InvoiceSerializer(invoice_objs, many=True).data
 
         # Add file URLs to each serialized invoice

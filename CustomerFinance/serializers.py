@@ -1,9 +1,13 @@
+from distutils.file_util import write_file
+from datetime import timedelta
+from django.utils import timezone
 from celery.bin.worker import worker
 from django.utils.text import normalize_newlines
 from rest_framework.serializers import ModelSerializer
 from .models import *
 from core.serializers import MainFileSerializer
 from rest_framework import serializers
+from core.widgets import  persian_to_gregorian
 from CrmCore.models import CustomerUser
 from django.shortcuts import get_object_or_404
 # SellerCopmany
@@ -68,9 +72,43 @@ class InvoiceStatusSerializer(ModelSerializer):
         return instance
 
 
+class InstallMentSerializer(ModelSerializer):
+    document_of_payment = MainFileSerializer(read_only=True)
+    document_of_payment_id =serializers.IntegerField(write_only=True,required=False)
+
+    class Meta:
+        model = Installment
+        fields =[
+            "id",
+            "price",
+            "date_to_pay",
+            "invoice",
+            "is_paid",
+            "date_payed",
+            "is_delayed",
+            "document_of_payment",
+            "document_of_payment_id",
+            "days_passed",
+            "created_persian",
+            "date_to_pay_persian",
+            "date_payed_persian",
+        ]
+
+
+
+
+
+
+
+
+
 
 class InvoiceSerializer(ModelSerializer):
     qr_code = MainFileSerializer(read_only=True)
+
+    installments = InstallMentSerializer(read_only=True,many=True)
+    installment_period_day  = serializers.IntegerField(write_only=True,required=False)
+    installment_price = serializers.IntegerField(write_only=True,required=False)
     seller_information = InformationSerializer(read_only=True)
     buyer_information = InformationSerializer(read_only=True)
     product= ProductInvoiceSerializer(many=True,read_only=True)
@@ -81,6 +119,7 @@ class InvoiceSerializer(ModelSerializer):
     status_id = serializers.IntegerField(write_only=True,required=False)
     seller_information_data =serializers.JSONField(write_only=True,required=True)
     signature_buyer_id = serializers.IntegerField(write_only=True,required=False)
+
     class Meta:
         model = Invoice
         fields = [
@@ -109,27 +148,42 @@ class InvoiceSerializer(ModelSerializer):
             "workspace_id",
             "signature_id",
             "product_list",
-
+            "installment_period_day",
+            "installment_price",
+            "installments",
             "seller_information_data",
+            "installment_period_day",
+            "installment_price",
       
         ]
 
 
 
     def create(self,validated_data):
+
+
         workspace_id =validated_data.pop("workspace_id")
         workspace_obj = get_object_or_404(WorkSpace,id=workspace_id)
         products = validated_data.pop("product_list",[])
         signature_id = validated_data.pop("signature_id",None)
 
+        installment_period_day = validated_data.pop("installment_period_day",None)
+        installment_price = validated_data.pop("installment_price",None)
+        created_date = validated_data.pop("created_date",None)
+        validity_date = validated_data.pop("validity_date",None)
         signature_buyer_id= validated_data.pop("signature_buyer_id",None)
         seller_information = validated_data.pop("seller_information_data")
 
         state_seller = seller_information.pop("state",None)
         city_seller = seller_information.pop("city",None)
-
-
-        customer_id= validated_data.pop("customer_id")
+        payment_type = validated_data.get("payment_type",None)
+        if products == [] or products == None:
+            raise serializers.ValidationError(
+                {
+                    "status":False,
+                    "message":"انتخاب حداقل یک محصول اجباری میباشد"
+                }
+            )
 
         if not workspace_obj.personal_information_status:
             raise serializers.ValidationError({
@@ -165,12 +219,16 @@ class InvoiceSerializer(ModelSerializer):
         buyer_information_obj.save()
         new_invoice = Invoice(
             **validated_data,
+            created_date = persian_to_gregorian(created_date),
+            validity_date = persian_to_gregorian(validity_date),
             buyer_information=buyer_information_obj,
             seller_information=seller_information_obj,
             invoice_code = f"#{random.randint(1,100000)}",
 
 
         )
+
+
         if workspace_obj.avatar:
             new_invoice.logo_main= workspace_obj.avatar
         if signature_id:
@@ -183,12 +241,33 @@ class InvoiceSerializer(ModelSerializer):
             signature_file_main_file.its_blong=True
             signature_file_main_file.save()
             new_invoice.signature_buyer= signature_file_main_file
+
+
         new_invoice.save()
+        if payment_type == "installment":
+            factor_price =new_invoice.factor_price()
+            final_price = factor_price['final_price']
+            installment_count = int(final_price) // installment_price
+            remaining = int(factor_price) % int(installment_price)
+            last_installment_date = new_invoice.created_date + timedelta(days=installment_period_day)
+            for item in range(1,installment_count+1):
+                new_installment = Installment.objects.create(
+                    price = installment_price,
+                    date_to_pay = last_installment_date,
+                    invoice =new_invoice
+                )
+                last_installment_date = last_installment_date + timedelta(days=installment_period_day)
+            if remaining > 0 :
+                new_installment = Installment.objects.create(
+                    price=installment_price,
+                    date_to_pay=last_installment_date,
+                    invoice =new_invoice
+                )
+
         for product in products:
             new_product = ProductInvoice(**product)
             new_product.save()
             new_invoice.product.add(new_product)
 
-        customer_obj = get_object_or_404(CustomerUser,id=customer_id)
-        customer_obj.invoice.add(new_invoice)
+
         return new_invoice

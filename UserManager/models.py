@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import *
 from extensions.utils import costum_date
-from CustomerFinance.models import Invoice
+
 from core.models import City,State,MainFile
 from datetime import datetime
 from datetime import timedelta
