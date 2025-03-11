@@ -245,12 +245,12 @@ class InvoiceSerializer(ModelSerializer):
             signature_file_main_file.its_blong=True
             signature_file_main_file.save()
             new_invoice.signature_buyer= signature_file_main_file
+        new_invoice.save()
 
         for product in products:
             new_product = ProductInvoice(**product)
             new_product.save()
             new_invoice.product.add(new_product)
-        new_invoice.save()
         if payment_type == "installment":
             factor_price =new_invoice.factor_price()
             final_price = factor_price['final_price']
