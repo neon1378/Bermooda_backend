@@ -88,7 +88,7 @@ class FavoriteMail(SoftDeleteModel):
     user_account = models.ForeignKey(UserAccount,on_delete=models.CASCADE)
 class MailReport(SoftDeleteModel):
     creator =models.ForeignKey(UserAccount,on_delete=models.CASCADE,null=True)
-    text = models.TextField(null=True)
+    text = models.TextField(null=True,blank=True)
     mail  = models.ForeignKey(Mail,on_delete=models.CASCADE,null=True,related_name="mail_reports")
     files = models.ManyToManyField(MainFile,blank=True)
     created = models.DateTimeField(auto_now_add=True)
