@@ -68,9 +68,9 @@ class Invoice(SoftDeleteModel):
     created = models.DateField(auto_now_add=True)
     invoice_code = models.CharField(max_length=90,null=True)
     qr_code = models.ForeignKey(MainFile,on_delete=models.SET_NULL,null=True,blank=True)
-    created_date = models.DateField(null=True)
+    created_date = models.DateField(null=True,blank=True)
 
-    validity_date = models.DateField(null=True)
+    validity_date = models.DateField(null=True,blank=True)
     main_id = models.UUIDField(unique=True,null=True,blank=True)
     installment_count = models.IntegerField(default=1)
 
