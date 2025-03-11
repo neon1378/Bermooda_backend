@@ -110,6 +110,12 @@ class Invoice(SoftDeleteModel):
     def invoice_date (self):
         return costum_date(self.created)
 
+
+    def is_over(self):
+        if self.validity_date < timezone.now():
+            return True
+        return False
+
     def created_date_persian(self):
 
         try:
