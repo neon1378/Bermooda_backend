@@ -122,7 +122,7 @@ class WorkSpaceSerializer(ModelSerializer):
 
         ]
     def update(self,instance,validated_data):
-        permission_list = validated_data.pop("permission_list")
+
 
         jadoo_brand_name= validated_data.get("jadoo_brand_name",None)
         if not jadoo_brand_name :
