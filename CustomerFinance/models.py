@@ -113,7 +113,9 @@ class Invoice(SoftDeleteModel):
 
 
     def is_over(self):
-        if self.validity_date < datetime.now():
+        print(self.validity_date)
+        print(datetime.now().date)
+        if self.validity_date < datetime.now().date:
             return True
         return False
 
