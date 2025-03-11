@@ -116,7 +116,7 @@ class MailSerializer(ModelSerializer):
     recipients_list =serializers.ListField(write_only=True,required=True)
     workspace_id = serializers.IntegerField()
     members = MemberSerializer(read_only=True,many=True)
-
+    self_signature_id = serializers.IntegerField(write_only=True,required=False)
     file_id_list = serializers.ListField(write_only=True)
     files = FileDetail(read_only=True,many=True)
     creator_id = serializers.IntegerField(write_only=True)
@@ -146,7 +146,7 @@ class MailSerializer(ModelSerializer):
             "slug",
             "files",
             "label_id",
-
+            "self_signature_id",
             "file_id_list",
             "jtime",
             "sign_completed",
@@ -162,7 +162,7 @@ class MailSerializer(ModelSerializer):
         recipients_list =validated_data.pop("recipients_list",[])
         workspace_id = validated_data.pop("workspace_id")
 
-        
+        self_signature_id =validated_data.pop("self_signature_id",None)
         file_id_list= validated_data.pop("file_id_list",[])
         label_id = validated_data.pop("label_id",None)
         mail_image_id= validated_data.pop("mail_image_id",None)
@@ -195,6 +195,16 @@ class MailSerializer(ModelSerializer):
 
                 )
 
+        if self_signature_id:
+            new_main_file = MainFile.objects.get(id=self_signature_id)
+            new_main_file.its_blong = True
+            new_main_file.save()
+            new_receipt = MailRecipient(
+                recipient_type = "sign",
+                user_id = validated_data.get("creator_id"),
+                signature_image=new_main_file
+            )
+            new_receipt.save()
 
         for file_id in file_id_list:
             main_file = MainFile.objects.get(id=file_id)
