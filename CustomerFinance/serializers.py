@@ -155,6 +155,8 @@ class InvoiceSerializer(ModelSerializer):
             "seller_information_data",
             "installment_period_day",
             "installment_price",
+            "created_date_persian",
+            "validity_date_persian",
       
         ]
 

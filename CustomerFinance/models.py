@@ -109,8 +109,19 @@ class Invoice(SoftDeleteModel):
         except:return {}
     def invoice_date (self):
         return costum_date(self.created)
-    
 
+    def created_date_persian(self):
+
+        try:
+            return gregorian_to_persian(self.created_date)
+        except:
+            return None
+    def validity_date_persian(self):
+
+        try:
+            return gregorian_to_persian(self.validity_date)
+        except:
+            return None
     def factor_price (self):
             factor_price = 0
             for product in self.product.all():
