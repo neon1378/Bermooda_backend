@@ -108,9 +108,9 @@ class MailManager(APIView):
             })
         
         mail_objs = Mail.objects.filter(workspace=workspace_obj)
-        mail_filtered =[
-            mail for mail in mail_objs if mail.creator == request.user or request.user in mail.members.all()
-        ]
+        mail_filtered = mail_objs.filter(
+            Q(creator=request.user) | Q(recipients__user=request.user)
+        ).distinct()
         serializer_data = MailSerializer(mail_filtered,many=True)
         for data in serializer_data.data:
             mail_obj= Mail.objects.get(id=data['id'])
@@ -205,34 +205,34 @@ class MailReportManager(APIView):
 
 @permission_classes([IsAuthenticated,IsWorkSpaceUser])
 @api_view(['PUT'])
-def add_signature_to_mail (request,sign_id):
+def add_signature_to_mail (request,recipient_id):
     data= request.data
     signature_file_id = data['signature_file_id'] 
-    signature_mail_obj = get_object_or_404(SignatureMail,id=sign_id)
-    if signature_mail_obj.owner == request.user:
+    mail_recipient = get_object_or_404(MailRecipient,id=recipient_id)
+    if mail_recipient.user == request.user:
         main_file = MainFile.objects.get(id=signature_file_id)
         main_file.its_blong=True
         main_file.save()
-        signature_mail_obj.signature = main_file
-        signature_mail_obj.sign_status=True
-        signature_mail_obj.save()
-        signature_mail_obj.mail.create_mail_action(user_sender=request.user,user=signature_mail_obj.mail.creator,title="امضا کرد") 
-        for member in signature_mail_obj.mail.members.all():
-            if request.user != member:
+        mail_recipient.signature_image = main_file
+        mail_recipient.signature_status=True
+        mail_recipient.save()
+        mail_recipient.mail.create_mail_action(user_sender=request.user,user=mail_recipient.mail.user,title="امضا کرد")
+        for recipient in mail_recipient.mail.recipients.filter(recipient_type="sign"):
+            if request.user != recipient.user:
                 sub_title = f"نامه توسط  {request.user.fullname} با موفقیت امضا شد"
                 title = "نامه اداری"
-                create_notification(related_instance=signature_mail_obj.mail,workspace=WorkSpace.objects.get(id=request.data['workspace_id']),user=member,title=title,sub_title=sub_title,side_type="mail_signatured")
-            signature_mail_obj.mail.create_mail_action(user_sender=request.user,user=member,title="امضا کرد") 
-        if request.user != signature_mail_obj.mail.creator:
+                create_notification(related_instance=recipient.mail,workspace=WorkSpace.objects.get(id=request.data['workspace_id']),user=recipient.user,title=title,sub_title=sub_title,side_type="mail_signatured")
+            recipient.mail.create_mail_action(user_sender=request.user,user=recipient.user,title="امضا کرد")
+        if request.user != mail_recipient.mail.creator:
                 sub_title = f"نامه توسط  {request.user.fullname} با موفقیت امضا شد"
                 title = "نامه اداری"
-                create_notification(related_instance=signature_mail_obj.mail,workspace=WorkSpace.objects.get(id=request.data['workspace_id']),user=signature_mail_obj.mail.creator,title=title,sub_title=sub_title,side_type="mail_signatured")
+                create_notification(related_instance=mail_recipient.mail,workspace=WorkSpace.objects.get(id=request.data['workspace_id']),user=mail_recipient.mail.creator,title=title,sub_title=sub_title,side_type="mail_signatured")
 
-        if signature_mail_obj.mail.sign_completed():
-                sub_title = f"نامه {signature_mail_obj.mail.title} به صورت کامل امضا شده است"
+        if mail_recipient.mail.sign_completed():
+                sub_title = f"نامه {mail_recipient.mail.title} به صورت کامل امضا شده است"
                 title = "نامه اداری"
-                create_notification(related_instance=signature_mail_obj.mail,workspace=WorkSpace.objects.get(id=request.data['workspace_id']),user=signature_mail_obj.mail.creator,title=title,sub_title=sub_title,side_type="mail_signatured")
-        serializer_data =SignatureMailSerializer(signature_mail_obj)
+                create_notification(related_instance=mail_recipient.mail,workspace=WorkSpace.objects.get(id=request.data['workspace_id']),user=mail_recipient.mail.creator,title=title,sub_title=sub_title,side_type="mail_signatured")
+        serializer_data =MailRecipientSerializer(mail_recipient)
         return Response(status=status.HTTP_202_ACCEPTED,data={
             "status":True,
             "message":"success",

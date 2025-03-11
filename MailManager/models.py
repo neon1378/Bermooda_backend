@@ -73,8 +73,8 @@ class Mail (SoftDeleteModel):
         return "داخلی"
     def sign_completed (self):
         status = True
-        for sign in self.signatures.all():
-            if sign.sign_status == False:
+        for sign in self.recipients.filter(recipient_type="sign"):
+            if sign.signature_status == False:
                 status=False
                 break
             else:
