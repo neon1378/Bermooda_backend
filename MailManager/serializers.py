@@ -154,6 +154,7 @@ class MailSerializer(ModelSerializer):
             "sender_fullname",
             "mail_type",
             "recipients",
+            "recipients_list",
 
            
         ]
