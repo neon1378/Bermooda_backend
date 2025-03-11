@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 from django.utils import timezone
 from extensions.utils import costum_date
 import os
+from datetime import datetime
 from core.models import City,State,MainFile,SoftDeleteModel
 import uuid
 from core.widgets import persian_to_gregorian,gregorian_to_persian
@@ -112,7 +113,7 @@ class Invoice(SoftDeleteModel):
 
 
     def is_over(self):
-        if self.validity_date < timezone.now():
+        if self.validity_date < datetime.now():
             return True
         return False
 
