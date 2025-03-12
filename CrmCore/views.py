@@ -616,7 +616,7 @@ class GroupCrmManager(APIView):
                         "step":2,
                     },
                     {
-                        "title":"تماس اولیه 3",
+                        "title":"تماس اولیه ",
                         "step":3,
                     },
 
@@ -716,7 +716,7 @@ class GroupCrmManager(APIView):
             },
 
             {
-                "title": "بسته شدن",
+                "title": "بسته شده",
                 "color_code": "#636D74",
                 "order": 5,
                 "steps": [
