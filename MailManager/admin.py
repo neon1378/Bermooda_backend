@@ -8,4 +8,5 @@ admin.site.register(MailReport)
 admin.site.register(MailStatus)
 admin.site.register(FavoriteMail)
 admin.site.register(MailAction)
+admin.site.register(MailRecipient)
 
