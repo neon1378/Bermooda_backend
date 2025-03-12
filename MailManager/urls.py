@@ -7,7 +7,7 @@ urlpatterns = [
     path ("MailLabelManager/<int:label_id>",views.MailLabelManager.as_view()),
     path ("MailReportManager",views.MailReportManager.as_view()),
     path ("MailReportManager/<int:report_id>",views.MailReportManager.as_view()),
-    path ("AddSignatureToMail/<int:sign_id>",views.add_signature_to_mail),
+    path ("AddSignatureToMail/<int:recipient_id>",views.add_signature_to_mail),
     path ("MailStatusManager/<int:mail_id>",views.MailStatusManager.as_view()),
     path ("create_statuses",views.create_statuses),
     path ("AddOrDiscardToFavorite/<int:mail_id>",views.add_or_discard_to_favorite),
