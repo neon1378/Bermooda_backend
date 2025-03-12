@@ -9,8 +9,8 @@ import jdatetime
 class Notification(models.Model):
 
     
-    title = models.CharField(max_length=40,null=True)
-    sub_title = models.CharField(max_length=200,null=True)
+    title = models.TextField(null=True)
+    sub_title = models.TextField(null=True)
     content_type = models.ForeignKey(ContentType, on_delete=models.SET_NULL,null=True)
     object_id = models.PositiveIntegerField()
     related_object = GenericForeignKey('content_type', 'object_id')
