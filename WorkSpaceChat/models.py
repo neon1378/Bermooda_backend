@@ -3,6 +3,7 @@ from django.db import models
 from UserManager.models import  UserAccount
 from WorkSpaceManager.models import  WorkSpace,WorkspaceMember
 import jdatetime
+import locale
 # Create your models here.
 class GroupMessage(SoftDeleteModel):
     workspace= models.ForeignKey(WorkSpace,on_delete=models.CASCADE,null=True)
@@ -25,6 +26,7 @@ class TextMessage(SoftDeleteModel):
 
         return formatted_time_persian
     def jalali_date (self):
+        locale.setlocale(locale.LC_ALL, 'fa_IR')
         jalali_date = jdatetime.datetime.fromgregorian(date=self.created_at)
 
         # Extract only the time from `created_at`
