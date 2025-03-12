@@ -7,6 +7,7 @@ from django.utils.timezone import is_aware, make_naive
 from dotenv import load_dotenv
 load_dotenv()
 import os
+import locale
 import requests
 
 from datetime import datetime
@@ -161,6 +162,7 @@ def change_current_workspace_jadoo(user_acc,workspace_obj):
 
 
 def gregorian_to_persian(date_time,type=None):
+    locale.setlocale(locale.LC_ALL, 'fa_IR')
     if type == "date_time":
         jalali_date = jdatetime.datetime.fromgregorian(datetime=date_time)
         formatted_date_persian = jalali_date.strftime("%d %B %Y | %H:%M ")

@@ -978,3 +978,41 @@ class WorkSpacePermissionManager(APIView):
                 "data": serializer_data.data
             }
         )
+
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def get_message(request):
+    from collections import defaultdict
+    from WorkSpaceChat.models import TextMessage
+    from django.db.models import F
+    import locale
+    from WorkSpaceChat.serializers import TextMessageSerializer
+    import jdatetime
+    from rest_framework.response import Response
+    from rest_framework import status
+
+    # Set locale for Persian language (move outside loop)
+    locale.setlocale(locale.LC_ALL, 'fa_IR')
+
+    messages = TextMessage.objects.all().order_by("created_at")
+
+    # Group messages by date
+    grouped_data = defaultdict(list)
+    for msg in messages:
+        # Convert Gregorian date to Jalali
+        jalali_date = jdatetime.datetime.fromgregorian(date=msg.created_at.date())
+
+        # Format Jalali date
+        formatted_date_persian = jalali_date.strftime("%d %B")
+
+        # Group messages
+        grouped_data[formatted_date_persian].append(TextMessageSerializer(msg).data)
+
+    # Convert grouped data to required format
+    result = [{"date": date, "messages": msgs} for date, msgs in grouped_data.items()]
+
+    # Return JSON response
+    return Response(result, status=status.HTTP_200_OK)
+

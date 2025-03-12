@@ -19,11 +19,13 @@ class GroupMessageAdmin(admin.ModelAdmin):
     def restore_selected(self, request, queryset):
         # Restore soft-deleted items
         queryset.update(is_deleted=False, deleted_at=None)
-        (self.message_user(request, f'{queryset.count()} items restored successfully.')
+        (self.message_user(request, f'{queryset.count()} items restored successfully.'))
 
-@admin.register(TextMessage))
+
+
+@admin.register(TextMessage)
 class TextMessageAdmin(admin.ModelAdmin):
-    list_display = ( 'is_deleted', 'deleted_at',"text")
+    list_display = ( 'is_deleted', 'deleted_at')
     list_filter = ('is_deleted',)
     actions = ['restore_selected']
 
@@ -35,4 +37,4 @@ class TextMessageAdmin(admin.ModelAdmin):
     def restore_selected(self, request, queryset):
         # Restore soft-deleted items
         queryset.update(is_deleted=False, deleted_at=None)
-        self.message_user(request, f'{queryset.count()} items restored successfully.')
+        (self.message_user(request, f'{queryset.count()} items restored successfully.'))

@@ -2,6 +2,8 @@ import json
 
 from channels.generic.websocket import AsyncWebsocketConsumer
 from asgiref.sync import sync_to_async, async_to_sync
+from django.core.paginator import Paginator
+
 from WorkSpaceManager.models import WorkSpace
 from .models import GroupMessage,TextMessage
 from .serializers import GroupSerializer,TextMessageSerializer
@@ -11,7 +13,10 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 from asgiref.sync import sync_to_async
 from .models import WorkSpace, GroupMessage, TextMessage
 from .serializers import GroupSerializer, TextMessageSerializer
-
+from collections import defaultdict
+from django.db.models import F
+import locale
+import jdatetime
 
 class GroupMessageWs(AsyncWebsocketConsumer):
     async def connect(self):
@@ -48,6 +53,72 @@ class GroupMessageWs(AsyncWebsocketConsumer):
             await self.close_group_message()
         elif command == "new_message":
             await self.new_message(data["data"].get("text"))
+        elif command == "read_message_list":
+            group_id = data["data"].get("group_id")
+            page_number = data["data"].get("page_number",1)
+
+
+            await self.read_messages(
+                group_id,
+                page_number
+            )
+
+    @sync_to_async
+    def _get_group_message_list(self,group_id,page_number):
+        group_obj = GroupMessage.objects.get(id= group_id)
+        text_messages = group_obj.group_text_messages.all().order_by("-id")
+        paginator = Paginator(text_messages, 20)  # Set items per page
+
+        # Check if the requested page exists
+        if int(page_number) > paginator.num_pages:
+            return {
+                "count": paginator.count,
+                "next": None,
+                "previous": None,
+                "data": []
+            }
+
+        # Get the page
+        page = paginator.get_page(page_number)
+
+        locale.setlocale(locale.LC_ALL, 'fa_IR')
+
+
+
+        # Group messages by date
+        grouped_data = defaultdict(list)
+        for msg in page.object_list:
+            # Convert Gregorian date to Jalali
+            jalali_date = jdatetime.datetime.fromgregorian(date=msg.created_at.date())
+
+            # Format Jalali date
+            formatted_date_persian = jalali_date.strftime("%d %B")
+
+            # Group messages
+            grouped_data[formatted_date_persian].append(TextMessageSerializer(msg).data)
+
+        # Convert grouped data to required format
+        result = [{"date": date, "messages": msgs} for date, msgs in grouped_data.items()]
+
+
+
+        return {
+            "count": paginator.count,
+            "next": page.next_page_number() if page.has_next() else None,
+            "previous": page.previous_page_number() if page.has_previous() else None,
+            "list": result
+        }
+
+
+
+    async def read_messages(self,group_id,page_number):
+        group_message_list = await self._get_group_message_list(group_id,page_number)
+        await self.send(json.dumps(
+            {
+                "data_type":"message_list",
+                "data":group_message_list
+            }
+        ))
 
     @sync_to_async
     def _group_message_serialize(self):

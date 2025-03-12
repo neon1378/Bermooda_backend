@@ -2,7 +2,7 @@ from core.models import  SoftDeleteModel
 from django.db import models
 from UserManager.models import  UserAccount
 from WorkSpaceManager.models import  WorkSpace,WorkspaceMember
-
+import jdatetime
 # Create your models here.
 class GroupMessage(SoftDeleteModel):
     workspace= models.ForeignKey(WorkSpace,on_delete=models.CASCADE,null=True)
@@ -16,7 +16,12 @@ class TextMessage(SoftDeleteModel):
     group = models.ForeignKey(GroupMessage,on_delete=models.CASCADE,related_name="group_text_messages",null=True)
 
 
+    def jalali_time (self):
+        # Convert Gregorian date to Jalali
+        jalali_date = jdatetime.datetime.fromgregorian(date=self.created_at)
 
+        # Extract only the time from `created_at`
+        formatted_time_persian = jalali_date.strftime("%H:%M")
 
-
+        return formatted_time_persian
 

@@ -52,6 +52,7 @@ class TextMessageSerializer(serializers.ModelSerializer):
             "owner_id",
             "created_at",
             "group_id",
+            "jalali_time",
 
         ]
     def create(self, validated_data):
