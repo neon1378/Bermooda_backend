@@ -499,22 +499,15 @@ class CheckListManager(APIView):
         except (ValueError, AttributeError):
             return None  # Return None if date or time format is invalid
     def get (self,request,checklist_id_or_task_id):
-        check_list_obj = CheckList.objects.filter(task_id=checklist_id_or_task_id)
+        check_list_obj = CheckList.objects.filter(task_id=checklist_id_or_task_id).order_by("-date_time_to_start_main")
         check_list_serializer = CheckListSerializer(check_list_obj,many=True)
 
-        tasks_sorted = sorted(
-            check_list_serializer.data,
-            key=lambda x: (
-                self._convert_jalali_to_datetime(x.get('date_to_end'), x.get('time_to_end')) is not None,
-                # False (0) if both are None
-                self._convert_jalali_to_datetime(x.get('date_to_end'), x.get('time_to_end')) or datetime.max
-            )
-        )
+
 
         return Response(status=status.HTTP_200_OK,data={
             "status":True,
             "message":"success",
-            "data":tasks_sorted
+            "data":check_list_serializer.data
         })
     def post(self,request,checklist_id_or_task_id):
 
