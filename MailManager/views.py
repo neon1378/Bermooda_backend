@@ -216,7 +216,7 @@ def add_signature_to_mail (request,recipient_id):
         mail_recipient.signature_image = main_file
         mail_recipient.signature_status=True
         mail_recipient.save()
-        mail_recipient.mail.create_mail_action(user_sender=request.user,user=mail_recipient.mail.user,title="امضا کرد")
+        mail_recipient.mail.create_mail_action(user_sender=request.user,user=mail_recipient.mail.creator,title="امضا کرد")
         for recipient in mail_recipient.mail.recipients.filter(recipient_type="sign"):
             if request.user != recipient.user:
                 sub_title = f"نامه توسط  {request.user.fullname} با موفقیت امضا شد"
