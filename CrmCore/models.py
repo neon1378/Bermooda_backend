@@ -22,6 +22,7 @@ class CrmDepartment(SoftDeleteModel):
 class Label (SoftDeleteModel):
     # workspace = models.ForeignKey(WorkSpace,null=True,on_delete=models.CASCADE,related_name="label_customer")
     title =models.CharField(max_length=50,null=True)
+    order = models.IntegerField(blank=True,null=True)
     color= models.CharField(max_length=50,null=True)
     group_crm = models.ForeignKey("GroupCrm",on_delete=models.CASCADE,null=True,related_name="label_customer")
 

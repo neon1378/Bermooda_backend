@@ -602,60 +602,160 @@ class GroupCrmManager(APIView):
         )
 
     def create_crm_label(self,group_crm_obj):
+
         label_list = [
             {
-                "title": "سرنخ ها",
-                "color_code": "#E82BA3"
+                "title": "کشف مشتری ",
+                "color_code": "#E82BA3",
+                "order":1,
+                "steps":[
+                    {
+                        "title":"تحقیق بازار",
+                        "step":1,
+                    },
+                    {
+                        "title":"جمع‌آوری اطلاعات",
+                        "step":2,
+                    },
+                    {
+                        "title":"ارزیابی اولیه 3",
+                        "step":3,
+                    },
+
+                    {
+                        "title":"تماس اولیه ",
+                        "step":4,
+                    },
+                    {
+                        "title": "تکمیل اطلاعات مشتری",
+                        "step": 5,
+                    },
+                ]
 
             },
             {
-                "title": "فرصت ها",
-                "color_code": "#DB4646"
+                "title": "معرفی محصول/ خدمات",
+                "color_code": "#DB4646",
+                "order": 2,
+                "steps":[
+                    {
+                        "title": "تحلیل نیاز مشتری",
+                        "step": 1,
+                    },
+                    {
+                        "title": "تنظیم پیشنهاد اولیه ",
+                        "step": 2,
+                    },
+                    {
+                        "title": "ارائه محصول / خدمات",
+                        "step": 3,
+                    },
+
+                    {
+                        "title": "پاسخ به نیاز ها و ابهامات ",
+                        "step": 4,
+                    },
+                    {
+                        "title": "جمع‌آوری بازخورد",
+                        "step": 5,
+                    },
+                ]
             },
 
             {
-                "title": "مشتری",
-                "color_code": "#02C875"
+                "title": "پیشنهاد / ارزیابی",
+                "color_code": "#02C875",
+                "order": 3,
+                "steps": [
+                    {
+                        "title": "تهیه پیشنهاد",
+                        "step": 1,
+                    },
+                    {
+                        "title": "مذاکره و سفارشی‌سازی ",
+                        "step": 2,
+                    },
+                    {
+                        "title": "ارزیابی رقبا ",
+                        "step": 3,
+                    },
+
+                    {
+                        "title": "آزمایش یا تست محصول  ",
+                        "step": 4,
+                    },
+                    {
+                        "title": "پیگیری مشتری",
+                        "step": 5,
+                    },
+                ]
             },
 
             {
-                "title": "فاکتور",
-                "color_code": "#04C4B7"
+                "title": "فاکتور / قرارداد",
+                "color_code": "#04C4B7",
+                "order": 4,
+                "steps": [
+                    {
+                        "title": "تهیه پیش‌فاکتور   ",
+                        "step": 1,
+                    },
+                    {
+                        "title": "نهایی‌سازی قرارداد ",
+                        "step": 2,
+                    },
+                    {
+                        "title": "تایید پرداخت اولیه   ",
+                        "step": 3,
+                    },
+
+                    {
+                        "title": "هماهنگی برای تحویل    ",
+                        "step": 4,
+                    },
+                    {
+                        "title": "ثبت و بایگانی مدارک ",
+                        "step": 5,
+                    },
+                ]
             },
 
             {
-                "title": "فروش",
-                "color_code": "#636D74"
+                "title": "بسته شدن",
+                "color_code": "#636D74",
+                "order": 5,
+                "steps": [
+                    {
+                        "title": "تحویل محصول یا شروع خدمت ",
+                        "step": 1,
+                    },
+                    {
+                        "title": "آموزش و راه‌اندازی  ",
+                        "step": 2,
+                    },
+                    {
+                        "title": "بازخورد پس از خرید    ",
+                        "step": 3,
+                    },
+
+                    {
+                        "title": "خدمات پس از فروش ",
+                        "step": 4,
+                    },
+                    {
+                        "title": "فروش مجدد ",
+                        "step": 5,
+                    },
+                ]
             },
         ]
-        steps = [
-            {
-                "title":"مرحله 1",
-                "step":1,
-            },
-            {
-                "title":"مرحله 2",
-                "step":2,
-            },
-            {
-                "title":"مرحله 3",
-                "step":3,
-            },
 
-            {
-                "title":"مرحله 4",
-                "step":4,
-            },
-            {
-                "title": "مرحله 5",
-                "step": 5,
-            },
-        ]
+
         for label in label_list:
-            new_label_obj = Label(title=label['title'], color=label['color_code'], group_crm=group_crm_obj)
+            new_label_obj = Label(order=label['order'],title=label['title'], color=label['color_code'], group_crm=group_crm_obj)
             new_label_obj.save()
             new_label_step = LabelStep.objects.create(label=new_label_obj)
-            for step in steps:
+            for step in label['steps']:
                 new_step = Step.objects.create(
                     title=step['title'],
                     step=step['step'],

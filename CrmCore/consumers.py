@@ -8,6 +8,7 @@ from .models import CustomerUser, GroupCrm, Label, CustomerStep
 from dotenv import load_dotenv
 from django.shortcuts import get_object_or_404
 import  os
+from WorkSpaceManager.models import WorkspaceMember
 
 
 load_dotenv()
@@ -137,8 +138,23 @@ class CustomerTask(WebsocketConsumer):
 
             )
 
+    def get_user_permission(self):
+        workspace= self.group_crm_obj.workspace
+        if self.user == workspace.owner:
+            return True
+        workspace_member =WorkspaceMember.objects.get(user_account = self.user,workspace=workspace)
+        for permission in workspace_member.permissions.all():
+            if permission.permission_name == "crm":
+                if permission.permission_type == "manager":
+                    return True
+                else:
+                    return False
+
     def send_data(self,event):
-        custommer_objs = CustomerUser.objects.filter(group_crm=self.group_crm_obj,is_followed=False)
+        if self.get_user_permission():
+            custommer_objs = CustomerUser.objects.filter(group_crm=self.group_crm_obj,is_followed=False)
+        else:
+            custommer_objs = CustomerUser.objects.filter(group_crm=self.group_crm_obj,user_account=self.user,is_followed=False)
         data_list = []
         for custommer_obj in custommer_objs:
             not_exsit = True
