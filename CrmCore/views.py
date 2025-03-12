@@ -580,9 +580,7 @@ class GroupCrmManager(APIView):
         if workspace_obj.owner == request.user:
             group_objs = GroupCrm.objects.filter(workspace=workspace_obj,department_id=department_id)
         else:
-            if request.user_permission_type == "manager":
-                group_objs = GroupCrm.objects.filter(workspace=workspace_obj,department_id=department_id)
-            else:
+
                 group_list = GroupCrm.objects.filter(workspace=workspace_obj,department_id=department_id)
                 group_objs = []
                 for group in group_list:
@@ -610,7 +608,7 @@ class GroupCrmManager(APIView):
                 "order":1,
                 "steps":[
                     {
-                        "title":"تحقیق بازار",
+                        "title":"جذب",
                         "step":1,
                     },
                     {
@@ -618,16 +616,16 @@ class GroupCrmManager(APIView):
                         "step":2,
                     },
                     {
-                        "title":"ارزیابی اولیه 3",
+                        "title":"تماس اولیه 3",
                         "step":3,
                     },
 
                     {
-                        "title":"تماس اولیه ",
+                        "title":"تکمیل اطلاعات ",
                         "step":4,
                     },
                     {
-                        "title": "تکمیل اطلاعات مشتری",
+                        "title": "تعیین وضعیت",
                         "step": 5,
                     },
                 ]
@@ -639,11 +637,11 @@ class GroupCrmManager(APIView):
                 "order": 2,
                 "steps":[
                     {
-                        "title": "تحلیل نیاز مشتری",
+                        "title": "نیازسنجی",
                         "step": 1,
                     },
                     {
-                        "title": "تنظیم پیشنهاد اولیه ",
+                        "title": "پیشنهاد اولیه",
                         "step": 2,
                     },
                     {
@@ -652,11 +650,11 @@ class GroupCrmManager(APIView):
                     },
 
                     {
-                        "title": "پاسخ به نیاز ها و ابهامات ",
+                        "title": "  نیاز ها و ابهامات ",
                         "step": 4,
                     },
                     {
-                        "title": "جمع‌آوری بازخورد",
+                        "title": "بازخورد",
                         "step": 5,
                     },
                 ]
@@ -676,17 +674,14 @@ class GroupCrmManager(APIView):
                         "step": 2,
                     },
                     {
-                        "title": "ارزیابی رقبا ",
+                        "title": "آزمایش یا تست محصول",
                         "step": 3,
                     },
 
-                    {
-                        "title": "آزمایش یا تست محصول  ",
-                        "step": 4,
-                    },
+
                     {
                         "title": "پیگیری مشتری",
-                        "step": 5,
+                        "step": 4,
                     },
                 ]
             },
@@ -697,11 +692,11 @@ class GroupCrmManager(APIView):
                 "order": 4,
                 "steps": [
                     {
-                        "title": "تهیه پیش‌فاکتور   ",
+                        "title": "تهیه پیش‌ فاکتور/قرارداد   ",
                         "step": 1,
                     },
                     {
-                        "title": "نهایی‌سازی قرارداد ",
+                        "title": "نهایی‌سازی فاکتور/قرارداد ",
                         "step": 2,
                     },
                     {
@@ -726,25 +721,22 @@ class GroupCrmManager(APIView):
                 "order": 5,
                 "steps": [
                     {
-                        "title": "تحویل محصول یا شروع خدمت ",
+                        "title": "تحویل محصول یا ارائه خدمت ",
                         "step": 1,
                     },
                     {
-                        "title": "آموزش و راه‌اندازی  ",
+                        "title": "آموزش و مشاوه  ",
                         "step": 2,
                     },
-                    {
-                        "title": "بازخورد پس از خرید    ",
-                        "step": 3,
-                    },
+
 
                     {
-                        "title": "خدمات پس از فروش ",
-                        "step": 4,
+                        "title": "پشتیبانی فروش ",
+                        "step": 3,
                     },
                     {
-                        "title": "فروش مجدد ",
-                        "step": 5,
+                        "title": "نعیین وضعیت فروش مجدد ",
+                        "step": 4,
                     },
                 ]
             },
