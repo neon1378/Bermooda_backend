@@ -24,4 +24,10 @@ class TextMessage(SoftDeleteModel):
         formatted_time_persian = jalali_date.strftime("%H:%M")
 
         return formatted_time_persian
+    def jalali_date (self):
+        jalali_date = jdatetime.datetime.fromgregorian(date=self.created_at)
 
+        # Extract only the time from `created_at`
+        formatted_time_persian = jalali_date.strftime("%d %B")
+
+        return formatted_time_persian

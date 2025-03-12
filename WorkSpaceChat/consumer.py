@@ -81,32 +81,19 @@ class GroupMessageWs(AsyncWebsocketConsumer):
         # Get the page
         page = paginator.get_page(page_number)
 
-        locale.setlocale(locale.LC_ALL, 'fa_IR')
+
 
 
 
         # Group messages by date
-        grouped_data = defaultdict(list)
-        for msg in page.object_list:
-            # Convert Gregorian date to Jalali
-            jalali_date = jdatetime.datetime.fromgregorian(date=msg.created_at.date())
-
-            # Format Jalali date
-            formatted_date_persian = jalali_date.strftime("%d %B")
-
-            # Group messages
-            grouped_data[formatted_date_persian].append(TextMessageSerializer(msg).data)
-
-        # Convert grouped data to required format
-        result = [{"date": date, "messages": msgs} for date, msgs in grouped_data.items()]
-
+        serializer_data =TextMessageSerializer(page.object_list,many=True)
 
 
         return {
             "count": paginator.count,
             "next": page.next_page_number() if page.has_next() else None,
             "previous": page.previous_page_number() if page.has_previous() else None,
-            "list": result
+            "list": serializer_data.data
         }
 
 
