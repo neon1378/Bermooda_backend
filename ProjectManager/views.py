@@ -1005,7 +1005,7 @@ def my_task_checklist(request,project_id):
     task_objs = Task.objects.filter(done_status=False,project=project_obj)
     check_list_objs = []
     for task in task_objs:
-        for check_list in task.check_list.all():
+        for check_list in task.check_list.all().order_by("date_time_to_start_main"):
             if check_list.responsible_for_doing == request.user:
                 check_list_objs.append(check_list)
     serializer_data =CheckListSerializer(check_list_objs,many=True)
