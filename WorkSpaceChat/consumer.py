@@ -54,18 +54,18 @@ class GroupMessageWs(AsyncWebsocketConsumer):
         elif command == "new_message":
             await self.new_message(data["data"].get("text"))
         elif command == "read_message_list":
-            group_id = data["data"].get("group_id")
+
             page_number = data["data"].get("page_number",1)
 
 
             await self.read_messages(
-                group_id,
+
                 page_number
             )
 
     @sync_to_async
-    def _get_group_message_list(self,group_id,page_number):
-        group_obj = GroupMessage.objects.get(id= group_id)
+    def _get_group_message_list(self,page_number):
+        group_obj = GroupMessage.objects.get(id= self.group_id)
         text_messages = group_obj.group_text_messages.all().order_by("-id")
         paginator = Paginator(text_messages, 20)  # Set items per page
 
@@ -111,8 +111,8 @@ class GroupMessageWs(AsyncWebsocketConsumer):
 
 
 
-    async def read_messages(self,group_id,page_number):
-        group_message_list = await self._get_group_message_list(group_id,page_number)
+    async def read_messages(self,page_number):
+        group_message_list = await self._get_group_message_list(page_number)
         await self.send(json.dumps(
             {
                 "data_type":"message_list",
