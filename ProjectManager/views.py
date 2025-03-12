@@ -499,7 +499,7 @@ class CheckListManager(APIView):
         except (ValueError, AttributeError):
             return None  # Return None if date or time format is invalid
     def get (self,request,checklist_id_or_task_id):
-        check_list_obj = CheckList.objects.filter(task_id=checklist_id_or_task_id).order_by("-date_time_to_start_main")
+        check_list_obj = CheckList.objects.filter(task_id=checklist_id_or_task_id).order_by("date_time_to_start_main")
         check_list_serializer = CheckListSerializer(check_list_obj,many=True)
 
 
