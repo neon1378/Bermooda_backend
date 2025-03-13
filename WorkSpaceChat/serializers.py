@@ -9,6 +9,7 @@ class UserSerializer(serializers.ModelSerializer):
             "id",
             "fullname",
             "avatar_url",
+            "is_online",
 
         ]
 

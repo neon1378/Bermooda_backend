@@ -128,6 +128,7 @@ class GroupMessageWs(AsyncWebsocketConsumer):
                 if member['id'] != self.user.id:
                     group['fullname'] = member['fullname']
                     group['avatar_url'] = member['avatar_url']
+                    group['is_online'] = member['is_online']
                 member["self"] = member["id"] == self.user
             group.pop("members")
 
