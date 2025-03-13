@@ -44,6 +44,8 @@ class GroupMessageWs(AsyncWebsocketConsumer):
 
         data = json.loads(text_data)
         command = data.get("command")
+        print(command)
+        print(command == "read_message_list" )
 
         if command == "get_group_messages":
             await self.get_group_messages()
