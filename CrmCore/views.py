@@ -526,7 +526,7 @@ class GroupCrmManager(APIView):
 
 
         # Set up custom pagination
-        paginator = Paginator(queryset.order_by("-id"), 20)  # Set items per page
+        paginator = Paginator(queryset, 20)  # Set items per page
 
         # Check if the requested page exists
         if int(page_number) > paginator.num_pages:
@@ -578,10 +578,10 @@ class GroupCrmManager(APIView):
         # Fetch all groups for the workspace
         department_id = request.GET.get("department_id",None)
         if workspace_obj.owner == request.user:
-            group_objs = GroupCrm.objects.filter(workspace=workspace_obj,department_id=department_id)
+            group_objs = GroupCrm.objects.filter(workspace=workspace_obj,department_id=department_id).order_by("-id")
         else:
 
-                group_list = GroupCrm.objects.filter(workspace=workspace_obj,department_id=department_id)
+                group_list = GroupCrm.objects.filter(workspace=workspace_obj,department_id=department_id).order_by("-id")
                 group_objs = []
                 for group in group_list:
                     if request.user in group.members.all():
