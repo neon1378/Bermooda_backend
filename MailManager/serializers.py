@@ -89,6 +89,7 @@ class MailRecipientSerializer(ModelSerializer):
     signature_image = MainFileSerializer(read_only=True)
     signature_image_id = serializers.IntegerField(write_only=True,required=False)
     mail_id = serializers.IntegerField(write_only=True,required=False)
+    creator_id= serializers.IntegerField(write_only=True,required=False)
     class Meta:
         model = MailRecipient
         fields = [
@@ -100,11 +101,39 @@ class MailRecipientSerializer(ModelSerializer):
             "signature_status",
             "signature_image_id",
             "mail_id",
+            "creator_id",
 
 
         ]
     def create(self, validated_data):
-        new_mail_recipient= MailRecipient.objects.create(
+        user_id = validated_data.get("user_id")
+        recipient_type = validated_data.get("recipient_type")
+        signature_image_id = validated_data.get("signature_image_id",None)
+
+        creator_id = validated_data.get("creator_id")
+        if creator_id == user_id:
+            if recipient_type == "vcc":
+                raise serializers.ValidationError(
+                    {
+                        "status":False,
+                        "message":"this user cannot be a Bcc",
+                        "data":{}
+                    }
+                )
+            new_mail_recipient = MailRecipient.objects.create(
+                **validated_data
+
+            )
+            if signature_image_id:
+                main_file = MainFile.objects.get(id=signature_image_id)
+                main_file.its_blong=True
+                main_file.save()
+                new_mail_recipient.signature_image = main_file
+
+
+            return new_mail_recipient
+
+        new_mail_recipient = MailRecipient.objects.create(
             **validated_data
         )
 
@@ -116,7 +145,7 @@ class MailSerializer(ModelSerializer):
     recipients_list =serializers.ListField(write_only=True,required=True)
     workspace_id = serializers.IntegerField()
     members = MemberSerializer(read_only=True,many=True)
-    self_signature_id = serializers.IntegerField(write_only=True,required=False)
+
     file_id_list = serializers.ListField(write_only=True)
     files = FileDetail(read_only=True,many=True)
     creator_id = serializers.IntegerField(write_only=True)
@@ -146,7 +175,7 @@ class MailSerializer(ModelSerializer):
             "slug",
             "files",
             "label_id",
-            "self_signature_id",
+
             "file_id_list",
             "jtime",
             "sign_completed",
@@ -162,12 +191,12 @@ class MailSerializer(ModelSerializer):
         recipients_list =validated_data.pop("recipients_list",[])
         workspace_id = validated_data.pop("workspace_id")
 
-        self_signature_id =validated_data.pop("self_signature_id",None)
+
         file_id_list= validated_data.pop("file_id_list",[])
         label_id = validated_data.pop("label_id",None)
         mail_image_id= validated_data.pop("mail_image_id",None)
-    
-        print(label_id)
+
+        creator_id = validated_data.get("creator_id")
         new_mail= Mail.objects.create(**validated_data)
         new_mail.workspace = get_object_or_404(WorkSpace,id=workspace_id)
         new_mail.save()
@@ -182,31 +211,17 @@ class MailSerializer(ModelSerializer):
 
         for receiver in recipients_list:
             receiver['mail_id']=new_mail.id
+            receiver['creator_id']= creator_id
+
             serializer_data = MailRecipientSerializer(data=receiver)
             if serializer_data.is_valid():
                 serializer_data.save()
             else:
                 raise serializers.ValidationError(
-                    {
-                        "status":False,
-                        "message":"Validation Error",
-                        "data":serializer_data.errors
-                    }
-
+                    serializer_data.errors
                 )
 
-        if self_signature_id:
-            new_main_file = MainFile.objects.get(id=self_signature_id)
-            new_main_file.its_blong = True
-            new_main_file.save()
-            new_receipt = MailRecipient(
-                recipient_type = "sign",
-                user_id = validated_data.get("creator_id"),
-                signature_image=new_main_file,
-                mail= new_mail,
-                signature_status=True
-            )
-            new_receipt.save()
+
 
         for file_id in file_id_list:
             main_file = MainFile.objects.get(id=file_id)
@@ -217,9 +232,7 @@ class MailSerializer(ModelSerializer):
         new_mail.files.set(file_id_list)
         
         new_mail.save()
-        for member in new_mail.members.all():
-            new_mail.create_mail_action(user_sender=member,user=new_mail.creator,title="ارسال شد")
-            new_mail.create_mail_action(user_sender=new_mail.creator,user=member,title="دریافت شد")
+
 
         
 
