@@ -28,6 +28,7 @@ class TextMessageSerializer(serializers.ModelSerializer):
             "group_id",
             "jalali_time",
             "jalali_date",
+            "last_message_time",
 
         ]
 class GroupSerializer(serializers.ModelSerializer):

@@ -4,6 +4,7 @@ from UserManager.models import  UserAccount
 from WorkSpaceManager.models import  WorkSpace,WorkspaceMember
 import jdatetime
 import locale
+from datetime import datetime
 # Create your models here.
 class GroupMessage(SoftDeleteModel):
     workspace= models.ForeignKey(WorkSpace,on_delete=models.CASCADE,null=True)
@@ -37,3 +38,9 @@ class TextMessage(SoftDeleteModel):
         formatted_time_persian = jalali_date.strftime("%d %B")
 
         return formatted_time_persian
+    def last_message_time (self):
+        jalali_date = jdatetime.datetime.fromgregorian(date=self.created_at)
+        if self.created_at.date == datetime.now().date():
+            formatted_time_persian = jalali_date.strftime("%H:%M")
+            return formatted_time_persian
+        formatted_time_persian = jalali_date.strftime("%d %B | %H:%M")
