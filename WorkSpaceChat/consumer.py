@@ -9,6 +9,7 @@ from .models import GroupMessage,TextMessage
 from .serializers import GroupSerializer,TextMessageSerializer
 from channels.layers import get_channel_layer
 import json
+from django.utils.timezone import make_aware
 from channels.generic.websocket import AsyncWebsocketConsumer
 from asgiref.sync import sync_to_async
 from .models import WorkSpace, GroupMessage, TextMessage
@@ -127,7 +128,7 @@ class GroupMessageWs(AsyncWebsocketConsumer):
 
                 data_list.append(gp)
         data_list.sort(
-            key=lambda gp: gp.last_message().created_at if gp.last_message() else datetime.min,
+            key=lambda gp: make_aware(gp.last_message().created_at) if gp.last_message() else make_aware(datetime.min),
             reverse=True
         )
 
