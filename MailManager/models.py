@@ -43,8 +43,9 @@ class Mail (SoftDeleteModel):
     files = models.ManyToManyField(MainFile,blank=True)
     status_mail = models.ForeignKey(MailStatus,on_delete=models.SET_NULL,null=True)
 
+    def is_favorite(self,user):
 
-
+        FavoriteMail.objects.get(user_account=user, mail=self)
     def save(self, *args, **kwargs):
         if not self.mail_code:
             random_code = random.randint(9999,100000)

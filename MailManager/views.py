@@ -135,6 +135,14 @@ class MailManager(APIView):
         search_query = request.GET.get("search_query",None)
         page_number = request.GET.get("page_number",1)
         workspace_id = request.GET.get("workspace_id")
+        is_favorite = request.GET.get("is_favorite",None)
+        label_id = request.GET.get("label_id",None)
+        start_date = request.GET.get("start_date", None)  # 1403/12/01
+        end_date = request.GET.get("end_date", None)  # 1403/12/10
+
+
+
+
         workspace_obj = get_object_or_404(WorkSpace,id=workspace_id)
 
 
@@ -165,6 +173,15 @@ class MailManager(APIView):
             mail_filtered= mail_filtered.filter(
                 Q(title=search_query),
             )
+        if start_date and end_date:
+            start_date_gregorian = jdatetime.datetime.strptime(start_date, "%Y/%m/%d").togregorian()
+            end_date_gregorian = jdatetime.datetime.strptime(end_date, "%Y/%m/%d").togregorian()
+            mail_filtered = mail_filtered.filter(created__range=[start_date_gregorian, end_date_gregorian])
+
+        if label_id:
+            mail_filtered = mail_filtered.filter(label_id=label_id)
+        if is_favorite:
+            mail_filtered = [mail for mail in mail_filtered if mail.is_favorite(user=request.user)]
 
         serializer_data = self._pagination_method(query_set=mail_filtered,page_number=page_number,user=request.user)
         return Response(status=status.HTTP_200_OK,data={
