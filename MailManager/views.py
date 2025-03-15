@@ -108,7 +108,7 @@ class MailManager(APIView):
 
 
         # Group messages by date
-        serializer_data = MailSerializer(query_set, many=True)
+        serializer_data = MailSerializer(page.object_list, many=True)
         for data in serializer_data.data:
             mail_obj = Mail.objects.get(id=data['id'])
 
