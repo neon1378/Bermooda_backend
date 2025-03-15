@@ -97,7 +97,7 @@ class MailManager(APIView):
                 "count": paginator.count,
                 "next": None,
                 "previous": None,
-                "data": []
+                "list": []
             }
 
         # Get the page
