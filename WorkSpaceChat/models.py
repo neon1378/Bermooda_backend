@@ -9,6 +9,10 @@ class GroupMessage(SoftDeleteModel):
     workspace= models.ForeignKey(WorkSpace,on_delete=models.CASCADE,null=True)
     members = models.ManyToManyField(UserAccount,related_name="group_messages")
 
+    def last_message (self):
+        return self.group_text_messages.last()
+    def unread_messages(self,user_id):
+        return self.group_text_messages.filter(owner_id=user_id,is_read=False).count()
 
 class TextMessage(SoftDeleteModel):
     text = models.TextField(null=True)
@@ -16,7 +20,7 @@ class TextMessage(SoftDeleteModel):
     created_at = models.DateTimeField(auto_now_add=True,null=True)
     group = models.ForeignKey(GroupMessage,on_delete=models.CASCADE,related_name="group_text_messages",null=True)
 
-
+    is_read = models.BooleanField(default=False)
     def jalali_time (self):
         # Convert Gregorian date to Jalali
         jalali_date = jdatetime.datetime.fromgregorian(date=self.created_at)

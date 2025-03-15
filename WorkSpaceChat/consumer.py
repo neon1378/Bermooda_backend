@@ -44,8 +44,7 @@ class GroupMessageWs(AsyncWebsocketConsumer):
 
         data = json.loads(text_data)
         command = data.get("command")
-        print(command)
-        print(command == "read_message_list" )
+
 
         if command == "get_group_messages":
             await self.get_group_messages()
@@ -68,6 +67,12 @@ class GroupMessageWs(AsyncWebsocketConsumer):
     @sync_to_async
     def _get_group_message_list(self,page_number):
         group_obj = GroupMessage.objects.get(id= self.group_id)
+        read_messages = group_obj.group_text_messages.filter(is_read =False)
+        for message in read_messages:
+            if message.owner != self.user:
+                message.is_read = True
+                message.save()
+
         text_messages = group_obj.group_text_messages.all().order_by("-id")
         paginator = Paginator(text_messages, 20)  # Set items per page
 
@@ -117,29 +122,30 @@ class GroupMessageWs(AsyncWebsocketConsumer):
         )
         data_list =[]
         for gp in group_messages :
-            for user in gp.members.all():
-                print(user.id,"!@#!")
-            if self.user in gp.members.all():
-                data_list.append(gp)
 
-        serializer_data = GroupSerializer(data_list, many=True)
+            if self.user in gp.members.all():
+
+                data_list.append(gp)
+        data_list.sort(key=lambda gp: gp.last_message().created_at if gp.last_message() else None, reverse=True)
+        serializer_data = GroupSerializer(data_list,many=True,context={'user': self.user})
 
         for group in serializer_data.data:
             for member in group.get("members", []):
 
                 if member['id'] != self.user.id:
                     group['fullname'] = member['fullname']
+
                     group['avatar_url'] = member['avatar_url']
                     group['is_online'] = member['is_online']
                 member["self"] = member["id"] == self.user
             group.pop("members")
 
-        print(serializer_data.data)
+
         return serializer_data.data
     async def get_group_messages(self):
 
         data = await  self._group_message_serialize()
-        print(data)
+
         await self.send(json.dumps({"data_type": "group_messages", "data": data}))
 
     async def open_group_message(self, group_id):
@@ -175,12 +181,30 @@ class GroupMessageWs(AsyncWebsocketConsumer):
             }
 
             await self.channel_layer.group_send(self.group_message_name, event)
+            event = {
+                "type":"send_groups"
+            }
+            await self.channel_layer.group_send(self.workspace_group_name, event)
+
         else:
             await self.send(json.dumps({"data_type": "error", "data": serializer.errors}))
 
-    async def send_group_message(self, event):
-        message_obj = await sync_to_async(TextMessage.objects.get)(id=event["message_id"])
-        serializer_data = await sync_to_async(lambda: TextMessageSerializer(message_obj).data)()
+    @sync_to_async
+    def _send_message_handler(self,event):
+        message_obj =  TextMessage.objects.get(id=event["message_id"])
+        if not message_obj.owner == self.user:
+            message_obj.is_read = True
+            message_obj.save()
+        serializer_data =  TextMessageSerializer(message_obj).data
         serializer_data["self"] = event["owner_id"] == self.user.id
+        return serializer_data
 
-        await self.send(json.dumps({"data_type": "new_message", "data": serializer_data}))
+    async def send_group_message(self, event):
+        message_data = await  self._send_message_handler(event=event)
+
+        await self.send(json.dumps({"data_type": "new_message", "data": message_data}))
+
+    async def send_groups(self,event):
+        group_data = await self._group_message_serialize()
+
+        await self.send(json.dumps({"data_type": "group_messages", "data": group_data}))
