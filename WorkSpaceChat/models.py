@@ -40,7 +40,8 @@ class TextMessage(SoftDeleteModel):
         return formatted_time_persian
     def last_message_time (self):
         jalali_date = jdatetime.datetime.fromgregorian(date=self.created_at)
-        if self.created_at.date == datetime.now().date():
+        if self.created_at.date() == datetime.now().date():
             formatted_time_persian = jalali_date.strftime("%H:%M")
             return formatted_time_persian
         formatted_time_persian = jalali_date.strftime("%d %B | %H:%M")
+        return formatted_time_persian
