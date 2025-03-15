@@ -1,3 +1,4 @@
+from django.core.paginator import Paginator
 from django.shortcuts import render
 from rest_framework import status
 from rest_framework.response import Response
@@ -83,8 +84,56 @@ class MailLabelManager(APIView):
 
 class MailManager(APIView):
     permission_classes = [IsAuthenticated,IsWorkSpaceUser]
+    def _pagination_method (self,query_set,page_number,user):
+
+
+
+
+        paginator = Paginator(query_set, 20)  # Set items per page
+
+        # Check if the requested page exists
+        if int(page_number) > paginator.num_pages:
+            return {
+                "count": paginator.count,
+                "next": None,
+                "previous": None,
+                "data": []
+            }
+
+        # Get the page
+        page = paginator.get_page(page_number)
+
+
+
+
+
+        # Group messages by date
+        serializer_data = MailSerializer(query_set, many=True)
+        for data in serializer_data.data:
+            mail_obj = Mail.objects.get(id=data['id'])
+
+            try:
+                favorite_obj = FavoriteMail.objects.get(user_account=user, mail=mail_obj)
+                data['favorite_status'] = favorite_obj.status
+            except:
+                data['favorite_status'] = False
+
+            if mail_obj.creator == user:
+                data['status'] = "ارسال شده"
+            else:
+                data['status'] = "دریافت شده"
+
+
+        return {
+            "count": paginator.count,
+            "next": page.next_page_number() if page.has_next() else None,
+            "previous": page.previous_page_number() if page.has_previous() else None,
+            "list": serializer_data.data
+        }
+
     def get(self,request,mail_id=None):
         search_query = request.GET.get("search_query",None)
+        page_number = request.GET.get("page_number",1)
         workspace_id = request.GET.get("workspace_id")
         workspace_obj = get_object_or_404(WorkSpace,id=workspace_id)
 
@@ -116,24 +165,12 @@ class MailManager(APIView):
             mail_filtered= mail_filtered.filter(
                 Q(title=search_query),
             )
-        serializer_data = MailSerializer(mail_filtered,many=True)
-        for data in serializer_data.data:
-            mail_obj= Mail.objects.get(id=data['id'])
-   
-            try: 
-                favorite_obj= FavoriteMail.objects.get(user_account=request.user,mail=mail_obj)
-                data['favorite_status'] = favorite_obj.status
-            except:
-                data['favorite_status'] = False
-         
-            if mail_obj.creator == request.user:
-                data['status'] = "ارسال شده"
-            else:
-                data['status'] = "دریافت شده" 
+
+        serializer_data = self._pagination_method(query_set=mail_filtered,page_number=page_number,user=request.user)
         return Response(status=status.HTTP_200_OK,data={
             "status":True,
             "message":"success",
-            "data":serializer_data.data
+            "data":serializer_data
         })
 
     def post(self,request):
