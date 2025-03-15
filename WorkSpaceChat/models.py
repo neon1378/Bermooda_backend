@@ -13,7 +13,7 @@ class GroupMessage(SoftDeleteModel):
     def last_message (self):
         return self.group_text_messages.first()
     def unread_messages(self,user_id):
-        return self.group_text_messages.filter(owner_id=user_id,is_read=False).count()
+        return self.group_text_messages.exclude(owner_id=user_id).filter(is_read=False).count()
 
 class TextMessage(SoftDeleteModel):
     text = models.TextField(null=True)

@@ -112,6 +112,10 @@ class GroupMessageWs(AsyncWebsocketConsumer):
 
     async def read_messages(self,page_number):
         group_message_list = await self._get_group_message_list(page_number)
+        event = {
+            "type": "send_groups"
+        }
+        await self.channel_layer.group_send(self.workspace_group_name, event)
         await self.send(json.dumps(
             {
                 "data_type":"message_list",
