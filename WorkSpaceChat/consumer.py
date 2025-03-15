@@ -3,7 +3,7 @@ import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 from asgiref.sync import sync_to_async, async_to_sync
 from django.core.paginator import Paginator
-
+from datetime import  datetime
 from WorkSpaceManager.models import WorkSpace
 from .models import GroupMessage,TextMessage
 from .serializers import GroupSerializer,TextMessageSerializer
@@ -126,7 +126,11 @@ class GroupMessageWs(AsyncWebsocketConsumer):
             if self.user in gp.members.all():
 
                 data_list.append(gp)
-        data_list.sort(key=lambda gp: gp.last_message().created_at if gp.last_message() else None, reverse=True)
+        data_list.sort(
+            key=lambda gp: gp.last_message().created_at if gp.last_message() else datetime.min,
+            reverse=True
+        )
+
         serializer_data = GroupSerializer(data_list,many=True,context={'user': self.user})
 
         for group in serializer_data.data:
