@@ -99,7 +99,8 @@ class GroupMessageWs(AsyncWebsocketConsumer):
         # Group messages by date
         serializer_data =TextMessageSerializer(page.object_list,many=True)
 
-
+        for message_data in serializer_data.data:
+            message_data['self'] = message_data['owner']['id'] == self.user.id
         return {
             "count": paginator.count,
             "next": page.next_page_number() if page.has_next() else None,
