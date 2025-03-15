@@ -7,6 +7,7 @@ from django.core.paginator import Paginator
 from django.utils.timezone import localtime
 from django.utils.timezone import is_naive, make_aware, get_current_timezone
 from datetime import datetime
+import pytz
 from WorkSpaceManager.models import WorkSpace
 from .models import GroupMessage,TextMessage
 from .serializers import GroupSerializer,TextMessageSerializer
@@ -136,14 +137,25 @@ class GroupMessageWs(AsyncWebsocketConsumer):
 
                 data_list.append(gp)
 
+
+
         def get_sort_key(gp):
             last_msg = gp.last_message()
+            tehran_tz = pytz.timezone("Asia/Tehran")  # Explicit Tehran timezone
+
             if last_msg:
                 created_at = last_msg.created_at
-                if is_naive(created_at):  # Convert naive datetime to timezone-aware
-                    created_at = make_aware(created_at, timezone=get_current_timezone())
+
+                # Ensure the datetime is timezone-aware
+                if is_naive(created_at):
+                    created_at = make_aware(created_at, timezone=tehran_tz)
+                else:
+                    created_at = created_at.astimezone(tehran_tz)  # Convert to Tehran time
+
                 return created_at
-            return make_aware(datetime.min, timezone=get_current_timezone())  # Ensure datetime.min is also aware
+
+            # Ensure datetime.min is also aware of Tehran timezone
+            return make_aware(datetime.min, timezone=tehran_tz)
 
         data_list.sort(key=get_sort_key, reverse=True)
 
