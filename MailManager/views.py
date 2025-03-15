@@ -84,6 +84,7 @@ class MailLabelManager(APIView):
 class MailManager(APIView):
     permission_classes = [IsAuthenticated,IsWorkSpaceUser]
     def get(self,request,mail_id=None):
+        search_query = request.GET.get("search_query",None)
         workspace_id = request.GET.get("workspace_id")
         workspace_obj = get_object_or_404(WorkSpace,id=workspace_id)
 
@@ -111,6 +112,10 @@ class MailManager(APIView):
         mail_filtered = mail_objs.filter(
             Q(creator=request.user) | Q(recipients__user=request.user)
         ).distinct()
+        if search_query:
+            mail_filtered= mail_filtered.filter(
+                Q(title=search_query),
+            )
         serializer_data = MailSerializer(mail_filtered,many=True)
         for data in serializer_data.data:
             mail_obj= Mail.objects.get(id=data['id'])
