@@ -4,6 +4,7 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 from asgiref.sync import sync_to_async, async_to_sync
 from django.core.paginator import Paginator
 from datetime import  datetime
+from django.utils.timezone import localtime
 from WorkSpaceManager.models import WorkSpace
 from .models import GroupMessage,TextMessage
 from .serializers import GroupSerializer,TextMessageSerializer
@@ -127,8 +128,11 @@ class GroupMessageWs(AsyncWebsocketConsumer):
             if self.user in gp.members.all():
 
                 data_list.append(gp)
+
+
+
         data_list.sort(
-            key=lambda gp: make_aware(gp.last_message().created_at) if gp.last_message() else make_aware(datetime.min),
+            key=lambda gp: localtime(gp.last_message().created_at) if gp.last_message() else localtime(datetime.min),
             reverse=True
         )
 
