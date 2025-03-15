@@ -3,8 +3,10 @@ import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 from asgiref.sync import sync_to_async, async_to_sync
 from django.core.paginator import Paginator
-from datetime import  datetime
+
 from django.utils.timezone import localtime
+from django.utils.timezone import is_naive, make_aware, get_current_timezone
+from datetime import datetime
 from WorkSpaceManager.models import WorkSpace
 from .models import GroupMessage,TextMessage
 from .serializers import GroupSerializer,TextMessageSerializer
@@ -129,12 +131,16 @@ class GroupMessageWs(AsyncWebsocketConsumer):
 
                 data_list.append(gp)
 
+        def get_sort_key(gp):
+            last_msg = gp.last_message()
+            if last_msg:
+                created_at = last_msg.created_at
+                if is_naive(created_at):  # Convert naive datetime to timezone-aware
+                    created_at = make_aware(created_at, timezone=get_current_timezone())
+                return created_at
+            return make_aware(datetime.min, timezone=get_current_timezone())  # Ensure datetime.min is also aware
 
-
-        data_list.sort(
-            key=lambda gp: localtime(gp.last_message().created_at) if gp.last_message() else localtime(datetime.min),
-            reverse=True
-        )
+        data_list.sort(key=get_sort_key, reverse=True)
 
         serializer_data = GroupSerializer(data_list,many=True,context={'user': self.user})
 
