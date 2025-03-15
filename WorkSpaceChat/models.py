@@ -10,7 +10,7 @@ class GroupMessage(SoftDeleteModel):
     members = models.ManyToManyField(UserAccount,related_name="group_messages")
 
     def last_message (self):
-        return self.group_text_messages.order_by("-created_at").last()
+        return self.group_text_messages.order_by("-created_at").first()
     def unread_messages(self,user_id):
         return self.group_text_messages.filter(owner_id=user_id,is_read=False).count()
 
