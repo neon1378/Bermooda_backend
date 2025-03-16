@@ -107,8 +107,7 @@ class InvoiceSerializer(ModelSerializer):
     qr_code = MainFileSerializer(read_only=True)
 
     installments = InstallMentSerializer(read_only=True,many=True)
-    installment_period_day  = serializers.IntegerField(write_only=True,required=False)
-    installment_price = serializers.IntegerField(write_only=True,required=False)
+
     seller_information = InformationSerializer(read_only=True)
     buyer_information = InformationSerializer(read_only=True)
     product= ProductInvoiceSerializer(many=True,read_only=True)
