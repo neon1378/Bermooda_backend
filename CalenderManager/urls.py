@@ -1,6 +1,6 @@
 from django.urls import path
 from . import  views
 urlpatterns = [
-    path("Calender",views.CalenderManger)
+    path("Calender",views.CalenderManger.as_view())
 
 ]
