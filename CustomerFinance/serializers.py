@@ -107,7 +107,6 @@ class InvoiceSerializer(ModelSerializer):
     qr_code = MainFileSerializer(read_only=True)
 
     installments = InstallMentSerializer(read_only=True,many=True)
-
     seller_information = InformationSerializer(read_only=True)
     buyer_information = InformationSerializer(read_only=True)
     product= ProductInvoiceSerializer(many=True,read_only=True)
@@ -150,13 +149,13 @@ class InvoiceSerializer(ModelSerializer):
             "workspace_id",
             "signature_id",
             "product_list",
-            "installment_period_day",
-            "installment_price",
+
+
             "installments",
             "seller_information_data",
-            "installment_period_day",
+
             "interest_percentage",
-            "installment_price",
+
             "created_date_persian",
             "validity_date_persian",
             "is_over",
