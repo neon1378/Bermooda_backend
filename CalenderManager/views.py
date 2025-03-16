@@ -48,9 +48,9 @@ class CalenderManger(APIView):
             check_list_objs = CheckList.objects.filter(date_time_to_start_main__date =g_date)
             for item in CheckList.objects.all():
                 if item.date_time_to_start_main:
-                    print(item.date_time_to_start_main.date)
+                    print(item.date_time_to_start_main.date())
                     print(g_date)
-                    print (item.date_time_to_start_main.date == g_date)
+                    print (item.date_time_to_start_main.date() == g_date)
             data_list.append(
                 {
                     "date":j_date.strftime("%Y/%m/%d"),
