@@ -1015,7 +1015,7 @@ def my_task_checklist(request,project_id):
 
 
     if pagination_data['list'] != []:
-        pagination_data['list'] = CheckListSerializer(check_list_objs,many=True)
+        pagination_data['list'] = CheckListSerializer(check_list_objs,many=True).data
 
 
     return Response(status=status.HTTP_200_OK,data={
