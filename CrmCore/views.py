@@ -4,6 +4,7 @@ from rest_framework.permissions import AllowAny,IsAuthenticated,DjangoModelPermi
 from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404
 from .models import *
+from core.widgets import pagination
 from datetime import datetime
 from rest_framework.response import Response
 from rest_framework.decorators import api_view,permission_classes
@@ -1493,3 +1494,37 @@ class LabelStepManager(APIView):
             step_obj.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+
+
+
+def get_customers_by_role(user, workspace):
+    if workspace.owner == user:
+        return CustomerUser.objects.filter(is_followed=True)
+
+    workspace_member = get_object_or_404(WorkspaceMember, user_account=user, workspace=workspace)
+
+    for permission in workspace_member.permissions.all():
+        if permission.permission_name == "crm" and permission.permission_type == "manager":
+            return CustomerUser.objects.filter(is_followed=True)
+
+    return CustomerUser.objects.filter(is_followed=True, user_account=user)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def customer_success_sells(request):
+    page_number = request.GET.get("page_number", 1)
+    group_crm_id = request.GET.get("group_crm_id")
+    group_crm_obj = get_object_or_404(GroupCrm, id=group_crm_id)
+    workspace_obj = get_object_or_404(WorkSpace, id=request.user.current_workspace_id)
+
+    customer_objs = get_customers_by_role(request.user, workspace_obj)
+    pagination_data = pagination(query_set=customer_objs, page_number=page_number)
+
+    if pagination_data['list']:
+        pagination_data['list'] = CustomerSmallSerializer(pagination_data['list'], many=True).data
+
+    return Response(
+        status=status.HTTP_200_OK,
+        data={"status": True, "message": "موفق", "data": pagination_data}
+    )

@@ -50,6 +50,8 @@ urlpatterns = [
 
     path("LabelStepManager", views.LabelStepManager.as_view()),
     path("LabelStepManager/<int:step_id>", views.LabelStepManager.as_view()),
+
+    path("CustomerSuccessSells", views.customer_success_sells),
 ]
 
 
