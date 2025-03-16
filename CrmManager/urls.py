@@ -37,6 +37,7 @@ urlpatterns = [
     path('v1/WalletManager/',include("WalletManager.urls")),
 
     path('v1/Planing/',include("PlaningManager.urls")),
+    path('v1/CalenderManager/',include("CalenderManager.urls")),
 
 
 ]
