@@ -1046,7 +1046,19 @@ def referral_task(request,task_id):
 class TaskArchiveManager(APIView):
     permission_classes = [IsAuthenticated]
 
-    def get(self, request):
+    def get(self, request,task_id=None):
+        if task_id:
+            try:
+                task_obj = Task.all_objects.get(id=task_id,is_deleted=True)
+            except :
+                return Response(status=status.HTTP_404_NOT_FOUND)
+            serializer_data = TaskSerializer(task_obj)
+            return Response(status=status.HTTP_200_OK,data={
+                "status":True,
+                "message":"موفق",
+                "data":serializer_data.data
+            })
+
         page_number = request.GET.get("page_number", 1)
         project_id = request.GET.get("project_id")
         task_objs = Task.all_objects.filter(is_deleted=True,project_id=project_id)
@@ -1074,3 +1086,18 @@ class TaskArchiveManager(APIView):
             status=status.HTTP_200_OK,
             data={"status": True, "message": "موفق", "data": pagination_data}
         )
+    def put(self,request,task_id):
+        try:
+            task_obj = Task.all_objects.get(id=task_id, is_deleted=True)
+        except:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        last_category_project = CategoryProject.objects.filter(project=task_obj.project).last()
+        last_task = Task.objects.filter(project=task_obj.project,category_task=last_category_project).order_by("order").last()
+        task_obj.order += last_task.order
+        task_obj.is_deleted= False
+        task_obj.save()
+        return Response(status=status.HTTP_202_ACCEPTED,data={
+            "status":True,
+            "message":"با موفقیت بازگردانی شد",
+            "data":TaskSerializer(task_obj).data
+        })

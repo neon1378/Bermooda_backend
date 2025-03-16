@@ -32,5 +32,6 @@ urlpatterns = [
     path("ReferralTask/<int:task_id>",views.referral_task),
 
     path("TaskArchiveManager",views.TaskArchiveManager.as_view()),
+    path("TaskArchiveManager/<int:task_id>",views.TaskArchiveManager.as_view()),
 
 ]
