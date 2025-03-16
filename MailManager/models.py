@@ -45,7 +45,7 @@ class Mail (SoftDeleteModel):
 
     def is_favorite(self,user):
 
-        FavoriteMail.objects.get(user_account=user, mail=self)
+        return FavoriteMail.objects.get(user_account=user, mail=self).exists()
     def save(self, *args, **kwargs):
         if not self.mail_code:
             random_code = random.randint(9999,100000)

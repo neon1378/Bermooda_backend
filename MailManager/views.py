@@ -171,8 +171,10 @@ class MailManager(APIView):
         ).distinct()
         if search_query:
             mail_filtered= mail_filtered.filter(
-                Q(title=search_query),
+                title__icontains=search_query,
             )
+
+
         if start_date and end_date:
             start_date_gregorian = jdatetime.datetime.strptime(start_date, "%Y/%m/%d").togregorian()
             end_date_gregorian = jdatetime.datetime.strptime(end_date, "%Y/%m/%d").togregorian()

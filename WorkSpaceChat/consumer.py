@@ -81,6 +81,7 @@ class GroupMessageWs(AsyncWebsocketConsumer):
                 message.save()
 
         text_messages = group_obj.group_text_messages.all().order_by("-id")
+
         paginator = Paginator(text_messages, 20)  # Set items per page
 
         # Check if the requested page exists
@@ -89,7 +90,7 @@ class GroupMessageWs(AsyncWebsocketConsumer):
                 "count": paginator.count,
                 "next": None,
                 "previous": None,
-                "data": []
+                "list": []
             }
 
         # Get the page
