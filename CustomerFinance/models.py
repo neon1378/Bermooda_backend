@@ -54,8 +54,8 @@ class Invoice(SoftDeleteModel):
         ("installment","INSTALLMENT"),
     )
     INVOICE_TYPE = (
-        ("preـinvoice","PRE_INVOICE"),
-        ("final_invoice","FINAL_INVOICE")
+        ("preinvoice","PREINVOICE"),
+        ("finalinvoice","FINALINVOICE")
     )
     invoice_type = models.CharField(choices=INVOICE_TYPE,null=True,max_length=20)
     payment_type = models.CharField(choices=PAYMENT_TYPE,null=True,default="cash",max_length=22)
