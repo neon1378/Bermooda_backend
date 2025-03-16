@@ -73,6 +73,8 @@ class GroupMessageWs(AsyncWebsocketConsumer):
     def _get_group_message_list(self,page_number):
         group_obj = GroupMessage.objects.get(id= self.group_id)
         read_messages = group_obj.group_text_messages.filter(is_read =False)
+        message_count = group_obj.group_text_messages.all().count()
+        print(message_count)
         for message in read_messages:
             if message.owner != self.user:
                 message.is_read = True
