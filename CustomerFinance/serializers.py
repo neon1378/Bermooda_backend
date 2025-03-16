@@ -126,6 +126,7 @@ class InvoiceSerializer(ModelSerializer):
         model = Invoice
         fields = [
             "status",
+            "invoice_type",
             "status_id",
             "qr_code",
             "id",

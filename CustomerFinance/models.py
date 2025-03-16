@@ -53,6 +53,11 @@ class Invoice(SoftDeleteModel):
         ("cash","CASH"),
         ("installment","INSTALLMENT"),
     )
+    INVOICE_TYPE = (
+        ("preـinvoice","PRE_INVOICE"),
+        ("final_invoice","FINAL_INVOICE")
+    )
+    invoice_type = models.CharField(choices=INVOICE_TYPE,null=True,max_length=20)
     payment_type = models.CharField(choices=PAYMENT_TYPE,null=True,default="cash",max_length=22)
     status = models.ForeignKey(InvoiceStatus,on_delete=models.SET_NULL,null=True)
     customer = models.ForeignKey(CustomerUser,on_delete=models.CASCADE,null=True)
