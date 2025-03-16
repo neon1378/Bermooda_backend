@@ -46,16 +46,11 @@ class CalenderManger(APIView):
             g_date = date(year, month, day)  # Create Gregorian date
 
             # Query checklist data based on Gregorian date
-            check_list_objs = CheckList.objects.all()
-            for item in check_list_objs:
-                if item.date_time_to_start_main:
-                    print(f"checklist_date : {item.date_time_to_start_main.date()}" )
-                    print(f"month_date{g_date}")
-                    # print(item.date_time_to_start_main.date() == )
+            check_list_objs = CheckList.objects.filter(date_time_to_start_main__date=g_date)
 
             data_list.append({
                 "date": g_date.strftime("%Y-%m-%d"),  # Format Gregorian date as string
-                "list":[]
+                "list": CheckListSerializer(check_list_objs, many=True).data
             })
 
             print(f"Gregorian: {g_date}, Records found: {check_list_objs.count()}")
