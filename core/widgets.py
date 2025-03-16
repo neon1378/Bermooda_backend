@@ -173,3 +173,40 @@ def gregorian_to_persian(date_time,type=None):
         formatted_date_persian = jalali_date.strftime("%d %B %Y")
         return formatted_date_persian
 
+
+
+
+def pagination (query_set,page_number):
+
+
+
+
+        paginator = Paginator(query_set, 20)  # Set items per page
+
+        # Check if the requested page exists
+        if int(page_number) > paginator.num_pages:
+            return {
+
+                "count": paginator.count,
+                "next": None,
+                "previous": None,
+                "list": []
+            }
+
+        # Get the page
+        page = paginator.get_page(page_number)
+
+
+
+
+
+        # Group messages by date
+
+
+
+        return {
+            "count": paginator.count,
+            "next": page.next_page_number() if page.has_next() else None,
+            "previous": page.previous_page_number() if page.has_previous() else None,
+            "list": page.object_list
+        }

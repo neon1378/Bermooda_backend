@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from rest_framework import status
+from core.widgets import  pagination
 from rest_framework.decorators import api_view,permission_classes
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -1001,19 +1002,26 @@ class ProjectDepartmentManager(APIView):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def my_task_checklist(request,project_id):
+    page_number = request.GET.get("page_number",1)
     project_obj = get_object_or_404(Project,id=project_id)
     task_objs = Task.objects.filter(done_status=False,project=project_obj)
+
     check_list_objs = []
     for task in task_objs:
         for check_list in task.check_list.all().order_by("date_time_to_start_main"):
             if check_list.responsible_for_doing == request.user:
                 check_list_objs.append(check_list)
-    serializer_data =CheckListSerializer(check_list_objs,many=True)
+    pagination_data = pagination(query_set=check_list_objs,page_number=page_number)
+
+
+    if pagination_data['list'] != []:
+        pagination_data['list'] = CheckListSerializer(check_list_objs,many=True)
+
 
     return Response(status=status.HTTP_200_OK,data={
         "status":True,
         "message":"success",
-        "data":serializer_data.data
+        "data":pagination_data
     })
 
 
