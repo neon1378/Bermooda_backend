@@ -1015,7 +1015,7 @@ def my_task_checklist(request,project_id):
 
 
     if pagination_data['list'] != []:
-        pagination_data['list'] = CheckListSerializer(check_list_objs,many=True).data
+        pagination_data['list'] = CheckListSerializer(pagination_data['list'],many=True).data
 
 
     return Response(status=status.HTTP_200_OK,data={
@@ -1043,10 +1043,7 @@ def referral_task(request,task_id):
         "data":{}
     })
 
+# class TaskArchiveManager(APIView):
+#     permission_classes=[IsAuthenticated]
+#     def get(self,request):
 
-class CalenderTaskManager(APIView):
-    def get(self,request):
-        data= request.GET
-        command =data.get("command")
-        if command == "":
-            pass
