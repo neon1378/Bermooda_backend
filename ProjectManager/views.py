@@ -1043,7 +1043,34 @@ def referral_task(request,task_id):
         "data":{}
     })
 
-# class TaskArchiveManager(APIView):
-#     permission_classes=[IsAuthenticated]
-#     def get(self,request):
+class TaskArchiveManager(APIView):
+    permission_classes = [IsAuthenticated]
 
+    def get(self, request):
+        page_number = request.GET.get("page_number", 1)
+        project_id = request.GET.get("project_id")
+        task_objs = Task.all_objects.filter(is_deleted=True,project_id=project_id)
+        workspace_obj = get_object_or_404(WorkSpace, id=request.user.current_workspace_id)
+
+        # ✅ If User is Workspace Owner
+        if workspace_obj.owner == request.user:
+            return self.get_paginated_response(task_objs, page_number)
+
+        # ✅ Check if User is a Manager in Workspace
+        workspace_member = WorkspaceMember.objects.filter(user_account=request.user, workspace=workspace_obj).first()
+        if workspace_member and workspace_member.permissions.filter(permission_name="project board", permission_type="manager").exists():
+            return self.get_paginated_response(task_objs, page_number)
+
+        # ✅ If Not Owner or Manager, Filter Tasks Where User is Responsible
+        task_filtered = [task for task in task_objs if any(check_list.responsible_for_doing == request.user for check_list in task.check_list.all())]
+
+        return self.get_paginated_response(task_filtered, page_number)
+
+    def get_paginated_response(self, queryset, page_number):
+        pagination_data = pagination(query_set=queryset, page_number=page_number)
+        pagination_data["list"] = TaskSerializer(pagination_data["list"], many=True).data if pagination_data["list"] else []
+
+        return Response(
+            status=status.HTTP_200_OK,
+            data={"status": True, "message": "موفق", "data": pagination_data}
+        )
