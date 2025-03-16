@@ -49,7 +49,9 @@ class CalenderManger(APIView):
             check_list_objs = CheckList.objects.all()
             for item in check_list_objs:
                 if item.date_time_to_start_main:
-                    print(item.date_time_to_start_main.date() == g_date)
+                    print(f"checklist_date : {item.date_time_to_start_main.date()}" )
+                    print(f"month_date{g_date}")
+                    # print(item.date_time_to_start_main.date() == )
 
             data_list.append({
                 "date": g_date.strftime("%Y-%m-%d"),  # Format Gregorian date as string
