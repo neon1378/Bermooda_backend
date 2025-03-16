@@ -1101,3 +1101,17 @@ class TaskArchiveManager(APIView):
             "message":"با موفقیت بازگردانی شد",
             "data":TaskSerializer(task_obj).data
         })
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def check_list_archive(request,task_id):
+    try:
+        task_obj = Task.all_objects.get(id=task_id, is_deleted=True)
+    except:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+    check_list_objs = CheckList.all_objects.filter(task=task_obj)
+    serializer_data = CheckListSerializer(check_list_objs,many=True)
+    return Response(status=status.HTTP_200_OK,data={
+        "status":True,
+        "message":"موفق",
+        "data":serializer_data.data
+    })

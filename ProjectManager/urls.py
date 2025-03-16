@@ -33,5 +33,6 @@ urlpatterns = [
 
     path("TaskArchiveManager",views.TaskArchiveManager.as_view()),
     path("TaskArchiveManager/<int:task_id>",views.TaskArchiveManager.as_view()),
+    path("CheckListArchive/<int:task_id>",views.check_list_archive),
 
 ]
