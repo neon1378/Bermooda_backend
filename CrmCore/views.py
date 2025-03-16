@@ -1497,7 +1497,7 @@ class LabelStepManager(APIView):
 
 
 
-def get_customers_by_role(user, workspace):
+def get_customers_by_role(user, workspace,group_crm_obj):
     if workspace.owner == user:
         return CustomerUser.objects.filter(is_followed=True)
 
@@ -1505,9 +1505,9 @@ def get_customers_by_role(user, workspace):
 
     for permission in workspace_member.permissions.all():
         if permission.permission_name == "crm" and permission.permission_type == "manager":
-            return CustomerUser.objects.filter(is_followed=True)
+            return CustomerUser.objects.filter(is_followed=True,group_crm=group_crm_obj)
 
-    return CustomerUser.objects.filter(is_followed=True, user_account=user)
+    return CustomerUser.objects.filter(is_followed=True, user_account=user,group_crm=group_crm_obj)
 
 
 @api_view(['GET'])
@@ -1518,7 +1518,7 @@ def customer_success_sells(request):
     group_crm_obj = get_object_or_404(GroupCrm, id=group_crm_id)
     workspace_obj = get_object_or_404(WorkSpace, id=request.user.current_workspace_id)
 
-    customer_objs = get_customers_by_role(request.user, workspace_obj)
+    customer_objs = get_customers_by_role(request.user, workspace_obj,group_crm_obj)
     pagination_data = pagination(query_set=customer_objs, page_number=page_number)
 
     if pagination_data['list']:

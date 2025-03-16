@@ -262,7 +262,7 @@ class CustomerSmallSerializer(serializers.ModelSerializer):
 
             "city",
             "state",
-
+            "link",
             "fax",
             "manager_national_code",
             "economic_code",

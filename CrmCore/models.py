@@ -200,7 +200,7 @@ class CustomerUser(SoftDeleteModel):
     avatar = models.ForeignKey(MainFile,on_delete=models.SET_NULL,null=True,blank=True)
     personal_type = models.CharField(max_length=9, choices=PERSONAL_TYPE,null=True)
     conection_type = models.CharField(max_length=30,choices=CONECTION_TYPE,default="phone")
-
+    link =models.URLField(null=True,blank=True)
     is_followed = models.BooleanField(default=False)
     group_crm = models.ForeignKey(GroupCrm,on_delete=models.CASCADE,null=True,related_name="customer_group")
     workspace = models.ForeignKey(WorkSpace,null=True,on_delete=models.CASCADE,related_name="customer")

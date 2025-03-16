@@ -120,6 +120,7 @@ class InvoiceSerializer(ModelSerializer):
     seller_information_data =serializers.JSONField(write_only=True,required=True)
     signature_buyer_id = serializers.IntegerField(write_only=True,required=False)
     created_date = serializers.CharField(write_only=True,required=True)
+
     validity_date = serializers.CharField(write_only=True,required=True)
     class Meta:
         model = Invoice
@@ -154,6 +155,7 @@ class InvoiceSerializer(ModelSerializer):
             "installments",
             "seller_information_data",
             "installment_period_day",
+            "interest_percentage",
             "installment_price",
             "created_date_persian",
             "validity_date_persian",
@@ -171,8 +173,8 @@ class InvoiceSerializer(ModelSerializer):
         products = validated_data.pop("product_list",[])
         signature_id = validated_data.pop("signature_id",None)
 
-        installment_period_day = validated_data.pop("installment_period_day",None)
-        installment_price = validated_data.pop("installment_price",None)
+        installment_payments = validated_data.pop("installment_payments",None)
+
         created_date = validated_data.pop("created_date",None)
         validity_date = validated_data.pop("validity_date",None)
         signature_buyer_id= validated_data.pop("signature_buyer_id",None)
@@ -252,31 +254,18 @@ class InvoiceSerializer(ModelSerializer):
             new_product.save()
             new_invoice.product.add(new_product)
         if payment_type == "installment":
-            factor_price =new_invoice.factor_price()
-            final_price = factor_price['final_price']
-            installment_count = int(final_price) // int(installment_price)
-            print("yeas")
-            print(installment_count)
-            print(int(final_price))
-            remaining = int(final_price) % int(installment_price)
-            last_installment_date = new_invoice.created_date + timedelta(days=installment_period_day)
-            for item in range(1,installment_count+1):
-                print("yeas")
-                print( int(installment_price))
-                new_installment = Installment(
-                    price = int(installment_price),
-                    date_to_pay = last_installment_date,
-                    invoice =new_invoice
+            try:
+                for installment in installment_payments:
+                    new_installment = Installment.objects.create(price=installment['price'],date_to_pay=persian_to_gregorian(installment['date_to_pay']),invoice=new_invoice)
+            except:
+                raise serializers.ValidationError(
+                    {
+                        "status":False,
+                        "message":"Validation Error",
+                        "data":{}
+                    }
                 )
-                new_installment.save()
-                last_installment_date = last_installment_date + timedelta(days=installment_period_day)
-            if remaining > 0 :
-                new_installment = Installment(
-                    price=int(installment_price),
-                    date_to_pay=last_installment_date,
-                    invoice =new_invoice
-                )
-                new_installment.save()
+
 
 
 
