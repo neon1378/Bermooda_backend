@@ -45,7 +45,7 @@ class CalenderManger(APIView):
             j_date = jdatetime.date(j_year, j_month, day)
             # Convert to Gregorian date
             g_date: date = j_date.togregorian()
-            check_list_objs = CheckList.objects.filter(date_time_to_start_main__date =j_date)
+            check_list_objs = CheckList.objects.filter(date_time_to_start_main__date =g_date)
             data_list.append(
                 {
                     "date":j_date.strftime("%Y/%m/%d"),
