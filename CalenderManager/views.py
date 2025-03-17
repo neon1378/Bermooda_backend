@@ -69,9 +69,9 @@ class CalenderManger(APIView):
         for check_list in check_list_objs:
             if check_list.date_time_to_start_main:
                 print(date_object,"@@@")
-                print(check_list_objs.date_time_to_start_main.date(),"!!!")
-                print(check_list_objs.date_time_to_start_main.date()==date_object,"$$$")
-            if check_list.date_time_to_start_main and check_list_objs.date_time_to_start_main.date()==date_object:
+                print(check_list.date_time_to_start_main.date(),"!!!")
+                print(check_list.date_time_to_start_main.date()==date_object,"$$$")
+            if check_list.date_time_to_start_main and check_list.date_time_to_start_main.date()==date_object:
                 data_list.append(check_list)
 
 
