@@ -15,7 +15,24 @@ from django.shortcuts import get_object_or_404
 
 
 class CalenderManger(APIView):
+
     permission_classes=[IsAuthenticated]
+
+    def get_all_dates_of_month(self,year, month):
+        start_date = jdatetime.date(year, month, 1)
+
+        if month < 12:
+
+            end_date = jdatetime.date(year, month + 1, 1) - jdatetime.timedelta(days=1)
+        else:
+
+            end_date = jdatetime.date(year, month, 29) if not jdatetime.date.isleap(year) else jdatetime.date(year,
+                                                                                                              month,
+                                                                                                              30)
+
+        all_dates = [start_date + jdatetime.timedelta(days=i) for i in range((end_date - start_date).days + 1)]
+
+        return all_dates
     def get(self, request, date=None):
         self.workspace_obj = get_object_or_404(WorkSpace, id=request.user.current_workspace_id)
         self.user = request.user
@@ -44,7 +61,9 @@ class CalenderManger(APIView):
             return Response({"status": False, "message": "Year and month must be integers."},
                             status=status.HTTP_400_BAD_REQUEST)
 
-        data = self.get_list_data(year, month)
+
+        all_day_in_month =  self.get_all_dates_of_month(year, month)
+        data = self.get_list_data(moth_list=all_day_in_month)
         return Response({"status": True, "message": "Success", "data": data}, status=status.HTTP_200_OK)
 
     def handle_get_a_day(self, request):
@@ -86,33 +105,29 @@ class CalenderManger(APIView):
             status=status.HTTP_200_OK,
         )
 
-    def get_list_data(self, year: int, month: int):
+    def get_list_data(self,moth_list):
         """Returns checklist count for each day in a month."""
-        num_days = calendar.monthrange(year, month)[1]  # Get number of days in month
-        data_list = []
 
         check_list_objs = CheckList.objects.filter(
             task__project__workspace=self.workspace_obj,
             responsible_for_doing=self.user,
 
         )
-
-        for day in range(1, num_days + 1):
-            g_date = date(year, month, day)  # Create Gregorian date
-
-            # Filter only checklists for this specific day
-            check_list_items =[]
+        data_list=[]
+        for jdate in moth_list:
+            g_date = jdate.togregorian()
+            print(g_date)
+            print(jdate)
+            check_list_items = []
             for item in check_list_objs:
                 if item.date_time_to_start_main:
 
                     if item.date_time_to_start_main.date() == g_date:
                         check_list_items.append(item)
-            jalali_datetime = jdatetime.datetime.fromgregorian(datetime=g_date)
 
-            # Format the Jalali DateTime as a string (optional)
-            jalali_datetime_str = jalali_datetime.strftime("%Y/%m/%d")
             data_list.append({
-                "date": jalali_datetime_str,
+                "date": jdate.strftime("%Y/%m/%d"),
                 "count": len(check_list_items)
             })
+
         return data_list
