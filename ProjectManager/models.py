@@ -158,36 +158,42 @@ class Task(SoftDeleteModel):
         return (check_list_completed / check_list_count * 100) if check_list_count > 0 else 0
 
     def calculate_performance(self):
-        completed_checklists = self.check_list.filter(status=True)
-        n = completed_checklists.count()
+        try:
+            completed_checklists = self.check_list.filter(status=True)
+            n = completed_checklists.count()
 
-        if n == 0:
+            if n == 0:
+                return {
+                    'N': 0,
+                    'E': 0.0,
+                    'T': 0.0,
+                    'Performance': 0.0
+                }
+
+            total_difficulty = sum(checklist.difficulty for checklist in completed_checklists)
+            average_difficulty = total_difficulty / n
+
+            total_time = sum(
+                (checklist.date_time_to_end_main - checklist.date_time_to_start_main).total_seconds() / 3600
+                for checklist in completed_checklists
+                if checklist.date_time_to_end_main and checklist.date_time_to_start_main
+            )
+
+            performance = n * average_difficulty
+
             return {
-                'N': 0,
-                'E': 0.0,
-                'T': 0.0,
-                'Performance': 0.0
+                'N': n,
+                'E': round(average_difficulty, 2),
+                'T': round(total_time, 2),
+                'Performance': round(performance, 2)
             }
 
-        total_difficulty = sum(checklist.difficulty for checklist in completed_checklists)
-        average_difficulty = total_difficulty / n
-
-        total_time = sum(
-            (checklist.date_time_to_end_main - checklist.date_time_to_start_main).total_seconds() / 3600
-            for checklist in completed_checklists
-            if checklist.date_time_to_end_main and checklist.date_time_to_start_main
-        )
-
-        performance = n * average_difficulty
-
-        return {
-            'N': n,
-            'E': round(average_difficulty, 2),
-            'T': round(total_time, 2),
-            'Performance': round(performance, 2)
+        except:return {
+            'N': 0,
+            'E': 0,
+            'T': 0,
+            'Performance': 0
         }
-
-
 class CheckList(SoftDeleteModel):
     title = models.TextField(null=True)
     difficulty = models.IntegerField(default=1)
