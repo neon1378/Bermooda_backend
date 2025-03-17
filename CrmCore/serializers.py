@@ -548,7 +548,7 @@ class CustomerBankSerializer(serializers.ModelSerializer):
         if 'state_id' in validated_data:
             instance.main_state_id = validated_data['state_id']
         if 'city_id' in validated_data:
-            instance.main_state_id  = validated_data['city_id']
+            instance.main_city_id  = validated_data['city_id']
 
         instance.save()
         return instance
