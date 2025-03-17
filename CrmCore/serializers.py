@@ -529,7 +529,7 @@ class CustomerBankSerializer(serializers.ModelSerializer):
         main_state_id = validated_data.pop("state_id",None)
         new_customer_bank = CustomerBank.objects.create(**validated_data, is_local=False)
         if main_city_id:
-            new_customer_bank.main_city_id = main_state_id
+            new_customer_bank.main_city_id = main_city_id
         if main_state_id:
             new_customer_bank.main_state_id = main_state_id
         new_customer_bank.save()
