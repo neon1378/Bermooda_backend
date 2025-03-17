@@ -65,13 +65,18 @@ class CalenderManger(APIView):
             responsible_for_doing=self.user,
             date_time_to_start_main__date=date_object
         )
+        data_list =[]
+        for check_list in check_list_objs:
+            if check_list.date_time_to_start_main and check_list_objs.date_time_to_start_main.date()==date_object:
+                data_list.append(check_list)
 
-        serializer = CheckListSerializer(check_list_objs, many=True)
+
+        serializer = CheckListSerializer(data_list, many=True)
         return Response(
             {
                 "status": True,
                 "message": "موفق",
-                "data": {"data_type": "check_list", "list": serializer.data},
+                "data": serializer.data,
             },
             status=status.HTTP_200_OK,
         )
