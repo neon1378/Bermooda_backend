@@ -532,7 +532,7 @@ class CustomerBankSerializer(serializers.ModelSerializer):
             new_customer_bank.main_city_id = main_state_id
         if main_state_id:
             new_customer_bank.main_state_id = main_state_id
-
+        new_customer_bank.save()
         return new_customer_bank
 
     def update(self, instance, validated_data):
