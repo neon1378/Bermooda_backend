@@ -1583,7 +1583,10 @@ class CustomerDocumentManager(APIView):
             "message":"Validation Error",
             "data":serializer_data.errors
         })
-
+    def delete(self,request,document_id):
+        document_obj = get_object_or_404(CustomerDocument,id=document_id)
+        document_obj.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class CustomerBankManager(APIView):
