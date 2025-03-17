@@ -525,10 +525,18 @@ class CustomerBankSerializer(serializers.ModelSerializer):
         return data
 
     def create(self, validated_data):
+        main_city_id = validated_data.pop("city_id",None)
+        main_state_id = validated_data.pop("state_id",None)
         new_customer_bank = CustomerBank.objects.create(**validated_data, is_local=False)
+        if main_city_id:
+            new_customer_bank.main_city_id = main_state_id
+        if main_state_id:
+            new_customer_bank.main_state_id = main_state_id
+
         return new_customer_bank
 
     def update(self, instance, validated_data):
+
         # Update instance fields dynamically based on provided data
         instance.phone_number = validated_data.get('phone_number', instance.phone_number)
         instance.static_phone_number = validated_data.get('static_phone_number', instance.static_phone_number)
@@ -538,9 +546,9 @@ class CustomerBankSerializer(serializers.ModelSerializer):
 
         # Handle state and city updates
         if 'state_id' in validated_data:
-            instance.state_id = validated_data['state_id']
+            instance.main_state_id = validated_data['state_id']
         if 'city_id' in validated_data:
-            instance.city_id = validated_data['city_id']
+            instance.main_state_id  = validated_data['city_id']
 
         instance.save()
         return instance
