@@ -63,10 +63,14 @@ class CalenderManger(APIView):
         check_list_objs = CheckList.objects.filter(
             task__project__workspace=self.workspace_obj,
             responsible_for_doing=self.user,
-            date_time_to_start_main__date=date_object
+
         )
         data_list =[]
         for check_list in check_list_objs:
+            if check_list.date_time_to_start_main:
+                print(date_object,"@@@")
+                print(check_list_objs.date_time_to_start_main.date(),"!!!")
+                print(check_list_objs.date_time_to_start_main.date()==date_object,"$$$")
             if check_list.date_time_to_start_main and check_list_objs.date_time_to_start_main.date()==date_object:
                 data_list.append(check_list)
 
