@@ -821,18 +821,57 @@ def get_text_workspace_invite(request):
             }
         }
     )
+
+def calculate_user_performance():
+    """
+    Calculate the average performance percentage (1-100) for each user
+    based on their completed checklists.
+    """
+    # Get all users with their completed checklists
+    users_with_performance = (
+        CheckList.objects
+        .filter(status=True)  # Only completed checklists
+        .values('responsible_for_doing')  # Group by user
+        .annotate(
+            total_tasks=Count('id'),  # Total completed tasks
+            average_difficulty=Avg('difficulty'),  # Average difficulty
+            total_time=Sum(
+                (timezone.now() - timezone.now())  # Placeholder for time calculation
+            )  # Placeholder for total time
+        )
+    )
+
+    # Calculate performance percentage for each user
+    performance_data = []
+    for user_data in users_with_performance:
+        user_id = user_data['responsible_for_doing']
+        total_tasks = user_data['total_tasks']
+        average_difficulty = user_data['average_difficulty']
+
+        # Calculate performance percentage (N * E, scaled to 1-100)
+        performance_percentage = min(max((total_tasks * average_difficulty) / 5 * 20, 1), 100)
+
+        performance_data.append({
+            'user_id': user_id,
+            'total_tasks': total_tasks,
+            'average_difficulty': round(average_difficulty, 2),
+            'performance_percentage': round(performance_percentage, 2)
+        })
+
+    return performance_data
 from WorkSpaceChat.models import  GroupMessage
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def create_group_message(request):
-    from ProjectManager.models import Task
-    for task in Task.objects.all():
-        performance_metrics = task.calculate_performance()
+    performance_data = calculate_user_performance()
 
-        print(f"Completed Tasks (N): {performance_metrics['N']}")
-        print(f"Average Difficulty (E): {performance_metrics['E']}")
-        print(f"Total Time Spent (T): {performance_metrics['T']} hours")
-        print(f"Performance Score: {performance_metrics['Performance']}")
+    # Print results
+    for data in performance_data:
+        print(f"User ID: {data['user_id']}")
+        print(f"Total Tasks: {data['total_tasks']}")
+        print(f"Average Difficulty: {data['average_difficulty']}")
+        print(f"Performance Percentage: {data['performance_percentage']}%")
+        print("-" * 30)
     # from django.db.models import Q
     # from WorkSpaceManager.models import  WorkSpace
     # from WorkSpaceChat.models import GroupMessage
