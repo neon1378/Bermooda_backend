@@ -516,7 +516,7 @@ class CustomerBankSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         data = super().to_representation(instance)
 
-        if instance.is_local:
+        if not instance.is_local:
             if instance.main_city:
                 data['city'] = instance.main_city.name
             if instance.main_state:
@@ -525,7 +525,7 @@ class CustomerBankSerializer(serializers.ModelSerializer):
         return data
 
     def create(self, validated_data):
-        new_customer_bank = CustomerBank.objects.create(**validated_data, is_local=True)
+        new_customer_bank = CustomerBank.objects.create(**validated_data, is_local=False)
         return new_customer_bank
 
     def update(self, instance, validated_data):
