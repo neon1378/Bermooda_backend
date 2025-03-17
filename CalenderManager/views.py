@@ -18,18 +18,19 @@ class CalenderManger(APIView):
 
     permission_classes=[IsAuthenticated]
 
-    def get_all_dates_of_month(self,year, month):
+    def get_all_dates_of_month(self, year, month):
         start_date = jdatetime.date(year, month, 1)
 
         if month < 12:
-
             end_date = jdatetime.date(year, month + 1, 1) - jdatetime.timedelta(days=1)
         else:
+            # Check if the year is a leap year using the correct method
+            if jdatetime.date.isleap(year):
+                end_date = jdatetime.date(year, month, 30)  # 30 days in Esfand for leap years
+            else:
+                end_date = jdatetime.date(year, month, 29)  # 29 days in Esfand for non-leap years
 
-            end_date = jdatetime.date(year, month, 29) if not jdatetime.date.isleap(year) else jdatetime.date(year,
-                                                                                                              month,
-                                                                                                              30)
-
+        # Generate all dates in the month
         all_dates = [start_date + jdatetime.timedelta(days=i) for i in range((end_date - start_date).days + 1)]
 
         return all_dates
@@ -62,7 +63,7 @@ class CalenderManger(APIView):
                             status=status.HTTP_400_BAD_REQUEST)
 
 
-        all_day_in_month =  self.get_all_dates_of_month(year, month)
+        all_day_in_month =  self.get_all_dates_of_month(year=year, month=month)
         data = self.get_list_data(moth_list=all_day_in_month)
         return Response({"status": True, "message": "Success", "data": data}, status=status.HTTP_200_OK)
 
