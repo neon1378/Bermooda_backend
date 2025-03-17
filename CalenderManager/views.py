@@ -93,8 +93,9 @@ class CalenderManger(APIView):
             # Filter only checklists for this specific day
             check_list_items =[]
             for item in check_list_objs:
-                if item.date_time_to_start_main.date() == g_date:
-                    check_list_items.append(item)
+                if item.date_time_to_start_main:
+                    if item.date_time_to_start_main.date() == g_date:
+                        check_list_items.append(item)
 
             data_list.append({
                 "date": g_date.strftime("%Y/%m/%d"),
