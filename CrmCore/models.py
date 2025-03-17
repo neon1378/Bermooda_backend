@@ -406,10 +406,16 @@ class CustomerDocument(SoftDeleteModel):
 
 
 class CustomerBank(SoftDeleteModel):
+    is_local = models.BooleanField(default=True)
+
     document= models.ForeignKey(CustomerDocument,on_delete=models.CASCADE,null=True)
     phone_number = models.CharField(max_length=14,null=True)
-    state= models.CharField(max_length=50,null=True)
-    city= models.CharField(max_length=50,null=True)
+    state= models.CharField(max_length=50,null=True,blank=True)
+    city= models.CharField(max_length=50,null=True,blank=True)
+
+    main_state = models.ForeignKey(State,on_delete=models.SET_NULL,null=True)
+    main_city =models.ForeignKey(City,on_delete=models.SET_NULL,null=True)
+
     static_phone_number = models.CharField(max_length=18,null=True)
     address =models.TextField(null=True)
     email = models.CharField(max_length=60,null=True)

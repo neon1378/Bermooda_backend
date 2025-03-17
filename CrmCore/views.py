@@ -523,7 +523,7 @@ class ReportManager(APIView):
 
 class GroupCrmManager(APIView):
     permission_classes = [IsAuthenticated,IsWorkSpaceMemberAccess]
-    def paginate_queryset(self,page_number,queryset):
+    def paginate_queryset(self,page_number,queryset,workspace_obj):
 
 
         # Set up custom pagination
@@ -541,7 +541,23 @@ class GroupCrmManager(APIView):
         # Get the page
         page = paginator.get_page(page_number)
         serializer_data=GroupCrmSerializer(page.object_list,many=True)
+        for group in serializer_data:
+            for member in group["members"]:
+                if member["id"] == workspace_obj.owner.id:
+                    member["type"] = "manager"
+                else:
+                    workspace_member = WorkspaceMember.objects.filter(
+                        user_account_id=member["id"], workspace=workspace_obj
+                    ).first()  # Use `.first()` to avoid exceptions
 
+                    if workspace_member:
+                        permission = next(
+                            (perm.permission_type for perm in workspace_member.permissions.all() if
+                             perm.permission_name == "crm"),
+                            None,
+                        )
+                        if permission:
+                            member["type"] = permission
         return {
             "count": paginator.count,
             "next": page.next_page_number() if page.has_next() else None,
@@ -558,25 +574,9 @@ class GroupCrmManager(APIView):
         if group_id:
             group_obj = get_object_or_404(GroupCrm, id=group_id)
             if request.user == workspace_obj.owner or request.user in group_obj.members.all():
-                serializer_data = GroupCrmSerializer(group_obj).data
+                serializer_data = GroupCrmSerializer(group_obj)
 
-                for group in serializer_data:
-                    for member in group["members"]:
-                        if member["id"] == workspace_obj.owner.id:
-                            member["type"] = "manager"
-                        else:
-                            workspace_member = WorkspaceMember.objects.filter(
-                                user_account_id=member["id"], workspace=workspace_obj
-                            ).first()  # Use `.first()` to avoid exceptions
 
-                            if workspace_member:
-                                permission = next(
-                                    (perm.permission_type for perm in workspace_member.permissions.all() if
-                                     perm.permission_name == "crm"),
-                                    None,
-                                )
-                                if permission:
-                                    member["type"] = permission
 
 
                 group_data = serializer_data.data
@@ -607,7 +607,7 @@ class GroupCrmManager(APIView):
                         group_objs.append(group)
                 
 
-        group_data = self.paginate_queryset(page_number=page,queryset=group_objs)
+        group_data = self.paginate_queryset(page_number=page,queryset=group_objs,workspace_obj=workspace_obj)
 
         return Response(
             status=status.HTTP_200_OK,
@@ -1611,3 +1611,37 @@ class CustomerBankManager(APIView):
             "message": "موفق",
             "data": serializer_data.data
         })
+    def post(self,request):
+        serializer_data = CustomerBankSerializer(data=request.data)
+        if serializer_data.is_valid():
+            serializer_data.save()
+            return Response(status=status.HTTP_201_CREATED,data={
+                "status":True,
+                "message":"با موفقیت ثبت",
+                "data":serializer_data.data
+            })
+        return Response(status=status.HTTP_400_BAD_REQUEST, data={
+            "status": False,
+            "message": "Validation Error",
+            "data": serializer_data.errors
+        })
+    def put(self,request,customer_b_id):
+        customer_bank = get_object_or_404(CustomerBank,id=customer_b_id)
+
+        serializer_data = CustomerBankSerializer(data=request.data,instance=customer_bank)
+        if serializer_data.is_valid():
+            serializer_data.save()
+            return Response(status=status.HTTP_202_ACCEPTED,data={
+                "status":True,
+                "message":"با موفقیت بروزرسانی شد",
+                "data":serializer_data.data
+            })
+        return Response(status=status.HTTP_400_BAD_REQUEST, data={
+            "status": False,
+            "message": "Validation Error",
+            "data": serializer_data.errors
+        })
+    def delete(self,request,customer_b_id):
+        customer_bank = get_object_or_404(CustomerBank, id=customer_b_id)
+        customer_bank.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)

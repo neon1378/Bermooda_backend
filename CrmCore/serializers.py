@@ -492,13 +492,17 @@ class GroupCrmSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
-
 class CustomerBankSerializer(serializers.ModelSerializer):
-    document_id = serializers.IntegerField(write_only=True,required=True)
+    document_id = serializers.IntegerField(write_only=True, required=True)
+    state_id = serializers.IntegerField(write_only=True, required=False)
+    city_id = serializers.IntegerField(write_only=True, required=False)
+
     class Meta:
         model = CustomerBank
-        fields =[
+        fields = [
             "id",
+            "state_id",
+            "city_id",
             "document_id",
             "phone_number",
             "state",
@@ -508,9 +512,36 @@ class CustomerBankSerializer(serializers.ModelSerializer):
             "email",
             "fullname_or_company_name",
         ]
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        if instance.is_local:
+            data['city'] = instance.main_city.name
+            data['state'] = instance.main_state.name
+        return data
+
     def create(self, validated_data):
-        new_customer_bank = CustomerBank.objects.create(**validated_data)
+        new_customer_bank = CustomerBank.objects.create(**validated_data, is_local=True)
         return new_customer_bank
+
+    def update(self, instance, validated_data):
+        # Update instance fields dynamically based on provided data
+        instance.phone_number = validated_data.get('phone_number', instance.phone_number)
+        instance.static_phone_number = validated_data.get('static_phone_number', instance.static_phone_number)
+        instance.address = validated_data.get('address', instance.address)
+        instance.email = validated_data.get('email', instance.email)
+        instance.fullname_or_company_name = validated_data.get('fullname_or_company_name', instance.fullname_or_company_name)
+
+        # Handle state and city updates
+        if 'state_id' in validated_data:
+            instance.state_id = validated_data['state_id']
+        if 'city_id' in validated_data:
+            instance.city_id = validated_data['city_id']
+
+        instance.save()
+        return instance
+
+
 
 
 class CustomerDocumentSerializer(serializers.ModelSerializer):
