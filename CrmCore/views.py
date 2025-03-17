@@ -1645,3 +1645,38 @@ class CustomerBankManager(APIView):
         customer_bank = get_object_or_404(CustomerBank, id=customer_b_id)
         customer_bank.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+@permission_classes([IsAuthenticated])
+@api_view(['POST'])
+def send_a_customer_to_board(request,customer_b_id):
+    group_crm_id = request.data.get("group_crm_id")
+    customer_bank_obj = get_object_or_404(CustomerBank,id=customer_b_id)
+    first_label = Label.objects.filter(group_crm_id=group_crm_id).first()
+
+
+
+    state = None
+    city=  None
+    if customer_bank_obj.is_local:
+        if customer_bank_obj.state:
+            if State.objects.filter(name=customer_bank_obj.state).exists():
+                state = State.objects.filter(name=customer_bank_obj.state).first()
+        if customer_bank_obj.city:
+            if City.objects.filter(name=customer_bank_obj.city).exists():
+                state = City.objects.filter(name=customer_bank_obj.city).first()
+    else:
+        state = customer_bank_obj.main_state
+        city = customer_bank_obj.main_city
+    new_customer = CustomerUser.objects.create(
+        group_crm_id=group_crm_id,
+        fullname_or_company_name = customer_bank_obj.fullname_or_company_name,
+        phone_number= customer_bank_obj.phone_number,
+        phone_number_static = customer_bank_obj.static_phone_number ,
+        city = city ,
+        state = state ,
+        address = customer_bank_obj.address ,
+        email = customer_bank_obj.email ,
+        label=first_label,
+    )
+    customer_bank_obj.delete()
+    return Response(status=status.HTTP_204_NO_CONTENT)
