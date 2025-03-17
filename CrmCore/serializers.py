@@ -542,7 +542,8 @@ class CustomerDocumentSerializer(serializers.ModelSerializer):
 
         # Create CustomerDocument instance
         new_customer_document = CustomerDocument.objects.create(**validated_data)
-
+        new_customer_document.exel_file = main_file_obj
+        new_customer_document.save()
         # Read the Excel file
         df = pd.read_excel(main_file_obj.file.path)
 
