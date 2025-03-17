@@ -132,66 +132,78 @@ class CategoryProject(SoftDeleteModel):
     project = models.ForeignKey(Project,on_delete=models.SET_NULL,null=True,related_name="category_project")
 
 
+from django.db import models
+from datetime import timedelta
 
 
-
-
-class Task (SoftDeleteModel):
-
-
+class Task(SoftDeleteModel):
     title = models.TextField(null=True)
     done_status = models.BooleanField(default=False)
-
     description = models.TextField(null=True)
-
-    main_file  = models.ManyToManyField(MainFile)
+    main_file = models.ManyToManyField(MainFile)
     order = models.PositiveIntegerField(default=0)
-
-    
-   
-    category_task = models.ForeignKey(CategoryProject,on_delete=models.SET_NULL,null=True,related_name="task_category")
-    
-    project = models.ForeignKey(Project,on_delete=models.SET_NULL,null=True,related_name="task")
+    category_task = models.ForeignKey(CategoryProject, on_delete=models.SET_NULL, null=True,
+                                      related_name="task_category")
+    project = models.ForeignKey(Project, on_delete=models.SET_NULL, null=True, related_name="task")
 
     def category_task_id(self):
-        if self.category_task:
-            return self.category_task.id
-        else:
-            return 0    
+        return self.category_task.id if self.category_task else 0
 
-    def project_id (self):
-        try:
-            return self.project.id
-        except:
-            return None
+    def project_id(self):
+        return self.project.id if self.project else None
+
     def task_progress(self):
         check_list_count = self.check_list.all().count()
-        check_list_completed= self.check_list.filter(status=True).count()
+        check_list_completed = self.check_list.filter(status=True).count()
+        return (check_list_completed / check_list_count * 100) if check_list_count > 0 else 0
 
-        try:
-            return check_list_completed / check_list_count * 100
-        except:
-            return 0
+    def calculate_performance(self):
+        completed_checklists = self.check_list.filter(status=True)
+        n = completed_checklists.count()
+
+        if n == 0:
+            return {
+                'N': 0,
+                'E': 0.0,
+                'T': 0.0,
+                'Performance': 0.0
+            }
+
+        total_difficulty = sum(checklist.difficulty for checklist in completed_checklists)
+        average_difficulty = total_difficulty / n
+
+        total_time = sum(
+            (checklist.date_time_to_end_main - checklist.date_time_to_start_main).total_seconds() / 3600
+            for checklist in completed_checklists
+            if checklist.date_time_to_end_main and checklist.date_time_to_start_main
+        )
+
+        performance = n * average_difficulty
+
+        return {
+            'N': n,
+            'E': round(average_difficulty, 2),
+            'T': round(total_time, 2),
+            'Performance': round(performance, 2)
+        }
 
 
-class CheckList (SoftDeleteModel):
-
+class CheckList(SoftDeleteModel):
     title = models.TextField(null=True)
     difficulty = models.IntegerField(default=1)
-    status= models.BooleanField(default=False)
-    responsible_for_doing = models.ForeignKey(UserAccount,on_delete=models.CASCADE,null=True)
-    date_to_start= models.CharField(max_length=30,null=True)
-    time_to_start = models.CharField(max_length=30,null=True)
-    date_to_end= models.CharField(max_length=30,null=True)
-    time_to_end = models.CharField(max_length=30,null=True)
+    status = models.BooleanField(default=False)
+    responsible_for_doing = models.ForeignKey(UserAccount, on_delete=models.CASCADE, null=True)
+    date_to_start = models.CharField(max_length=30, null=True)
+    time_to_start = models.CharField(max_length=30, null=True)
+    date_to_end = models.CharField(max_length=30, null=True)
+    time_to_end = models.CharField(max_length=30, null=True)
     check_by_date = models.BooleanField(default=False)
-    check_by_time =models.BooleanField(default=False)
-    task= models.ForeignKey(Task,on_delete=models.CASCADE,null=True,related_name="check_list")
-    label = models.ForeignKey(TaskLabel,on_delete=models.SET_NULL,null=True,blank=True)
-    date_time_to_start_main= models.DateTimeField(null=True)
-    date_time_to_end_main= models.DateTimeField(null=True)
-
-    file = models.ManyToManyField(MainFile,blank=True)
+    check_by_time = models.BooleanField(default=False)
+    task = models.ForeignKey(Task, on_delete=models.CASCADE, null=True, related_name="check_list")
+    label = models.ForeignKey(TaskLabel, on_delete=models.SET_NULL, null=True, blank=True)
+    date_time_to_start_main = models.DateTimeField(null=True)
+    date_time_to_end_main = models.DateTimeField(null=True)
+    file = models.ManyToManyField(MainFile, blank=True)
     def task_data (self):
         try:
             return {
