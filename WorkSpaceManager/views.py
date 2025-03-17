@@ -825,46 +825,43 @@ from WorkSpaceChat.models import  GroupMessage
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def create_group_message(request):
+    from ProjectManager.models import Task
+    for task in Task.objects.all():
+        performance_metrics = task.calculate_performance()
+
+        print(f"Completed Tasks (N): {performance_metrics['N']}")
+        print(f"Average Difficulty (E): {performance_metrics['E']}")
+        print(f"Total Time Spent (T): {performance_metrics['T']} hours")
+        print(f"Performance Score: {performance_metrics['Performance']}")
+    # from django.db.models import Q
+    # from WorkSpaceManager.models import  WorkSpace
+    # from WorkSpaceChat.models import GroupMessage
     # workspace_objs = WorkSpace.objects.all()
-    # for workspace_obj  in workspace_objs:
-    #     for member in WorkspaceMember.objects.filter(workspace=workspace_obj):
-    #         group_message = GroupMessage.objects.create(workspace=workspace_obj)
-    #         group_message.members.set([workspace_obj.owner, member.user_account])
-    #         for other_member in WorkspaceMember.objects.filter(workspace=workspace_obj):
-    #             if other_member.user_account != member.user_account:
-    #                 group_message =GroupMessage.objects.create(workspace=workspace_obj)
-    #                 group_message.members.set([other_member.user_account, member.user_account])
-    # return Response(status=status.HTTP_200_OK)
-
-    from django.db.models import Q
-    from WorkSpaceManager.models import  WorkSpace
-    from WorkSpaceChat.models import GroupMessage
-    workspace_objs = WorkSpace.objects.all()
-
-    for workspace_obj in workspace_objs:
-        members = list(WorkspaceMember.objects.filter(workspace=workspace_obj).values_list('user_account', flat=True))
-
-        # Create a group for the workspace owner and each member
-        for member in members:
-            if not GroupMessage.objects.filter(
-                    workspace=workspace_obj,
-                    members=workspace_obj.owner
-            ).filter(members=member).exists():
-                group_message = GroupMessage.objects.create(workspace=workspace_obj)
-                group_message.members.set([workspace_obj.owner, member])
-
-        # Create a group for every unique pair of members
-        for i in range(len(members)):
-            for j in range(i + 1, len(members)):
-                user1 = members[i]
-                user2 = members[j]
-
-                # Check if a group already exists with exactly these two members
-                if not GroupMessage.objects.filter(
-                        workspace=workspace_obj
-                ).filter(members=user1).filter(members=user2).exists():
-                    group_message = GroupMessage.objects.create(workspace=workspace_obj)
-                    group_message.members.set([user1, user2])
+    #
+    # for workspace_obj in workspace_objs:
+    #     members = list(WorkspaceMember.objects.filter(workspace=workspace_obj).values_list('user_account', flat=True))
+    #
+    #     # Create a group for the workspace owner and each member
+    #     for member in members:
+    #         if not GroupMessage.objects.filter(
+    #                 workspace=workspace_obj,
+    #                 members=workspace_obj.owner
+    #         ).filter(members=member).exists():
+    #             group_message = GroupMessage.objects.create(workspace=workspace_obj)
+    #             group_message.members.set([workspace_obj.owner, member])
+    #
+    #     # Create a group for every unique pair of members
+    #     for i in range(len(members)):
+    #         for j in range(i + 1, len(members)):
+    #             user1 = members[i]
+    #             user2 = members[j]
+    #
+    #             # Check if a group already exists with exactly these two members
+    #             if not GroupMessage.objects.filter(
+    #                     workspace=workspace_obj
+    #             ).filter(members=user1).filter(members=user2).exists():
+    #                 group_message = GroupMessage.objects.create(workspace=workspace_obj)
+    #                 group_message.members.set([user1, user2])
 
     return Response(status=status.HTTP_200_OK)
 
