@@ -52,6 +52,13 @@ urlpatterns = [
     path("LabelStepManager/<int:step_id>", views.LabelStepManager.as_view()),
 
     path("CustomerSuccessSells", views.customer_success_sells),
+
+
+    path("CustomerDocumentManager", views.CustomerDocumentManager.as_view()),
+    path("CustomerDocumentManager/<int:document_id>", views.CustomerDocumentManager.as_view()),
+
+    path("CustomerBankManager", views.CustomerBankManager.as_view()),
+    path("CustomerBankManager/<int:customer_b_id>", views.CustomerBankManager.as_view()),
 ]
 
 

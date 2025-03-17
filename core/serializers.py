@@ -46,9 +46,13 @@ class CitySerializer(serializers.ModelSerializer):
 
 
 class MainFileSerializer(serializers.ModelSerializer):
+    file_name = serializers.SerializerMethodField()
     class Meta:
         model = MainFile
         fields = [
             "id",
-            "file_url"
+            "file_url",
+            "file_name"
         ]
+    def get_file_name(self, obj):
+        return os.path.basename(obj.file.name) if obj.file else None

@@ -389,3 +389,22 @@ class IpExist(SoftDeleteModel):
 class IpAshol(SoftDeleteModel):
     ip = models.GenericIPAddressField(null=True)
 
+
+
+class CustomerDocument(SoftDeleteModel):
+    group_crm = models.ForeignKey(GroupCrm,on_delete=models.CASCADE,null=True)
+    exel_file = models.ForeignKey(MainFile,on_delete=models.SET_NULL,null=True)
+
+
+
+class CustomerBank(SoftDeleteModel):
+    document= models.ForeignKey(CustomerDocument,on_delete=models.CASCADE,null=True)
+    phone_number = models.CharField(max_length=14,null=True)
+    state= models.CharField(max_length=50,null=True)
+    city= models.CharField(max_length=50,null=True)
+    static_phone_number = models.CharField(max_length=18,null=True)
+    address =models.TextField(null=True)
+    email = models.CharField(max_length=60,null=True)
+
+    fullname_or_company_name = models.CharField(max_length=40,null=True)
+

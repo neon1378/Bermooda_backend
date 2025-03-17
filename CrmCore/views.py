@@ -1513,6 +1513,7 @@ def get_customers_by_role(user, workspace,group_crm_obj):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def customer_success_sells(request):
+
     page_number = request.GET.get("page_number", 1)
     group_crm_id = request.GET.get("group_crm_id")
     group_crm_obj = get_object_or_404(GroupCrm, id=group_crm_id)
@@ -1528,3 +1529,64 @@ def customer_success_sells(request):
         status=status.HTTP_200_OK,
         data={"status": True, "message": "موفق", "data": pagination_data}
     )
+
+
+class CustomerDocumentManager(APIView):
+    permission_classes=[IsAuthenticated]
+    def get(self,request,document_id=None):
+        if document_id:
+            document_obj =get_object_or_404(CustomerDocument,id=document_id)
+            serializer_data = CustomerDocumentSerializer(document_obj)
+            return Response(status=status.HTTP_200_OK,data={
+                "status":True,
+                "message":"موفق",
+                "data":serializer_data.data
+            })
+        group_crm_id= request.GET.get("group_crm_id")
+        group_crm_obj  = get_object_or_404(GroupCrm,id=group_crm_id)
+        document_objs =CustomerDocument.objects.filter(group_crm=group_crm_obj)
+        serializer_data = CustomerDocumentSerializer(document_objs,many=True)
+        return Response(status=status.HTTP_200_OK, data={
+            "status": True,
+            "message": "موفق",
+            "data": serializer_data.data
+        })
+    def post (self,request):
+        serializer_data = CustomerDocumentSerializer(data=request.data)
+        if serializer_data.is_valid():
+            serializer_data.save()
+            return Response(status=status.HTTP_201_CREATED,data={
+                "status":True,
+                "message":"با موفقیت آپلود شد",
+                "data":serializer_data.data
+            })
+        return Response(status=status.HTTP_400_BAD_REQUEST,data={
+            "status":False,
+            "message":"Validation Error",
+            "data":serializer_data.errors
+        })
+
+
+
+class CustomerBankManager(APIView):
+    permission_classes=[IsAuthenticated]
+    def get(self,request,customer_b_id=None):
+        if customer_b_id:
+            customer_bank_obj =get_object_or_404(CustomerBank,id=customer_b_id)
+            serializer_data = CustomerBankSerializer(customer_bank_obj)
+
+            return Response(status=status.HTTP_200_OK,data={
+                "status":True,
+                "message":"موفق",
+                "data":serializer_data.data
+            })
+        document_id =request.GET.get("document_id")
+        document_obj= get_object_or_404(CustomerDocument,id=document_id)
+        customer_bank_objs = CustomerBank.objects.filter(document=document_obj)
+        serializer_data = CustomerBankSerializer(customer_bank_objs)
+
+        return Response(status=status.HTTP_200_OK, data={
+            "status": True,
+            "message": "موفق",
+            "data": serializer_data.data
+        })

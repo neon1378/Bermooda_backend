@@ -1,11 +1,15 @@
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from rest_framework import serializers
+from sqlalchemy.util import ellipses_string
+
 from .models import *
+import magic
+import pandas as pd
 from django.shortcuts import get_object_or_404
 from core.widgets import  persian_to_gregorian
 from UserManager.serializers import UserDetailSerializer
-from core.serializers import   StateSerializer,CitySerializer
+from core.serializers import StateSerializer, CitySerializer, MainFileSerializer
 from MailManager.serializers import  MemberSerializer
 class CrmDepartmentSerializer(serializers.ModelSerializer):
     workspace_id = serializers.IntegerField(write_only=True,required=True)
@@ -486,3 +490,101 @@ class GroupCrmSerializer(serializers.ModelSerializer):
         instance.title = title
         instance.save()
         return instance
+
+
+class CustomerBankSerializer(serializers.ModelSerializer):
+    document_id = serializers.IntegerField(write_only=True,required=True)
+    class Meta:
+        model = CustomerBank
+        fields =[
+            "id",
+            "document_id",
+            "phone_number",
+            "state",
+            "city",
+            "static_phone_number",
+            "address",
+            "email",
+            "fullname_or_company_name",
+        ]
+    def create(self, validated_data):
+        new_customer_bank = CustomerBank.objects.create(**validated_data)
+        return new_customer_bank
+
+class CustomerDocumentSerializer(serializers.ModelSerializer):
+    exel_file = MainFileSerializer(read_only=True)
+    exel_file_id = serializers.IntegerField(write_only=True,required=True)
+    group_crm_id = serializers.IntegerField(write_only=True,required=True)
+    class Meta:
+        model = CustomerDocument
+        field = [
+            "id",
+            "exel_file",
+            "exel_file_id"
+        ]
+    def create(self, validated_data):
+        exel_file_id = validated_data.get("exel_file_id")
+        main_file_obj = get_object_or_404(MainFile,id=exel_file_id)
+
+        mime = magic.Magic(mime=True)
+        file_mime_type = mime.from_buffer(main_file_obj.file.read(2048))  # Read first 2KB to detect MIME type
+        main_file_obj.file.seek(0)  # Reset file pointer after reading
+
+        if file_mime_type not in ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',  # XLSX
+                              'application/vnd.ms-excel']:  # XLS
+            raise serializers.ValidationError({
+                "status":False,
+                "message":"فرمت فایل ارسال شده Exel نمیباشد"
+            })
+
+        main_file_obj.its_blong = True
+        main_file_obj.save()
+        new_customer_document=CustomerDocument.objects.create(
+            **validated_data
+        )
+
+        file_path = main_file_obj .file.path  # Only works for local storage
+
+        # Read the Excel file
+        df = pd.read_excel(file_path)
+
+
+
+
+        # Process the data
+        phone_number = {"status": True, "key_name": "شماره تماس"} if "شماره تماس" in df.columns else {"status": False}
+        static_phone_number = {"status": True, "key_name": "شماره ثابت"} if "شماره ثابت" in df.columns else {
+            "status": False}
+        state = {"status": True, "key_name": "استان"} if "استان" in df.columns else {"status": False}
+        city = {"status": True, "key_name": "شهر"} if "شهر" in df.columns else {"status": False}
+        address = {"status": True, "key_name": "آدرس"} if "آدرس" in df.columns else {"status": False}
+        email = {"status": True, "key_name": "ایمیل"} if "ایمیل" in df.columns else {"status": False}
+
+        for index, row in df.iterrows():
+
+
+            # Save to Product model
+            new_customer = CustomerBank(document=new_customer_document)
+            if phone_number:
+                if not pd.isna(row[phone_number['key_name']]):
+                    new_customer_document.phone_number=row[phone_number['key_name']]
+
+            if static_phone_number:
+                if not pd.isna(row[static_phone_number['key_name']]):
+                    new_customer_document.static_phone_number=row[static_phone_number['key_name']]
+
+            if state:
+                if not pd.isna(row[state['key_name']]):
+                    new_customer_document.state=row[state['key_name']]
+            if city:
+                if not pd.isna(row[city['key_name']]):
+                    new_customer_document.city=row[city['key_name']]
+            if email:
+                if not pd.isna(row[email['key_name']]):
+                    new_customer_document.email=row[email['key_name']]
+
+            if address:
+                if not pd.isna(row[address['key_name']]):
+                    new_customer_document.address=row[address['key_name']]
+            new_customer.save()
+        return new_customer_document
