@@ -4,6 +4,7 @@ from rest_framework import serializers
 from sqlalchemy.util import ellipses_string
 
 from .models import *
+from core.serializers import CitySerializer,StateSerializer
 import magic
 import pandas as pd
 from django.shortcuts import get_object_or_404
@@ -496,10 +497,14 @@ class CustomerBankSerializer(serializers.ModelSerializer):
     document_id = serializers.IntegerField(write_only=True, required=True)
     state_id = serializers.IntegerField(write_only=True, required=False)
     city_id = serializers.IntegerField(write_only=True, required=False)
+    main_city = CitySerializer(read_only=True)
+    main_state = StateSerializer(read_only=True)
 
     class Meta:
         model = CustomerBank
         fields = [
+            "main_city",
+            "main_state",
             "id",
             "state_id",
             "city_id",
