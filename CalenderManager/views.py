@@ -84,17 +84,19 @@ class CalenderManger(APIView):
         check_list_objs = CheckList.objects.filter(
             task__project__workspace=self.workspace_obj,
             responsible_for_doing=self.user,
-            date_time_to_start_main__year=year,
-            date_time_to_start_main__month=month
+
         )
 
         for day in range(1, num_days + 1):
             g_date = date(year, month, day)  # Create Gregorian date
 
             # Filter only checklists for this specific day
-            count = check_list_objs.filter(date_time_to_start_main__day=day).count()
+            check_list_items =[]
+            for item in check_list_objs:
+                if item.date_time_to_start_main.date() == g_date:
+                    check_list_items.append(item)
 
             data_list.append({
                 "date": g_date.strftime("%Y/%m/%d"),
-                "count": count
+                "count": len(check_list_items)
             })

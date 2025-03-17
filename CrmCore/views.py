@@ -558,8 +558,26 @@ class GroupCrmManager(APIView):
         if group_id:
             group_obj = get_object_or_404(GroupCrm, id=group_id)
             if request.user == workspace_obj.owner or request.user in group_obj.members.all():
+                serializer_data = GroupCrmSerializer(group_obj).data
 
-                serializer_data =GroupCrmSerializer(group_obj)
+                for group in serializer_data:
+                    for member in group["members"]:
+                        if member["id"] == workspace_obj.owner.id:
+                            member["type"] = "manager"
+                        else:
+                            workspace_member = WorkspaceMember.objects.filter(
+                                user_account_id=member["id"], workspace=workspace_obj
+                            ).first()  # Use `.first()` to avoid exceptions
+
+                            if workspace_member:
+                                permission = next(
+                                    (perm.permission_type for perm in workspace_member.permissions.all() if
+                                     perm.permission_name == "crm"),
+                                    None,
+                                )
+                                if permission:
+                                    member["type"] = permission
+
 
                 group_data = serializer_data.data
                 return Response(

@@ -164,6 +164,14 @@ class GroupCrm (SoftDeleteModel):
     department = models.ForeignKey(CrmDepartment,on_delete=models.CASCADE,null=True,related_name="group_crm")
 
 
+    def summery_customers(self):
+        return {
+            "customer_count":self.customer_group.all().count(),
+            "customer_is_not_followed":self.customer_group.filter(is_followed=False).count(),
+            "customer_is_followed":self.customer_group.filter(is_followed=True).count(),
+
+        }
+
 
 
     def profit_price(self):
