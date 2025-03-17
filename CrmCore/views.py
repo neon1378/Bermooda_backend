@@ -1601,7 +1601,7 @@ class CustomerBankManager(APIView):
         document_id =request.GET.get("document_id")
         document_obj= get_object_or_404(CustomerDocument,id=document_id)
         customer_bank_objs = CustomerBank.objects.filter(document=document_obj)
-        serializer_data = CustomerBankSerializer(customer_bank_objs)
+        serializer_data = CustomerBankSerializer(customer_bank_objs,many=True)
 
         return Response(status=status.HTTP_200_OK, data={
             "status": True,
