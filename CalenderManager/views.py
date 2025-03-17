@@ -18,14 +18,23 @@ class CalenderManger(APIView):
 
     permission_classes=[IsAuthenticated]
 
+    def is_jalali_leap_year(self,year):
+        """
+        Determine if a Jalali year is a leap year.
+        Leap years in the Jalali calendar occur in years where:
+        year % 33 is in [1, 5, 9, 13, 17, 22, 26, 30].
+        """
+        return year % 33 in {1, 5, 9, 13, 17, 22, 26, 30}
+
     def get_all_dates_of_month(self, year, month):
         start_date = jdatetime.date(year, month, 1)
 
         if month < 12:
+            # For months other than Esfand (month 12), the end date is the last day of the month
             end_date = jdatetime.date(year, month + 1, 1) - jdatetime.timedelta(days=1)
         else:
-            # Check if the year is a leap year using the correct method
-            if jdatetime.date.isleap(year):
+            # For Esfand (month 12), check if it's a leap year using the custom function
+            if self.is_jalali_leap_year(year):  # Use custom leap year function
                 end_date = jdatetime.date(year, month, 30)  # 30 days in Esfand for leap years
             else:
                 end_date = jdatetime.date(year, month, 29)  # 29 days in Esfand for non-leap years
@@ -34,6 +43,7 @@ class CalenderManger(APIView):
         all_dates = [start_date + jdatetime.timedelta(days=i) for i in range((end_date - start_date).days + 1)]
 
         return all_dates
+
     def get(self, request, date=None):
         self.workspace_obj = get_object_or_404(WorkSpace, id=request.user.current_workspace_id)
         self.user = request.user
