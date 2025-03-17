@@ -89,13 +89,12 @@ class CalenderManger(APIView):
 
         for day in range(1, num_days + 1):
             g_date = date(year, month, day)  # Create Gregorian date
-            print(g_date,"@@@")
+
             # Filter only checklists for this specific day
             check_list_items =[]
             for item in check_list_objs:
                 if item.date_time_to_start_main:
-                    print (item.date_time_to_start_main.date(),"!!!")
-                    print(item.date_time_to_start_main.date() == g_date,"$$$")
+
                     if item.date_time_to_start_main.date() == g_date:
                         check_list_items.append(item)
 
@@ -103,3 +102,4 @@ class CalenderManger(APIView):
                 "date": g_date.strftime("%Y/%m/%d"),
                 "count": len(check_list_items)
             })
+        return data_list
