@@ -1,6 +1,9 @@
 from django.db.models.sql import Query
 from django.shortcuts import render
 from rest_framework import status
+from ProjectManager.models import CheckList
+from django.db.models import Avg, Count, Sum
+from django.utils import timezone
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated,AllowAny
 from rest_framework.views import APIView
