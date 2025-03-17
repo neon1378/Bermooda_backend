@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from ProjectManager.models import Task, Project, CheckList
 from rest_framework import status
+import jdatetime
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.views import APIView
@@ -106,9 +107,12 @@ class CalenderManger(APIView):
 
                     if item.date_time_to_start_main.date() == g_date:
                         check_list_items.append(item)
+            jalali_datetime = jdatetime.datetime.fromgregorian(datetime=g_date)
 
+            # Format the Jalali DateTime as a string (optional)
+            jalali_datetime_str = jalali_datetime.strftime("%Y/%m/%d")
             data_list.append({
-                "date": g_date.strftime("%Y/%m/%d"),
+                "date": jalali_datetime_str,
                 "count": len(check_list_items)
             })
         return data_list
