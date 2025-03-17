@@ -541,7 +541,7 @@ class GroupCrmManager(APIView):
         # Get the page
         page = paginator.get_page(page_number)
         serializer_data=GroupCrmSerializer(page.object_list,many=True)
-        for group in serializer_data:
+        for group in serializer_data.data:
             for member in group["members"]:
                 if member["id"] == workspace_obj.owner.id:
                     member["type"] = "manager"
