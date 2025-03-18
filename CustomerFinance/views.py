@@ -23,7 +23,7 @@ from io import BytesIO
 
 
 class InvoiceManager(APIView):
-    permission_classes = [IsAuthenticated, IsAccess]
+    permission_classes = [IsAuthenticated]
     
     def add_file_urls(self, invoice_obj):
         """Helper method to add signature and logo file URLs to the serialized invoice."""
