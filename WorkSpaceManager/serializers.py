@@ -87,6 +87,7 @@ class UpdateWorkSpaceSerializer(ModelSerializer):
                 main_file.its_blong = True
                 main_file.save()
                 instance.document_image = main_file
+        instance.save()
         try:
             requests.put(url=url,data=payload,headers=headers)
         except:
