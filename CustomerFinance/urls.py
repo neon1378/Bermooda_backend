@@ -17,4 +17,7 @@ urlpatterns = [
 
     path("SendVerificationCode/<uuid:invoice_id>",views.send_verification_code),
     path("VerificationCode/<uuid:invoice_id>",views.verification_code),
+
+    path("CreateBuyerSignature/<uuid:invoice_id>",views.create_buyer_signature),
+
 ]

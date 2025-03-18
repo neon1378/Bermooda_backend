@@ -275,3 +275,37 @@ def verification_code(request,invoice_id):
         "message":"با موفقیت انجام شد",
         "data":{}
     })
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def create_buyer_signature(request,invoice_id):
+    invoice_obj = get_object_or_404(Invoice,main_id=invoice_id)
+    ip_address = get_client_ip(request)
+    if ip_address != invoice_obj.login_ip or not invoice_obj.is_expired():
+        return Response(status=status.HTTP_403_FORBIDDEN,data={
+            "status":False,
+            "message":"Access Denied",
+            "data":{}
+        })
+    data =request.data
+    try:
+        signature_id = data.get("signature_id")
+    except:
+        return Response(status=status.HTTP_400_BAD_REQUEST,data={
+            "status":False,
+            "message":"signature_id its required"
+        })
+    main_file = MainFile.objects.filter(id=signature_id).first()
+    if main_file:
+        main_file.its_blong =True
+        main_file.save()
+
+        invoice_obj.signature_buyer = main_file
+        invoice_obj.save()
+        return Response(status=status.HTTP_201_CREATED,data={
+            "status":True,
+            "message":"با موفقیت ثبت شد ",
+            "data":MainFileSerializer(main_file).data
+        })
+    return Response(status=status.HTTP_404_NOT_FOUND)
