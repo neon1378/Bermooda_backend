@@ -39,6 +39,29 @@ class GroupMessageWs(AsyncWebsocketConsumer):
 
         await self.channel_layer.group_add(self.workspace_group_name, self.channel_name)
         await self.accept()
+        message_count = await self._get_all_group_unread_messages()
+        await self.send({
+            "data_type":"all_group_message_unread",
+            "data":{
+                "message_count":message_count
+            }
+        })
+
+    @sync_to_async
+    def _get_all_group_unread_messages(self):
+        groups = GroupMessage.objects.filter(members=self.user,workspace= self.workspace_obj).only('id')
+        return sum(group.unread_messages(user_id=self.user.id) for group in groups)
+
+    async def send_all_unread_messages(self,event):
+        message_count = await self._get_all_group_unread_messages()
+        await self.send({
+            "data_type":"all_group_message_unread",
+            "data":{
+                "message_count":message_count
+            }
+        })
+
+
 
     async def disconnect(self, code=None):
         await self.channel_layer.group_discard(f"group_ws_{self.workspace_obj.id}", self.channel_name)
@@ -216,8 +239,14 @@ class GroupMessageWs(AsyncWebsocketConsumer):
             }
 
             await self.channel_layer.group_send(self.group_message_name, event)
+
             event = {
                 "type":"send_groups"
+            }
+            await self.channel_layer.group_send(self.workspace_group_name, event)
+
+            event = {
+                "type":"send_all_unread_messages"
             }
             await self.channel_layer.group_send(self.workspace_group_name, event)
 
