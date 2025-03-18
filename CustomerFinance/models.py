@@ -85,12 +85,13 @@ class Invoice(SoftDeleteModel):
     installment_count = models.IntegerField(default=1)
     interest_percentage =models.PositiveIntegerField(default=0,blank=True)
 
-
     def is_expired(self):
         current_time = datetime.now()
-        if current_time >= self.date_time_to_login + timedelta(hours=1):
-            return False
-        return True
+
+        if self.date_time_to_login is None:
+            return False  # Consider expired if not set
+
+        return current_time >= self.date_time_to_login + timedelta(hours=1)
 
     def save(self, *args, **kwargs):
         if not self.main_id:  # اگر مقدار نداشته باشد
