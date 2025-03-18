@@ -207,7 +207,7 @@ def change_invoice_status(request,invoice_id):
 def invoice_preview(request,invoice_id):
     invoice_obj = get_object_or_404(Invoice,main_id=invoice_id)
     ip_address = get_client_ip(request)
-    if ip_address != invoice_obj.ip_login or not invoice_obj.is_expired():
+    if ip_address != invoice_obj.login_ip or not invoice_obj.is_expired():
         return Response(status=status.HTTP_403_FORBIDDEN,data={
             "status":False,
             "message":"Access Denied",
@@ -267,7 +267,7 @@ def verification_code(request,invoice_id):
             "data":{}
         })
     ip_address = get_client_ip(request)
-    invoice_obj.ip_login = ip_address
+    invoice_obj.login_ip = ip_address
     invoice_obj.date_time_to_login=datetime.now()
     invoice_obj.save()
     return Response(status=status.HTTP_202_ACCEPTED,data={
