@@ -247,9 +247,13 @@ class ProjectSerializer(serializers.ModelSerializer):
         ]
 
     def create(self, validated_data):
+        user = self.context.get("user")
         users = validated_data.pop("users", [])
         avatar_id = validated_data.pop("avatar_id", None)
         project_obj = Project.objects.create(**validated_data)
+        if user.id not in users:
+            users.append(user.id)
+
         for user in users:
             user_acc = UserAccount.objects.get(id=user)
             project_obj.members.add(user_acc)

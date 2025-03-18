@@ -199,7 +199,7 @@ class ProjectManager(APIView):
     def post(self, request):
 
 
-        serializer_data =ProjectSerializer(data=request.data)
+        serializer_data =ProjectSerializer(data=request.data,context={"user":request.user})
         if serializer_data.is_valid():
             project_obj = serializer_data.save()
             for user in serializer_data.data['members']:
