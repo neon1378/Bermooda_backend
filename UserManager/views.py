@@ -1216,6 +1216,10 @@ def get_user_data (request):
     try :
         current_workspace_obj = WorkSpace.objects.get(id=request.user.current_workspace_id)
         dic = {
+            "wallet":{
+                "id":current_workspace_obj.wallet.id,
+                "balance":current_workspace_obj.wallet
+            },
             "id":current_workspace_obj.id,
             "title":current_workspace_obj.title,
             "is_authenticated":current_workspace_obj.is_authenticated,

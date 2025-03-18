@@ -55,7 +55,7 @@ class WorkSpace (SoftDeleteModel):
     is_active = models.BooleanField(default=True)
     is_team_bonos = models.BooleanField(default=False)
     personal_information_status= models.BooleanField(default=False)
-    #personal and  legal fields
+
 
     national_code = models.CharField(max_length=11,null=True)
     email = models.EmailField(null=True)

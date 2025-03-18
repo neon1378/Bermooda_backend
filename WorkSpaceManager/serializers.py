@@ -10,6 +10,7 @@ import requests
 from django.shortcuts import get_object_or_404
 from core.views import  send_invite_link
 from WorkSpaceChat.serializers import  GroupSerializer
+from WorkSpaceChat.models import  GroupMessage
 class IndustrialActivitySerializer(ModelSerializer):
     class Meta:
         model =IndustrialActivity
@@ -229,6 +230,23 @@ class WorkSpaceMemberSerializer(serializers.ModelSerializer):
         new_workspace_member.user_account = user_acc
         new_workspace_member.is_accepted= False
         new_workspace_member.save()
+        if not GroupMessage.objects.filter(
+            workspace = workspace_obj,
+            members=workspace_obj.owner
+        ).filter(members=new_workspace_member.user_account).exists():
+            group_message = GroupMessage.objects.create(workspace=workspace_obj)
+            group_message.members.set([workspace_obj.owner, new_workspace_member.user_account])
+
+
+        workspace_members = WorkspaceMember.objects.filter(workspace=workspace_obj)
+        for member in workspace_members:
+            if member != new_workspace_member:
+                if not GroupMessage.objects.filter(
+                    workspace = workspace_obj,
+                    members = new_workspace_member.user_account
+                ).filter(members=member.user_account).exists():
+                    group_message = GroupMessage.objects.create(workspace=workspace_obj)
+                    group_message.members.set([member.user_account, new_workspace_member.user_account])
 
         send_invite_link(user_acc.phone_number, new_workspace_member.workspace.owner.fullname,
                             new_workspace_member.workspace.title)

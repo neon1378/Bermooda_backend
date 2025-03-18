@@ -19,15 +19,25 @@ class Wallet (models.Model):
 class WalletTransAction(models.Model):
     CHOICE =(
         ("deposit","DEPOSIT"),
+
         ("decrease","DECREASE"),
+
+        ("decreasesms","DECREASESMS"),
+
+        ("decreasesmsline","DECREASESMSLINE"),
+
 
 
     )
     track_id = models.TextField(null=True)
     wallet = models.ForeignKey(Wallet,on_delete=models.CASCADE,null=True)
+    phone = models.CharField(max_length=30,null=True)
     created = models.DateTimeField(auto_now_add=True)
+
     price = models.DecimalField(max_digits=20, decimal_places=0, help_text="Price in Tomans")
+
     trans_action_status = models.CharField(choices=CHOICE,max_length=60,null=True)
+
     total_gb = models.IntegerField(default=0)
     total_user = models.IntegerField(default=0)
     total_sms = models.IntegerField(default=0)
