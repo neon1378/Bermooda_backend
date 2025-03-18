@@ -205,7 +205,7 @@ def change_invoice_status(request,invoice_id):
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def invoice_preview(request,invoice_id):
-    invoice_obj = get_object_or_404(Invoice,uuid=invoice_id)
+    invoice_obj = get_object_or_404(Invoice,main_id=invoice_id)
     ip_address = get_client_ip(request)
     if ip_address != invoice_obj.ip_login or not invoice_obj.is_expired():
         return Response(status=status.HTTP_403_FORBIDDEN,data={
