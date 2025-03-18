@@ -1218,7 +1218,7 @@ def get_user_data (request):
         dic = {
             "wallet":{
                 "id":current_workspace_obj.wallet.id,
-                "balance":current_workspace_obj.wallet
+                "balance":current_workspace_obj.wallet.balance
             },
             "id":current_workspace_obj.id,
             "title":current_workspace_obj.title,
