@@ -9,7 +9,9 @@ from django.shortcuts import get_object_or_404
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from .serializers import *
 from CrmCore.models import *
-
+from core.widgets import get_client_ip
+from core.views import send_sms
+from datetime import datetime
 from core.permission import IsAccess
 from dotenv import load_dotenv
 import os
@@ -204,6 +206,14 @@ def change_invoice_status(request,invoice_id):
 @permission_classes([AllowAny])
 def invoice_preview(request,invoice_id):
     invoice_obj = get_object_or_404(Invoice,uuid=invoice_id)
+    ip_address = get_client_ip(request)
+    if ip_address != invoice_obj.ip_login or not invoice_obj.is_expired():
+        return Response(status=status.HTTP_403_FORBIDDEN,data={
+            "status":False,
+            "message":"Access Denied",
+            "data":{}
+        })
+
     serializer_data =InvoiceSerializer(invoice_obj)
     return Response(
         status=status.HTTP_200_OK,data={
@@ -213,3 +223,55 @@ def invoice_preview(request,invoice_id):
         },
 
     )
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def send_verification_code(request,invoice_id):
+    data =request.data
+    invoice_obj = get_object_or_404(Invoice,main_id=invoice_id)
+    phone_number  = data.get("phone_number")
+    if invoice_obj.customer.phone_number != phone_number:
+        return Response(status=status.HTTP_400_BAD_REQUEST,data={
+            "status":False,
+            "message":"شماره تلفن وارد شده اشتباه میباشد"
+        })
+
+
+    random_number= random.randint(100000, 999999)
+    invoice_obj.verify_code =random_number
+
+    invoice_obj.save()
+    send_sms(phone_number=invoice_obj.customer.phone_number,verify_code=invoice_obj.verify_code)
+    return Response(status=status.HTTP_202_ACCEPTED,data={
+        "status":True,
+        "message":"کد تایید با موفقیت ارسال شد",
+        "data":{
+            "phone_number":phone_number
+        }
+    })
+
+
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def verification_code(request,invoice_id):
+    data = request.data
+    invoice_obj = get_object_or_404(Invoice, main_id=invoice_id)
+    code = data.get("code")
+    if int(invoice_obj.verify_code) != int(code):
+        return Response(status=status.HTTP_403_FORBIDDEN,data={
+            "status":False,
+            "message":"کد تایید وارد شده اشتباه میباشد",
+            "data":{}
+        })
+    ip_address = get_client_ip(request)
+    invoice_obj.ip_login = ip_address
+    invoice_obj.date_time_to_login=datetime.now()
+    invoice_obj.save()
+    return Response(status=status.HTTP_202_ACCEPTED,data={
+        "status":True,
+        "message":"با موفقیت انجام شد",
+        "data":{}
+    })

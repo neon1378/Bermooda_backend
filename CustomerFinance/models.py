@@ -9,6 +9,7 @@ import uuid
 from core.widgets import persian_to_gregorian,gregorian_to_persian
 from CrmCore.models import CustomerUser
 load_dotenv()
+from datetime import datetime, timedelta
 
 class InvoiceStatus(SoftDeleteModel):
     group_crm = models.ForeignKey("CrmCore.GroupCrm",on_delete=models.CASCADE,null=True,related_name="invoice_statuses")
@@ -61,6 +62,9 @@ class Invoice(SoftDeleteModel):
     payment_type = models.CharField(choices=PAYMENT_TYPE,null=True,default="cash",max_length=22)
     status = models.ForeignKey(InvoiceStatus,on_delete=models.SET_NULL,null=True)
     customer = models.ForeignKey(CustomerUser,on_delete=models.CASCADE,null=True)
+    login_ip = models.GenericIPAddressField(null=True)
+    date_time_to_login = models.DateTimeField(null=True)
+    verify_code = models.CharField(max_length=6,null=True)
     title = models.CharField(max_length=60,null=True)
     seller_information = models.OneToOneField(Information,on_delete=models.CASCADE,null=True,related_name="information_seller")
     buyer_information = models.OneToOneField(Information,on_delete=models.CASCADE,null=True,related_name="information_buyer")
@@ -81,6 +85,12 @@ class Invoice(SoftDeleteModel):
     installment_count = models.IntegerField(default=1)
     interest_percentage =models.PositiveIntegerField(default=0,blank=True)
 
+
+    def is_expired(self):
+        current_time = datetime.now()
+        if current_time >= self.date_time_to_login + timedelta(hours=1):
+            return False
+        return True
 
     def save(self, *args, **kwargs):
         if not self.main_id:  # اگر مقدار نداشته باشد

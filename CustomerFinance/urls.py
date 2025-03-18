@@ -13,4 +13,8 @@ urlpatterns = [
     path("InvoiceStatusManager/<int:status_id>",views.InvoiceStatusDetailManager.as_view()),
     path("ChangeInvoiceStatus/<int:invoice_id>",views.change_invoice_status),
     path("InvoicePreview/<uuid:invoice_id>",views.invoice_preview),
+
+
+    path("SendVerificationCode/<uuid:invoice_id>",views.send_verification_code),
+    path("VerificationCode/<uuid:invoice_id>",views.verification_code),
 ]
