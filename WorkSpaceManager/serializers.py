@@ -1,6 +1,6 @@
 import os
 from multiprocessing.util import is_exiting
-
+from core.serializers import MainFileSerializer
 from rest_framework.serializers import ModelSerializer
 from rest_framework import serializers
 
@@ -22,10 +22,17 @@ class IndustrialActivitySerializer(ModelSerializer):
 
 class UpdateWorkSpaceSerializer(ModelSerializer):
     user_id = serializers.IntegerField(write_only=True,required=False)
-
+    national_card_image =MainFileSerializer(read_only=True)
+    national_card_image_id = serializers.IntegerField(write_only=True,required=False)
+    document_image =MainFileSerializer(read_only=True)
+    document_image_id = serializers.IntegerField(write_only=True,required=False)
     class Meta:
         model = WorkSpace
         fields =[
+            "national_card_image",
+            "national_card_image_id",
+            "document_image",
+            "document_image_id",
             "user_id",
             "company_name",
             "id",
@@ -49,6 +56,8 @@ class UpdateWorkSpaceSerializer(ModelSerializer):
         ]
 
     def update(self, instance, validated_data):
+        national_card_image_id = validated_data.pop("national_card_image_id",None)
+        document_image_id = validated_data.pop("document_image_id",None)
         user_id = validated_data.pop("user_id")
         user = UserAccount.objects.get(id=user_id)
         permission_list= validated_data.pop("permission_list",[])
@@ -66,7 +75,18 @@ class UpdateWorkSpaceSerializer(ModelSerializer):
             "bio":instance.business_detail ,
             "username":instance.business_detail,
         }
-
+        if national_card_image_id:
+            main_file = MainFile.objects.filter(id=national_card_image_id).first()
+            if main_file:
+                main_file.its_blong = True
+                main_file.save()
+                instance.national_card_image = main_file
+        if document_image_id:
+            main_file = MainFile.objects.filter(id=document_image_id).first()
+            if main_file:
+                main_file.its_blong = True
+                main_file.save()
+                instance.document_image = main_file
         try:
             requests.put(url=url,data=payload,headers=headers)
         except:
@@ -88,6 +108,11 @@ class WorkSpacePermissionSerializer(ModelSerializer):
 class WorkSpaceSerializer(ModelSerializer):
     industrialactivity_id = serializers.IntegerField(write_only=True,required=True)
     permissions = WorkSpacePermissionSerializer(read_only=True,many=True)
+    national_card_image_id = serializers.IntegerField(write_only=True,required=False)
+    document_image_id = serializers.IntegerField(write_only=True,required=False)
+
+    document_image = MainFileSerializer(read_only=True)
+    national_card_image = MainFileSerializer(read_only=True)
 
     class Meta:
         model =WorkSpace
@@ -96,6 +121,8 @@ class WorkSpaceSerializer(ModelSerializer):
             "industrialactivity_id",
             "personal_information_status",
             "business_type",
+            "document_image",
+            "national_card_image",
             "permissions",
             "company_name",
             "jadoo_brand_name",
@@ -111,6 +138,8 @@ class WorkSpaceSerializer(ModelSerializer):
             "person_type",
             "national_code",
             "email",
+            "national_card_image_id",
+            "document_image_id",
             "postal_code",
             "bank_number",
             "phone_number",
@@ -124,7 +153,8 @@ class WorkSpaceSerializer(ModelSerializer):
         ]
     def update(self,instance,validated_data):
 
-
+        national_card_image_id = validated_data.pop("national_card_image_id",None)
+        document_image_id = validated_data.pop("document_image_id",None)
         jadoo_brand_name= validated_data.get("jadoo_brand_name",None)
         if not jadoo_brand_name :
             raise serializers.ValidationError({
@@ -139,7 +169,18 @@ class WorkSpaceSerializer(ModelSerializer):
                 })
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
-
+        if national_card_image_id:
+            main_file = MainFile.objects.filter(id=national_card_image_id).first()
+            if main_file:
+                main_file.its_blong = True
+                main_file.save()
+                instance.national_card_image = main_file
+        if document_image_id:
+            main_file = MainFile.objects.filter(id=document_image_id).first()
+            if main_file:
+                main_file.its_blong = True
+                main_file.save()
+                instance.document_image = main_file
         instance.save()
         return instance
     

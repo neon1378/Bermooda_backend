@@ -56,6 +56,9 @@ class WorkSpace (SoftDeleteModel):
     is_team_bonos = models.BooleanField(default=False)
     personal_information_status= models.BooleanField(default=False)
 
+    national_card_image = models.ForeignKey(MainFile,on_delete=models.SET_NULL,null=True,related_name="national_image")
+    document_image = models.ForeignKey(MainFile,on_delete=models.SET_NULL,null=True,related_name="duc_image")
+
 
     national_code = models.CharField(max_length=11,null=True)
     email = models.EmailField(null=True)
