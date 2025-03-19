@@ -32,6 +32,9 @@ class TextMessageSerializer(serializers.ModelSerializer):
             "is_read",
 
         ]
+    def create(self, validated_data):
+        new_text_message = TextMessage.objects.create(**validated_data)
+        return  new_text_message
 class GroupSerializer(serializers.ModelSerializer):
     members = UserSerializer(many=True,read_only=True)
     last_message = serializers.SerializerMethodField(read_only=True)
@@ -75,8 +78,6 @@ class GroupSerializer(serializers.ModelSerializer):
 
 
 
-    def create(self, validated_data):
-        new_text_message = TextMessage.objects.create(**validated_data)
-        return  new_text_message
+
 
 

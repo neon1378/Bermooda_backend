@@ -300,25 +300,7 @@ class WorkSpaceMemberSerializer(serializers.ModelSerializer):
         change_current_workspace_jadoo(user_acc=new_workspace_member.user_account,workspace_obj=workspace_obj)
         new_workspace_member.user_account.save()
         # create group messages
-        group_message = GroupSerializer(data={
-            "workspace_id":workspace_obj.id,
-            "member_id_list":[workspace_obj.owner.id,new_workspace_member.user_account.id]
 
-        })
-        if group_message.is_valid():
-            group_message.save()
-        for member in WorkspaceMember.objects.filter(workspace=workspace_obj):
-            if member.id !=new_workspace_member:
-
-                group_message_member =GroupSerializer(
-                    data={
-                        "workspace_id": workspace_obj.id,
-                        "member_id_list": [member.user_account.id, new_workspace_member.user_account.id]
-
-                    }
-                )
-                if group_message_member.is_valid():
-                    group_message_member.save()
 
         base_url = os.getenv("JADOO_BASE_URL")
         url = f"{base_url}/workspace/addWorkSpaceMember"
