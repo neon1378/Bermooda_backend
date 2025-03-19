@@ -301,21 +301,22 @@ class WorkSpaceMemberSerializer(serializers.ModelSerializer):
         new_workspace_member.user_account.save()
         # create group messages
 
+        try:
+            base_url = os.getenv("JADOO_BASE_URL")
+            url = f"{base_url}/workspace/addWorkSpaceMember"
 
-        base_url = os.getenv("JADOO_BASE_URL")
-        url = f"{base_url}/workspace/addWorkSpaceMember"
-
-        headers = {
-            "content-type": "application/json",
-            "Authorization": f"Bearer {new_workspace_member.workspace.owner.refrence_token}"
-        }
-        payload = {
-            "workSpaceId": new_workspace_member.workspace.jadoo_workspace_id,
-            "userId": new_workspace_member.user_account.refrence_id,
-            "businessUserId": new_workspace_member.user_account.id,
-            "businessMemberId": new_workspace_member.id,
-        }
-        response = requests.post(url=url, headers=headers, json=payload)
-        print(response.json())
-
+            headers = {
+                "content-type": "application/json",
+                "Authorization": f"Bearer {new_workspace_member.workspace.owner.refrence_token}"
+            }
+            payload = {
+                "workSpaceId": new_workspace_member.workspace.jadoo_workspace_id,
+                "userId": new_workspace_member.user_account.refrence_id,
+                "businessUserId": new_workspace_member.user_account.id,
+                "businessMemberId": new_workspace_member.id,
+            }
+            response = requests.post(url=url, headers=headers, json=payload)
+            print(response.json())
+        except:
+            pass
         return new_workspace_member
