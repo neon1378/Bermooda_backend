@@ -212,6 +212,7 @@ class WorkSpaceMemberSerializer(serializers.ModelSerializer):
     class Meta:
         model = WorkspaceMember
         fields = [
+        "is_team_bonos_status",
         "id",
         "user_account_data",
         "user_account",

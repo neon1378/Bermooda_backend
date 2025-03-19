@@ -725,7 +725,7 @@ class WorkSpaceMemberManger(APIView):
             if serializer_data.is_valid():
                 new_member = serializer_data.save()
 
-                serializer_data.data["is_team_bonos"] = workspace_obj.is_team_bonos
+
 
                 return Response(status=status.HTTP_201_CREATED,data={
                     "status":True,

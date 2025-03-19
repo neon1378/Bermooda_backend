@@ -145,6 +145,9 @@ class WorkspaceMember(SoftDeleteModel):
     is_accepted = models.BooleanField(default=True)
     avatar = models.ForeignKey(MainFile,on_delete=models.SET_NULL,null=True)
 
+    def is_team_bonos_status(self):
+        return self.workspace.is_team_bonos
+
     def jtime (self):
         return costum_date(self.created)
     
