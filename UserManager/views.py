@@ -1187,7 +1187,7 @@ def create_workspace(request):
             ""
             "title":new_workspace_obj.title,
             "id":new_workspace_obj.id,
-            "team_bonos":new_workspace_obj.is_team_bonos,
+            "is_team_bonos":new_workspace_obj.is_team_bonos,
             "workspace_bonos":BonosPhone.objects.filter(phone=request.user.phone_number).count() < 3
 
         }
