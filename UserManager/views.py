@@ -1132,7 +1132,7 @@ def create_workspace(request):
         {"title": "تست", "order": 4, "color_code": "#E82BA3"},
     ]
     category_objs = [
-        CategoryProject(
+        CategoryProject.objects.create(
             title=category['title'],
             color_code=category['color_code'],
             order=category['order'],
@@ -1150,34 +1150,155 @@ def create_workspace(request):
     )
     label_list = [
         {
-            "title": "سرنخ ها",
-            "color_code": "#E82BA3"
+            "title": "کشف مشتری ",
+            "color_code": "#E82BA3",
+            "order": 1,
+            "steps": [
+                {
+                    "title": "جذب",
+                    "step": 1,
+                },
+                {
+                    "title": "جمع‌آوری اطلاعات",
+                    "step": 2,
+                },
+                {
+                    "title": "تماس اولیه ",
+                    "step": 3,
+                },
+
+                {
+                    "title": "تکمیل اطلاعات ",
+                    "step": 4,
+                },
+                {
+                    "title": "تعیین وضعیت",
+                    "step": 5,
+                },
+            ]
 
         },
         {
-            "title": "فرصت ها",
-            "color_code": "#DB4646"
+            "title": "معرفی محصول/ خدمات",
+            "color_code": "#DB4646",
+            "order": 2,
+            "steps": [
+                {
+                    "title": "نیازسنجی",
+                    "step": 1,
+                },
+                {
+                    "title": "پیشنهاد اولیه",
+                    "step": 2,
+                },
+                {
+                    "title": "ارائه محصول / خدمات",
+                    "step": 3,
+                },
+
+                {
+                    "title": "  نیاز ها و ابهامات ",
+                    "step": 4,
+                },
+                {
+                    "title": "بازخورد",
+                    "step": 5,
+                },
+            ]
         },
 
         {
-            "title": "مشتری",
-            "color_code": "#02C875"
+            "title": "پیشنهاد / ارزیابی",
+            "color_code": "#02C875",
+            "order": 3,
+            "steps": [
+                {
+                    "title": "تهیه پیشنهاد",
+                    "step": 1,
+                },
+                {
+                    "title": "مذاکره و سفارشی‌سازی ",
+                    "step": 2,
+                },
+                {
+                    "title": "آزمایش یا تست محصول",
+                    "step": 3,
+                },
+
+                {
+                    "title": "پیگیری مشتری",
+                    "step": 4,
+                },
+            ]
         },
 
         {
-            "title": "فاکتور",
-            "color_code": "#04C4B7"
+            "title": "فاکتور / قرارداد",
+            "color_code": "#04C4B7",
+            "order": 4,
+            "steps": [
+                {
+                    "title": "تهیه پیش‌ فاکتور/قرارداد   ",
+                    "step": 1,
+                },
+                {
+                    "title": "نهایی‌سازی فاکتور/قرارداد ",
+                    "step": 2,
+                },
+                {
+                    "title": "تایید پرداخت اولیه   ",
+                    "step": 3,
+                },
+
+                {
+                    "title": "هماهنگی برای تحویل    ",
+                    "step": 4,
+                },
+                {
+                    "title": "ثبت و بایگانی مدارک ",
+                    "step": 5,
+                },
+            ]
         },
 
         {
-            "title": "فروش",
-            "color_code": "#636D74"
+            "title": "بسته شده",
+            "color_code": "#636D74",
+            "order": 5,
+            "steps": [
+                {
+                    "title": "تحویل محصول یا ارائه خدمت ",
+                    "step": 1,
+                },
+                {
+                    "title": "آموزش و مشاوه  ",
+                    "step": 2,
+                },
+
+                {
+                    "title": "پشتیبانی فروش ",
+                    "step": 3,
+                },
+                {
+                    "title": "نعیین وضعیت فروش مجدد ",
+                    "step": 4,
+                },
+            ]
         },
     ]
+
     for label in label_list:
-        new_label_obj = Label(title=label['title'], color=label['color_code'], group_crm=new_group_crm)
+        new_label_obj = Label(order=label['order'], title=label['title'], color=label['color_code'],
+                              group_crm=new_group_crm)
         new_label_obj.save()
         new_label_step = LabelStep.objects.create(label=new_label_obj)
+        for step in label['steps']:
+            new_step = Step.objects.create(
+                title=step['title'],
+                step=step['step'],
+                label_step=new_label_step
+            )
+
     new_group_crm.members.add(request.user)
     new_group_crm.save()
     return Response(status=status.HTTP_201_CREATED,data={
