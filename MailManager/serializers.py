@@ -4,7 +4,9 @@ from .models import *
 from UserManager.models import UserAccount
 from django.shortcuts import get_object_or_404
 from core.models import MainFile
-from core.serializers import  MainFileSerializer
+from core.serializers import MainFileSerializer
+
+
 class MemberSerializer(ModelSerializer):
     class Meta:
         model = UserAccount
@@ -14,14 +16,16 @@ class MemberSerializer(ModelSerializer):
             "avatar_url"
         ]
 
+
 class MailStatusSerializer(ModelSerializer):
     class Meta:
-        model= MailStatus
-        fields ="__all__"
-class FileDetail(ModelSerializer):
+        model = MailStatus
+        fields = "__all__"
 
+
+class FileDetail(ModelSerializer):
     class Meta:
-        model= MainFile
+        model = MainFile
         fields = [
             "id",
             "file_url",
@@ -30,13 +34,14 @@ class FileDetail(ModelSerializer):
 
 
 class MailReportSerializer(ModelSerializer):
-    file_id_list = serializers.ListField(write_only=True,required=False)
+    file_id_list = serializers.ListField(write_only=True, required=False)
     creator_id = serializers.IntegerField(write_only=True)
     creator = MemberSerializer(read_only=True)
     mail_id = serializers.IntegerField(write_only=True)
+
     class Meta:
-        model= MailReport
-        fields =[
+        model = MailReport
+        fields = [
             'mail_id',
             'creator',
             'id',
@@ -46,23 +51,26 @@ class MailReportSerializer(ModelSerializer):
             'jtime',
             'file_id_list'
         ]
+
     def create(self, validated_data):
-        file_id_list = validated_data.pop('file_id_list',[])
+        file_id_list = validated_data.pop('file_id_list', [])
         new_mail_report = MailReport.objects.create(**validated_data)
         for file_id in file_id_list:
             main_file = MainFile.objects.get(id=file_id)
-            main_file.its_blong=True
+            main_file.its_blong = True
             main_file.save()
             new_mail_report.files.add(file_id)
 
         return new_mail_report
 
+
 class SignatureMailSerializer(ModelSerializer):
-    owner= MemberSerializer(read_only=True)
-    signature= FileDetail(read_only=True)
+    owner = MemberSerializer(read_only=True)
+    signature = FileDetail(read_only=True)
+
     class Meta:
         model = SignatureMail
-        fields =[
+        fields = [
             "id",
             "owner",
             "sign_status",
@@ -70,11 +78,11 @@ class SignatureMailSerializer(ModelSerializer):
             "order"
         ]
 
+
 class MaliLabelSerializer(ModelSerializer):
     workspace_id = serializers.IntegerField(write_only=True)
 
     class Meta:
-
         model = MailLabel
         fields = [
             "workspace_id",
@@ -83,13 +91,15 @@ class MaliLabelSerializer(ModelSerializer):
             "color_code"
         ]
 
+
 class MailRecipientSerializer(ModelSerializer):
     user = MemberSerializer(read_only=True)
-    user_id = serializers.IntegerField(write_only=True,required=True)
+    user_id = serializers.IntegerField(write_only=True, required=True)
     signature_image = MainFileSerializer(read_only=True)
-    signature_image_id = serializers.IntegerField(write_only=True,required=False)
-    mail_id = serializers.IntegerField(write_only=True,required=False)
-    creator_id= serializers.IntegerField(write_only=True,required=False)
+    signature_image_id = serializers.IntegerField(write_only=True, required=False)
+    mail_id = serializers.IntegerField(write_only=True, required=False)
+    creator_id = serializers.IntegerField(write_only=True, required=False)
+
     class Meta:
         model = MailRecipient
         fields = [
@@ -103,21 +113,21 @@ class MailRecipientSerializer(ModelSerializer):
             "mail_id",
             "creator_id",
 
-
         ]
+
     def create(self, validated_data):
         user_id = validated_data.get("user_id")
         recipient_type = validated_data.get("recipient_type")
-        signature_image_id = validated_data.get("signature_image_id",None)
+        signature_image_id = validated_data.get("signature_image_id", None)
 
-        creator_id = validated_data.get("creator_id")
+        creator_id = validated_data.pop("creator_id")
         if creator_id == user_id:
             if recipient_type == "vcc":
                 raise serializers.ValidationError(
                     {
-                        "status":False,
-                        "message":"this user cannot be a Bcc",
-                        "data":{}
+                        "status": False,
+                        "message": "this user cannot be a Bcc",
+                        "data": {}
                     }
                 )
             new_mail_recipient = MailRecipient.objects.create(
@@ -126,13 +136,12 @@ class MailRecipientSerializer(ModelSerializer):
             )
             if signature_image_id:
                 main_file = MainFile.objects.get(id=signature_image_id)
-                main_file.its_blong=True
+                main_file.its_blong = True
                 main_file.save()
                 new_mail_recipient.signature_image = main_file
 
-
             return new_mail_recipient
-        creator_id =validated_data.pop("creator_id")
+        creator_id=validated_data.pop("creator_id")
         new_mail_recipient = MailRecipient.objects.create(
             **validated_data
         )
@@ -141,21 +150,22 @@ class MailRecipientSerializer(ModelSerializer):
 
 
 class MailSerializer(ModelSerializer):
-    recipients =MailRecipientSerializer(read_only=True,many=True)
-    recipients_list =serializers.ListField(write_only=True,required=True)
+    recipients = MailRecipientSerializer(read_only=True, many=True)
+    recipients_list = serializers.ListField(write_only=True, required=True)
     workspace_id = serializers.IntegerField()
-    members = MemberSerializer(read_only=True,many=True)
+    members = MemberSerializer(read_only=True, many=True)
 
     file_id_list = serializers.ListField(write_only=True)
-    files = FileDetail(read_only=True,many=True)
+    files = FileDetail(read_only=True, many=True)
     creator_id = serializers.IntegerField(write_only=True)
-    creator= MemberSerializer(read_only= True)
-    mail_image=FileDetail(read_only=True)
-    mail_image_id=serializers.IntegerField(write_only=True,required=False)
+    creator = MemberSerializer(read_only=True)
+    mail_image = FileDetail(read_only=True)
+    mail_image_id = serializers.IntegerField(write_only=True, required=False)
     label = MaliLabelSerializer(read_only=True)
     label_id = serializers.IntegerField(write_only=True)
 
-    status_mail=MailStatusSerializer(read_only=True)
+    status_mail = MailStatusSerializer(read_only=True)
+
     class Meta:
         model = Mail
         fields = [
@@ -185,33 +195,32 @@ class MailSerializer(ModelSerializer):
             "recipients",
             "recipients_list",
 
-           
         ]
+
     def create(self, validated_data):
-        recipients_list =validated_data.pop("recipients_list",[])
+        recipients_list = validated_data.pop("recipients_list", [])
         workspace_id = validated_data.pop("workspace_id")
 
-
-        file_id_list= validated_data.pop("file_id_list",[])
-        label_id = validated_data.pop("label_id",None)
-        mail_image_id= validated_data.pop("mail_image_id",None)
+        file_id_list = validated_data.pop("file_id_list", [])
+        label_id = validated_data.pop("label_id", None)
+        mail_image_id = validated_data.pop("mail_image_id", None)
 
         creator_id = validated_data.get("creator_id")
-        new_mail= Mail.objects.create(**validated_data)
-        new_mail.workspace = get_object_or_404(WorkSpace,id=workspace_id)
+        new_mail = Mail.objects.create(**validated_data)
+        new_mail.workspace = get_object_or_404(WorkSpace, id=workspace_id)
         new_mail.save()
         if mail_image_id:
-            new_mail.mail_image_id=mail_image_id
+            new_mail.mail_image_id = mail_image_id
             main_file = MainFile.objects.get(id=mail_image_id)
-            main_file.its_blong=True
+            main_file.its_blong = True
             main_file.save()
         if label_id:
-            label_obj = get_object_or_404(MailLabel,id=label_id)
-            new_mail.label=label_obj
+            label_obj = get_object_or_404(MailLabel, id=label_id)
+            new_mail.label = label_obj
 
         for receiver in recipients_list:
-            receiver['mail_id']=new_mail.id
-            receiver['creator_id']= creator_id
+            receiver['mail_id'] = new_mail.id
+            receiver['creator_id'] = creator_id
 
             serializer_data = MailRecipientSerializer(data=receiver)
             if serializer_data.is_valid():
@@ -221,31 +230,25 @@ class MailSerializer(ModelSerializer):
                     serializer_data.errors
                 )
 
-
-
         for file_id in file_id_list:
             main_file = MainFile.objects.get(id=file_id)
-            
-            main_file.its_blong=True
+
+            main_file.its_blong = True
             new_mail.files.add()
             main_file.save()
         new_mail.files.set(file_id_list)
-        
+
         new_mail.save()
 
-
-        
-
-
-
         return new_mail
-    
+
+
 class MailActionSerializer(serializers.ModelSerializer):
     user_sender = MemberSerializer(read_only=True)
     owner = MemberSerializer(read_only=True)
-    
+
     class Meta:
-        fields =[
+        fields = [
             "id",
             "user_sender",
             "title",
@@ -253,12 +256,12 @@ class MailActionSerializer(serializers.ModelSerializer):
         ]
 
 
-
 class CategoryDraftSerializer(ModelSerializer):
     workspace_id = serializers.IntegerField(write_only=True)
-    owner_id = serializers.IntegerField(write_only=True,required= False)
+    owner_id = serializers.IntegerField(write_only=True, required=False)
+
     class Meta:
-        model= CategoryDraft
+        model = CategoryDraft
         fields = [
             "id",
             "title",
@@ -266,28 +269,33 @@ class CategoryDraftSerializer(ModelSerializer):
             "workspace_id",
             "owner_id",
         ]
+
     def create(self, validated_data):
-        new_category_draft =CategoryDraft.objects.create(**validated_data)
+        new_category_draft = CategoryDraft.objects.create(**validated_data)
         return new_category_draft
+
     def update(self, instance, validated_data):
         validated_data.pop("workspace_id")
         instance.title = validated_data.get("title")
         instance.color_code = validated_data.get("title")
         instance.save()
         return instance
+
+
 class DraftSerializer(ModelSerializer):
-    category= CategoryDraftSerializer(read_only=True)
-    members = MemberSerializer(read_only=True,many=True)
+    category = CategoryDraftSerializer(read_only=True)
+    members = MemberSerializer(read_only=True, many=True)
     label = MaliLabelSerializer(read_only=True)
     image = FileDetail(read_only=True)
-    files= FileDetail(read_only=True,many=True)
-    workspace_id = serializers.IntegerField(write_only=True,required=False)
-    owner_id= serializers.IntegerField(write_only=True)
-    category_id = serializers.IntegerField(write_only=True,required=False)
-    member_id_list = serializers.ListField(write_only=True,required=False)
-    label_id= serializers.IntegerField(write_only=True,required=False)
-    image_id = serializers.IntegerField(write_only=True,required=False)
-    file_id_list = serializers.ListField(write_only=True,required=False)
+    files = FileDetail(read_only=True, many=True)
+    workspace_id = serializers.IntegerField(write_only=True, required=False)
+    owner_id = serializers.IntegerField(write_only=True)
+    category_id = serializers.IntegerField(write_only=True, required=False)
+    member_id_list = serializers.ListField(write_only=True, required=False)
+    label_id = serializers.IntegerField(write_only=True, required=False)
+    image_id = serializers.IntegerField(write_only=True, required=False)
+    file_id_list = serializers.ListField(write_only=True, required=False)
+
     class Meta:
         model = Draft
         fields = [
@@ -306,45 +314,45 @@ class DraftSerializer(ModelSerializer):
             "members",
             "signature_status",
             "text",
-            "files", 
+            "files",
             "owner_id"
         ]
 
     def create(self, validated_data):
-        member_id_list = validated_data.pop("member_id_list",[])
-        file_id_list = validated_data.pop("file_id_list",[])
-        image_id = validated_data.pop("image_id",None)
+        member_id_list = validated_data.pop("member_id_list", [])
+        file_id_list = validated_data.pop("file_id_list", [])
+        image_id = validated_data.pop("image_id", None)
         new_draft_obj = Draft.objects.create(**validated_data)
         if image_id:
-            main_file= MainFile.objects.get(id=image_id)
-            main_file.its_blong=True
+            main_file = MainFile.objects.get(id=image_id)
+            main_file.its_blong = True
             main_file.save()
-            new_draft_obj.image_id=image_id
+            new_draft_obj.image_id = image_id
 
         new_draft_obj.members.set(member_id_list)
 
         new_draft_obj.files.set(file_id_list)
-        
+
         new_draft_obj.save()
         for file_id in file_id_list:
-            main_file= MainFile.objects.get(id=file_id)
-            main_file.its_blong=True
+            main_file = MainFile.objects.get(id=file_id)
+            main_file.its_blong = True
             main_file.save()
-        
+
         return new_draft_obj
-        
+
     def update(self, instance, validated_data):
-        
-        member_id_list = validated_data.pop("member_id_list",[])
-        file_id_list = validated_data.pop("file_id_list",[])
-        image_id = validated_data.pop("image_id",None)
+
+        member_id_list = validated_data.pop("member_id_list", [])
+        file_id_list = validated_data.pop("file_id_list", [])
+        image_id = validated_data.pop("image_id", None)
         if image_id:
             if image_id != instance.image.id:
                 instance.image.delete()
-                main_file= MainFile.objects.get(id=image_id)
-                main_file.its_blong=True
-                instance.image=main_file
-            
+                main_file = MainFile.objects.get(id=image_id)
+                main_file.its_blong = True
+                instance.image = main_file
+
         instance.members.set(member_id_list)
 
         instance.draft_name = validated_data.get("draft_name")
@@ -360,7 +368,7 @@ class DraftSerializer(ModelSerializer):
             for file_id in file_id_list:
                 main_file = MainFile.objects.get(id=file_id)
                 main_file.its_blong = True
-                    # instance.files.add(main_file)
+                # instance.files.add(main_file)
             instance.files.set(file_id_list)
             removed_file_ids = set(existing_file_ids) - set(file_id_list)
 
@@ -369,6 +377,6 @@ class DraftSerializer(ModelSerializer):
                 main_file.delete()
             for file_id in instance.files.all():
                 main_file = MainFile.objects.get(id=file_id)
-                main_file.its_blong=True
+                main_file.its_blong = True
                 main_file.save()
         instance.save()
