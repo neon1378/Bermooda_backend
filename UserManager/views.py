@@ -255,7 +255,7 @@ def get_users_info(request):
 
 
             dic = {
-                    "fullname":workspace_member.fullname,
+                    "fullname":workspace_member.user_account.fullname,
                     "id":workspace_member.user_account.id,
                     "avatar_url":workspace_member.user_account.avatar_url(),
                     "self":workspace_member.user_account == request.user,
