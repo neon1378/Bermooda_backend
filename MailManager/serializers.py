@@ -132,7 +132,7 @@ class MailRecipientSerializer(ModelSerializer):
 
 
             return new_mail_recipient
-
+        creator_id =validated_data.pop("creator_id")
         new_mail_recipient = MailRecipient.objects.create(
             **validated_data
         )
