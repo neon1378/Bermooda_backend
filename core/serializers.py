@@ -61,6 +61,7 @@ class MainFileSerializer(serializers.ModelSerializer):
 
 class AppUpdateSerializer(serializers.ModelSerializer):
     class Meta:
+        model = AppUpdate
         fields = [
             "last_version",
             "is_force",
