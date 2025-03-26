@@ -200,7 +200,7 @@ class MailManager(APIView):
         if mail_serializer.is_valid():
             mail_obj = mail_serializer.save()
             for member in MailRecipient.objects.filter(mail=mail_obj):
-                sub_title = f"نام جدیدی از طرف {mail_obj.creator.fullname} دریافت کردید"
+                sub_title = f"نامه جدیدی از طرف {mail_obj.creator.fullname} دریافت کردید"
                 title = "نامه اداری"
                 create_notification(related_instance=mail_obj,workspace=WorkSpace.objects.get(id=request.data['workspace_id']),user=member.user,title=title,sub_title=sub_title,side_type="recive_mail")
 

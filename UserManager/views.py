@@ -1049,6 +1049,12 @@ def get_workspaces (request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_workspace(request):
+
+    if WorkSpace.objects.filter(owner=request.user).count() == 10:
+        return  Response(status=status.HTTP_400_BAD_REQUEST,data={
+            "status":False,
+            "message":"شما نمیتوانید بیشتر از ۱۰ کسب کار داشته باشید"
+        })
     data= request.data
 
     new_workspace_obj = WorkSpace(title= data['title'])

@@ -411,7 +411,8 @@ class TaskManager(APIView):
             report_obj.save()
         channel_layer = get_channel_layer()
         event ={
-            "type":"send_data"
+            "type":"send_one_task",
+            "task_id":task.id
         }
         async_to_sync(channel_layer.group_send)(f"{project.id}_admin",event)
         return Response(status=status.HTTP_201_CREATED, data={"status": True, "message": "تسک جدید با موفقیت ثبت شد", "data": response_data})
@@ -458,8 +459,9 @@ class TaskManager(APIView):
                 success_notif.append(member.responsible_for_doing.id)
         task.save()
         channel_layer = get_channel_layer()
-        event ={
-            "type":"send_data"
+        event = {
+            "type": "send_one_task",
+            "task_id": task.id
         }
         async_to_sync(channel_layer.group_send)(f"{task.project.id}_admin",event)
         return Response(status=status.HTTP_202_ACCEPTED, data={"status": True, "message": "تسک با موفقیت آپدیت شد"})
@@ -546,8 +548,9 @@ class CheckListManager(APIView):
         check_list_obj.save()
 
         channel_layer = get_channel_layer()
-        event ={
-            "type":"send_data"
+        event = {
+            "type": "send_one_task",
+            "task_id": task_obj.id
         }
         async_to_sync(channel_layer.group_send)(f"{task_obj.project.id}_admin",event)
         if request.user != check_list_obj.responsible_for_doing:
@@ -574,11 +577,18 @@ class CheckListManager(APIView):
                 else:
                     checklist_obj.status=False
                 checklist_obj.save()
+                channel_layer = get_channel_layer()
+                event = {
+                    "type": "send_one_task",
+                    "task_id": checklist_obj.task.id
+                }
+                async_to_sync(channel_layer.group_send)(f"{checklist_obj.task.project.id}_admin", event)
                 return Response(status=status.HTTP_202_ACCEPTED,data={
                     "status":True,
                     "message":"success",
                     "data":{}
                 })
+
 
             return Response(status=status.HTTP_400_BAD_REQUEST,data={
                 "status":False,
@@ -632,7 +642,8 @@ class CheckListManager(APIView):
             checklist_obj.save()
             channel_layer = get_channel_layer()
             event = {
-                "type": "send_data"
+                "type": "send_one_task",
+                "task_id": checklist_obj.task.id
             }
             async_to_sync(channel_layer.group_send)(f"{checklist_obj.task.project.id}_admin", event)
             if request.user != checklist_obj.responsible_for_doing:
@@ -650,11 +661,14 @@ class CheckListManager(APIView):
 
 
     def delete(self,request,checklist_id_or_task_id):
+
         checklist_obj = get_object_or_404(CheckList,id=checklist_id_or_task_id)
+        task_id = checklist_obj.task.id
         checklist_obj.delete()
         channel_layer = get_channel_layer()
         event = {
-            "type": "send_data"
+            "type": "send_one_task",
+            "task_id":task_id,
         }
         async_to_sync(channel_layer.group_send)(f"{checklist_obj.task.project.id}_admin", event)
         return Response(status=status.HTTP_204_NO_CONTENT)
