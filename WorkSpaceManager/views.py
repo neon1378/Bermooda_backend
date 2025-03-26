@@ -53,7 +53,7 @@ class WorkspaceManager(APIView):
                 elif workspace_member:
                     change_current_workspace_jadoo(user_acc=request.user,workspace_obj=workspace_member.workspace)
 
-                    request.user.current_workspace_id = workspace_member.workspace.id
+                request.user.current_workspace_id = workspace_member.workspace.id
                 request.user.save()
 
             workspace_obj.delete()
