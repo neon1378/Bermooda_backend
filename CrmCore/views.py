@@ -781,7 +781,7 @@ class GroupCrmManager(APIView):
         workspace_obj = get_object_or_404(WorkSpace, id=workspace_id)
         members = data.get("members", [])
         title = data.get("title")
-    
+
         department_id = data.get("department_id",None)
 
         avatar_id = data.get("avatar_id",None)
@@ -793,10 +793,14 @@ class GroupCrmManager(APIView):
         new_group_obj.manager =request.user
 
         # Add members to the group
+        is_user = True
         for member_id in members:
+            if int(member_id)  == request.user.id:
+                is_user= False
             user_account = get_object_or_404(UserAccount, id=member_id)
             new_group_obj.members.add(user_account)
-
+        if is_user:
+            new_group_obj.members.add(request.user)
         # Set avatar if provided
         if avatar_id:
             main_file_obj = get_object_or_404(MainFile, id=avatar_id)

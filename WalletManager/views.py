@@ -242,9 +242,12 @@ def wallet_detail (request):
     mb_count =0
     for file in main_files:
                 
-                    
-        file_size_in_bytes = file.file.size
-        mb_count += file_size_in_bytes / (1024 * 1024) 
+        try:
+            file_size_in_bytes = file.file.size
+            mb_count += file_size_in_bytes / (1024 * 1024)
+        except:
+            pass
+
     return Response(status=status.HTTP_200_OK,data={
         "status":True,
         "message":"success",
