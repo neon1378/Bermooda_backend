@@ -28,12 +28,17 @@ class CustomerTask(WebsocketConsumer):
         async_to_sync(self.channel_layer.group_add)(
             f"{self.group_crm_id}_crm",self.channel_name
         )
+
     def receive(self, text_data=None, bytes_data=None):
         data = json.loads(text_data)
         command= data['command']
 
         if command == "customer_list":
-            custommer_objs = CustomerUser.objects.filter(group_crm=self.group_crm_obj,is_followed=False)
+            if self.get_user_permission():
+                custommer_objs = CustomerUser.objects.filter(group_crm=self.group_crm_obj,is_followed=False)
+            else:
+                custommer_objs = CustomerUser.objects.filter(group_crm=self.group_crm_obj,is_followed=False,user_account=self.user)
+
             data_list = []
 
             for custommer_obj in custommer_objs:
