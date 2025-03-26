@@ -1483,6 +1483,7 @@ def change_user_profile_password(request):
 @permission_classes([IsAuthenticated])
 def add_fcm_token(request):
     token = request.data.get('token')
+    is_application = request.data.get("is_application",False)
 
     if not token:
         return Response(status=status.HTTP_400_BAD_REQUEST,data={
@@ -1498,7 +1499,8 @@ def add_fcm_token(request):
         
 
     fcm_token, created = FcmToken.objects.get_or_create(
-            token=token, 
+            is_application=is_application,
+            token=token,
             defaults={'user_account': request.user}
         ) 
     if not created:

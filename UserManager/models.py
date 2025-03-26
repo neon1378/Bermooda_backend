@@ -156,6 +156,8 @@ class BonosPhone(models.Model):
 
 class FcmToken(models.Model):
     token = models.TextField(null=True)
+    is_application = models.BooleanField(default=False)
+
     user_account = models.ForeignKey(UserAccount,on_delete=models.CASCADE,null=True,related_name="fcm_tokens")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

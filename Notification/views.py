@@ -132,7 +132,8 @@ def create_notification (related_instance,workspace=None,user=None,title=None,su
     print(custom_data)
 
     for fcm_token in FcmToken.objects.filter(user_account=user):
-        print(send_notification_to_device(title=title,body=sub_title,fcm_token=fcm_token.token,custom_data=custom_data))
+        if not fcm_token.is_application:
+            print(send_notification_to_device(title=title,body=sub_title,fcm_token=fcm_token.token,custom_data=custom_data))
     
 
     
