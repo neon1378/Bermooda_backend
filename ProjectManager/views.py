@@ -453,10 +453,11 @@ class TaskManager(APIView):
         success_notif = []
         for member in task.check_list.all():
             if member.responsible_for_doing.id not in success_notif:
-                title = f"بروزرسانی وظیفه"
-                sub_title = f"وظیفه {task.title} توسط {request.user.fullname} بروزرسانی شد"
-                create_notification(related_instance=task,workspace=workspace_obj,user=member.responsible_for_doing,title=title,sub_title=sub_title,side_type="update_task")
-                success_notif.append(member.responsible_for_doing.id)
+                if member.responsible_for_doing != request.user:
+                    title = f"بروزرسانی وظیفه"
+                    sub_title = f"وظیفه {task.title} توسط {request.user.fullname} بروزرسانی شد"
+                    create_notification(related_instance=task,workspace=workspace_obj,user=member.responsible_for_doing,title=title,sub_title=sub_title,side_type="update_task")
+                    success_notif.append(member.responsible_for_doing.id)
         task.save()
         channel_layer = get_channel_layer()
         event = {
@@ -470,11 +471,7 @@ class TaskManager(APIView):
         """Delete a task."""
         workspace_obj = get_object_or_404(WorkSpace,id=request.data.get("workspace_id",None))
         task = get_object_or_404(Task, id=request.data["task_id"])
-        for member in task.project.members.all():
-            
-            title = f"حذف وضیظه"
-            sub_title = f"وضیفه {task.title} توسط {request.user.fullname} حذف شد"
-            create_notification(related_instance=task,workspace=workspace_obj,user=member,title=title,sub_title=sub_title)
+
         task.delete()
         channel_layer = get_channel_layer()
         event ={
