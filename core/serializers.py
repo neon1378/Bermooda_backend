@@ -56,3 +56,19 @@ class MainFileSerializer(serializers.ModelSerializer):
         ]
     def get_file_name(self, obj):
         return os.path.basename(obj.file.name) if obj.file else None
+
+
+
+class AppUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        fields = [
+            "last_version",
+            "is_force",
+            "cafe_bazar_link",
+            "myket_link",
+            "download_link",
+        ]
+
+
+
+

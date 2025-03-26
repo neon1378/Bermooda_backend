@@ -3,14 +3,14 @@ from dotenv import load_dotenv
 import os
 from rest_framework.decorators import api_view,permission_classes,parser_classes
 from rest_framework.response import Response
-from .models import MainFile
+from .models import MainFile, AppUpdate
 from rest_framework import status
 from rest_framework.parsers import MultiPartParser, FormParser
 import requests
 from rest_framework.permissions import IsAuthenticated,AllowAny
 load_dotenv()
 import re
-
+from .serializers import AppUpdateSerializer
 # Create your views here.
 def send_sms (phone_number,verify_code ):
     api_key = "6865587A4B6D694F2F39556156724B53674F386142593074583545495859734C52414A4B46384C336543383D"
@@ -75,3 +75,14 @@ def upload_file (request):
 
 
 
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def app_update_detail(request):
+
+    app_update = AppUpdate.objects.get(id=1)
+    serializer_data = AppUpdateSerializer(app_update).data
+    return Response(status=status.HTTP_200_OK,data={
+        "status":True,
+        "message":"success",
+        "data":serializer_data
+    })

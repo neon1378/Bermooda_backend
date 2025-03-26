@@ -160,3 +160,10 @@ class SoftDeleteModel(models.Model):
 
 
 
+
+class AppUpdate(SoftDeleteModel):
+    last_version = models.CharField(max_length=20)
+    is_force = models.BooleanField(default=False)
+    cafe_bazar_link = models.URLField(null=True)
+    myket_link = models.URLField(null=True)
+    download_link = models.URLField(null=True)
