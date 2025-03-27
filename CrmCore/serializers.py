@@ -289,8 +289,8 @@ class CustomerSmallSerializer(serializers.ModelSerializer):
             email = validated_data.pop("email",None)
             date_time_to_remember=validated_data.get("date_time_to_remember",None)
             new_customer = CustomerUser.objects.create(**validated_data)
-            new_customer.main_date_time_to_remember = persian_to_gregorian(date_time_to_remember)
-            new_customer.save()
+
+
             if avatar_id :
                 main_file = MainFile.objects.get(id=avatar_id)
                 main_file.its_blong =True
