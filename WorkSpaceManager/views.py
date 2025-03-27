@@ -63,7 +63,7 @@ class WorkspaceManager(APIView):
             }
 
             response= requests.delete(url=url, headers=headers)
-            print(response)
+            print(response,"!!!!!!!!!!@@@@@")
 
 
             workspace_obj.delete()
