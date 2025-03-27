@@ -1132,13 +1132,16 @@ def check_list_archive(request,task_id):
 @permission_classes([IsAuthenticated])
 def completed_tasks(request):
     project_id = request.GET.get("project_id")
+    page_number=request.GET.get("page_number",1)
     project_obj = get_object_or_404(Project,id=project_id)
     completed_task_objs= Task.objects.filter(project=project_obj,done_status=True)
-    serializer_data = TaskSerializer(completed_task_objs,many=True)
+    data = pagination(query_set=completed_task_objs,page_number=page_number)
+    data['list'] = TaskSerializer(data['list'],many=True).data
+
     return Response(status=status.HTTP_200_OK,data={
         "status":True,
         "message":"موفق",
-        "data":serializer_data.data
+        "data":data
     })
 
 
