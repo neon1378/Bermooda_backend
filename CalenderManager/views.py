@@ -102,7 +102,7 @@ class CalenderManger(APIView):
 
         )
         check_list_items =[]
-        for check_list in check_list_items:
+        for check_list in check_list_objs:
 
             if check_list.date_time_to_start_main and check_list.date_time_to_start_main.date()==date_object:
                 check_list_items.append(check_list)
