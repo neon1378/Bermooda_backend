@@ -74,7 +74,7 @@ class CalenderManger(APIView):
 
 
         all_day_in_month =  self.get_all_dates_of_month(year=year, month=month)
-        data = self.get_list_data(moth_list=all_day_in_month)
+        data = self.get_list_data(month_list=all_day_in_month)
         return Response({"status": True, "message": "Success", "data": data}, status=status.HTTP_200_OK)
 
     def handle_get_a_day(self, request):
