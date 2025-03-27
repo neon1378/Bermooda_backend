@@ -12,8 +12,8 @@ from WorkSpaceManager.models import WorkSpace
 
 from ProjectManager.serializers import CheckListSerializer
 from django.shortcuts import get_object_or_404
-
-
+from CrmCore.serializers import CustomerSmallSerializer
+from CrmCore.models import CustomerUser
 class CalenderManger(APIView):
 
     permission_classes=[IsAuthenticated]
@@ -96,27 +96,36 @@ class CalenderManger(APIView):
             responsible_for_doing=self.user,
 
         )
-        data_list =[]
-        for check_list in check_list_objs:
-            if check_list.date_time_to_start_main:
-                print(date_object,"@@@")
-                print(check_list.date_time_to_start_main.date(),"!!!")
-                print(check_list.date_time_to_start_main.date()==date_object,"$$$")
+        customer_objs = CustomerUser.objects.filter(
+            workspace =self.workspace_obj,
+            user_account = self.user
+
+        )
+        check_list_items =[]
+        for check_list in check_list_items:
+
             if check_list.date_time_to_start_main and check_list.date_time_to_start_main.date()==date_object:
-                data_list.append(check_list)
+                check_list_items.append(check_list)
 
-
-        serializer = CheckListSerializer(data_list, many=True)
+        customer_items = []
+        for customer in customer_objs:
+            if customer.main_date_time_to_remember and customer.main_date_time_to_remember.date() == date_object:
+                customer_items.append(customer)
+        check_list_serializer = CheckListSerializer(check_list_items, many=True)
+        customer_serializer  =CustomerSmallSerializer(customer_items,many=True)
         return Response(
             {
                 "status": True,
                 "message": "موفق",
-                "data": serializer.data,
+                "data": {
+                    "task_list":check_list_serializer.data,
+                    "customer_list":customer_serializer.data
+                },
             },
             status=status.HTTP_200_OK,
         )
 
-    def get_list_data(self,moth_list):
+    def get_list_data(self,month_list):
         """Returns checklist count for each day in a month."""
 
         check_list_objs = CheckList.objects.filter(
@@ -124,21 +133,30 @@ class CalenderManger(APIView):
             responsible_for_doing=self.user,
 
         )
-        data_list=[]
-        for jdate in moth_list:
-            g_date = jdate.togregorian()
-            print(g_date)
-            print(jdate)
-            check_list_items = []
-            for item in check_list_objs:
-                if item.date_time_to_start_main:
 
-                    if item.date_time_to_start_main.date() == g_date:
-                        check_list_items.append(item)
+        customer_objs = CustomerUser.objects.filter(
+            workspace =self.workspace_obj,
+            user_account = self.user
+
+        )
+
+        data_list = []
+        for jdate in month_list:
+            g_date = jdate.togregorian()
+
+            customer_list = [
+                customer for customer in customer_objs
+                if customer.main_date_time_to_remember and customer.main_date_time_to_remember.date() == g_date
+            ]
+
+            check_list_items = [
+                item for item in check_list_objs
+                if item.date_time_to_start_main and item.date_time_to_start_main.date() == g_date
+            ]
 
             data_list.append({
                 "date": jdate.strftime("%Y/%m/%d"),
-                "count": len(check_list_items)
+                "count": len(customer_list) + len(check_list_items)
             })
 
         return data_list
