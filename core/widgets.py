@@ -142,20 +142,22 @@ def persian_to_gregorian(persian_date_str):
 
 
 def change_current_workspace_jadoo(user_acc,workspace_obj):
+        try:
+            jadoo_base_url =os.getenv("JADOO_BASE_URL")
+            url = f"{jadoo_base_url}/workspace/changeWorkSpace"
+            headers = {
+                "content-type": "application/json",
+                "Authorization": f"Bearer {user_acc.refrence_token}"
 
-        jadoo_base_url =os.getenv("JADOO_BASE_URL")
-        url = f"{jadoo_base_url}/workspace/changeWorkSpace"
-        headers = {
-            "content-type": "application/json",
-            "Authorization": f"Bearer {user_acc.refrence_token}"
-
-        }
-        payload = {
-            "workspaceId":workspace_obj.jadoo_workspace_id
-        }
-        print(payload)
-        response = requests.post(url=url,json=payload,headers=headers)
-        print(response)
+            }
+            payload = {
+                "workspaceId":workspace_obj.jadoo_workspace_id
+            }
+            print(payload)
+            response = requests.post(url=url,json=payload,headers=headers)
+            print(response)
+        except:
+            pass
 
 
 

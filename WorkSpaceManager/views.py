@@ -55,15 +55,18 @@ class WorkspaceManager(APIView):
 
                 request.user.current_workspace_id = workspace_member.workspace.id
                 request.user.save()
+            try:
+                url = f"{self.jadoo_base_url}/workspace/destroy/{workspace_obj.jadoo_workspace_id}"
+                headers = {
+                        "content-type": "application/json",
+                        "Authorization": f"Bearer {request.user.refrence_token}"
+                }
 
-            url = f"{self.jadoo_base_url}/workspace/destroy/{workspace_obj.jadoo_workspace_id}"
-            headers = {
-                    "content-type": "application/json",
-                    "Authorization": f"Bearer {request.user.refrence_token}"
-            }
+                response= requests.delete(url=url, headers=headers)
+                print(response,"!!!!!!!!!!@@@@@")
+            except:
+                pass
 
-            response= requests.delete(url=url, headers=headers)
-            print(response,"!!!!!!!!!!@@@@@")
 
 
             workspace_obj.delete()
