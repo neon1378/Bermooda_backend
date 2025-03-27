@@ -314,8 +314,9 @@ class CustomerSmallSerializer(serializers.ModelSerializer):
             else:
                 new_customer.connection_type = "email"
                 new_customer.email = email
-            new_customer.main_date_time_to_remember = persian_to_gregorian(new_customer.date_time_to_remember)
 
+            new_customer.save()
+            new_customer.main_date_time_to_remember = persian_to_gregorian(new_customer.date_time_to_remember)
             new_customer.save()
             channel_layer = get_channel_layer()
             event = {
