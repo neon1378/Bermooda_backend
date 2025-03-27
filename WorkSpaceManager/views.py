@@ -840,6 +840,7 @@ def get_text_workspace_invite(request):
     )
 
 from ProjectManager.models import Project,CheckList
+
 def calculate_user_performance(project_id):
     """
     Calculate the average performance percentage (1-100) for each user
