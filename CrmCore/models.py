@@ -261,6 +261,12 @@ class CustomerUser(SoftDeleteModel):
         except:
             return  ""
 
+    def app_avatar_url(self):
+        try:
+            base_url = os.getenv("BASE_URL")
+            return f"{base_url}{self.avatar.file.url}"
+        except:
+            return None
 
     def category_data (self):
         try:

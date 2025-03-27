@@ -264,7 +264,7 @@ class CustomerSmallSerializer(serializers.ModelSerializer):
             "agent_position",
             "address",
             "description",
-
+            "app_avatar_url",
             "city",
             "state",
             "link",
