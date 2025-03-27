@@ -253,7 +253,7 @@ class CustomerSmallSerializer(serializers.ModelSerializer):
             "agent_status",
             "agent_name",
             "agent_phone_number",
-
+            "website",
             #new
             "is_followed",
             "city_id",
