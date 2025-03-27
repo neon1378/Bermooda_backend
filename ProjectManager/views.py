@@ -1126,3 +1126,19 @@ def check_list_archive(request,task_id):
         "message":"موفق",
         "data":serializer_data.data
     })
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def completed_tasks(request):
+    project_id = request.GET.get("project_id")
+    project_obj = get_object_or_404(Project,id=project_id)
+    completed_task_objs= Task.objects.filter(project=project_obj,done_status=True)
+    serializer_data = TaskSerializer(completed_task_objs,many=True)
+    return Response(status=status.HTTP_200_OK,data={
+        "status":True,
+        "message":"موفق",
+        "data":serializer_data.data
+    })
+
+
