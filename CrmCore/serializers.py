@@ -255,6 +255,7 @@ class CustomerSmallSerializer(serializers.ModelSerializer):
             "agent_phone_number",
 
             #new
+            "is_followed",
             "city_id",
             "state_id",
             "category",
