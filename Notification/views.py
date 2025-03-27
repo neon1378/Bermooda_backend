@@ -63,54 +63,56 @@ def notif_data (notification_obj,workspace_obj=None,side_type=None,user=None):
 
         object_name = notification_obj.related_object.__class__.__name__
         dic ={}
-        if object_name == "Task":
-                task_obj = notification_obj.related_object
-                dic['data_type'] = "project_task"
-                dic['side_type'] =notification_obj.side_type
-                try:
-                    dic['department_id'] = str(task_obj.project.department.id)
-                except:
-                    dic['department_id']=None
-                dic['task_id'] = str(task_obj.id)
-                dic['category_id'] = str(task_obj.category_task.id)
-                dic['project_id'] = str(task_obj.project.id)
+        try:
+            if object_name == "Task":
+                    task_obj = notification_obj.related_object
+                    dic['data_type'] = "project_task"
+                    dic['side_type'] =notification_obj.side_type
+                    try:
+                        dic['department_id'] = str(task_obj.project.department.id)
+                    except:
+                        dic['department_id']=None
+                    dic['task_id'] = str(task_obj.id)
+                    dic['category_id'] = str(task_obj.category_task.id)
+                    dic['project_id'] = str(task_obj.project.id)
 
-                dic['workspace_id'] = str(workspace_obj.id)
-        elif object_name == "Report":
-                report_obj= notification_obj.related_object
-                dic['data_type'] = "crm_report"
+                    dic['workspace_id'] = str(workspace_obj.id)
+            elif object_name == "Report":
+                    report_obj= notification_obj.related_object
+                    dic['data_type'] = "crm_report"
+                    dic['side_type'] = notification_obj.side_type
+                    dic['report_id'] = str(report_obj.id)
+                    dic['workspace_id'] = str(workspace_obj.id)
+                    customer_obj = None
+                    customer_obj = next(iter(report_obj.customer_user.all()), None)
+
+                    dic['customer_id'] = str(customer_obj.id)
+                    dic['group_id'] = str(customer_obj.group_crm.id)
+                    dic['workspace_id'] = str(workspace_obj.id)
+            elif object_name == "Planing":
+                    plan_obj=notification_obj.related_object
+                    dic['data_type'] = "plan_member"
+                    dic['side_type'] = notification_obj.side_type
+                    dic['plan_id'] = str(plan_obj.id)
+                    dic['workspace_id'] = str(workspace_obj.id)
+
+            elif object_name == "Mail":
+                mail_obj = notification_obj.related_object
+                dic['data_type'] = "mail_manager"
                 dic['side_type'] = notification_obj.side_type
-                dic['report_id'] = str(report_obj.id)
+                dic['mail_id'] = str(mail_obj.id)
                 dic['workspace_id'] = str(workspace_obj.id)
-                customer_obj = None
-                customer_obj = next(iter(report_obj.customer_user.all()), None)
-                
-                dic['customer_id'] = str(customer_obj.id)
-                dic['group_id'] = str(customer_obj.group_crm.id)
-                dic['workspace_id'] = str(workspace_obj.id)
-        elif object_name == "Planing":
-                plan_obj=notification_obj.related_object
-                dic['data_type'] = "plan_member"
+            elif object_name == "WorkspaceMember":
+                member_obj =   notification_obj.related_object
+                dic['data_type'] = "member_manager"
                 dic['side_type'] = notification_obj.side_type
-                dic['plan_id'] = str(plan_obj.id)
-                dic['workspace_id'] = str(workspace_obj.id)
-            
-        elif object_name == "Mail":
-            mail_obj = notification_obj.related_object
-            dic['data_type'] = "mail_manager"
-            dic['side_type'] = notification_obj.side_type
-            dic['mail_id'] = str(mail_obj.id)
-            dic['workspace_id'] = str(workspace_obj.id)
-        elif object_name == "WorkspaceMember":
-            member_obj =   notification_obj.related_object
-            dic['data_type'] = "member_manager"
-            dic['side_type'] = notification_obj.side_type
-            dic['member_id'] = member_obj.id
-            if member_obj.user_account.current_workspace_id not in (0, None):
-                dic['workspace_id'] = member_obj.user_account.current_workspace_id
-            # if workspace_obj:
-                #  dic['workspace_id']= workspace_obj.id
-                
+                dic['member_id'] = member_obj.id
+                if member_obj.user_account.current_workspace_id not in (0, None):
+                    dic['workspace_id'] = member_obj.user_account.current_workspace_id
+                # if workspace_obj:
+                    #  dic['workspace_id']= workspace_obj.id
+        except:
+            pass
         return dic
 def create_notification (related_instance,workspace=None,user=None,title=None,sub_title=None,side_type=None):
     content_type = ContentType.objects.get_for_model(related_instance.__class__)
