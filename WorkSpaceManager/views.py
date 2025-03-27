@@ -849,7 +849,7 @@ def calculate_user_performance(project_id):
     project_obj =Project.objects.get(id=project_id)
     users_with_performance = (
         CheckList.objects
-        .filter(status=True,task__project=project_obj)  # Only completed checklists
+        .filter(task__project=project_obj)  # Only completed checklists
         .values('responsible_for_doing')  # Group by user
         .annotate(
             total_tasks=Count('id'),  # Total completed tasks
