@@ -29,6 +29,17 @@ class CustomerTask(WebsocketConsumer):
             f"{self.group_crm_id}_crm",self.channel_name
         )
 
+    def send_a_customer(self,event):
+        customer_obj = CustomerUser.objects.get(id=event['customer_id'])
+        serializer_data = CustomerSmallSerializer(customer_obj)
+        self.send(json.dumps(
+            {
+                "data_type":"send_a_customer",
+                "data":serializer_data.data
+            }
+        ))
+
+
     def receive(self, text_data=None, bytes_data=None):
         data = json.loads(text_data)
         command= data['command']

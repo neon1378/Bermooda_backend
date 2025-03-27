@@ -839,15 +839,17 @@ def get_text_workspace_invite(request):
         }
     )
 
-def calculate_user_performance():
+from ProjectManager.models import Project,CheckList
+def calculate_user_performance(project_id):
     """
     Calculate the average performance percentage (1-100) for each user
     based on their completed checklists.
     """
     # Get all users with their completed checklists
+    project_obj =Project.objects.get(id=project_id)
     users_with_performance = (
         CheckList.objects
-        .filter(status=True)  # Only completed checklists
+        .filter(status=True,task__project=project_obj)  # Only completed checklists
         .values('responsible_for_doing')  # Group by user
         .annotate(
             total_tasks=Count('id'),  # Total completed tasks
@@ -880,7 +882,7 @@ from WorkSpaceChat.models import  GroupMessage
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def create_group_message(request):
-    performance_data = calculate_user_performance()
+    performance_data = calculate_user_performance(project_id=19)
 
     # Print results
     for data in performance_data:
