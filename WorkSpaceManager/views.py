@@ -56,7 +56,7 @@ class WorkspaceManager(APIView):
                 request.user.current_workspace_id = workspace_member.workspace.id
                 request.user.save()
 
-            url = f"{self.jadoo_base_url}/workspace/destroy"
+            url = f"{self.jadoo_base_url}/workspace/destroy/{workspace_obj.jadoo_workspace_id}"
             headers = {
                     "content-type": "application/json",
                     "Authorization": f"Bearer {request.user.refrence_token}"
