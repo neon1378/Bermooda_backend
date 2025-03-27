@@ -287,7 +287,10 @@ class CustomerSmallSerializer(serializers.ModelSerializer):
             conection_type = validated_data.pop("conection_type","phone")
             phone_number = validated_data.pop("phone_number",None)
             email = validated_data.pop("email",None)
+            date_time_to_remember=validated_data.get("date_time_to_remember",None)
             new_customer = CustomerUser.objects.create(**validated_data)
+            new_customer.main_date_time_to_remember = persian_to_gregorian(date_time_to_remember)
+            new_customer.save()
             if avatar_id :
                 main_file = MainFile.objects.get(id=avatar_id)
                 main_file.its_blong =True
@@ -316,8 +319,8 @@ class CustomerSmallSerializer(serializers.ModelSerializer):
                 new_customer.email = email
 
             new_customer.save()
-            new_customer.main_date_time_to_remember = persian_to_gregorian(new_customer.date_time_to_remember)
-            new_customer.save()
+
+
             channel_layer = get_channel_layer()
             event = {
                 "type": "send_data"

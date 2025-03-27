@@ -64,6 +64,7 @@ INSTALLED_APPS = [
     'Notification',
     "PlaningManager",
     "WorkSpaceChat",
+    "CalenderManager",
 ]
 
 
