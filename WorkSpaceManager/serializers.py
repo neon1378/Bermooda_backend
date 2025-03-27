@@ -106,12 +106,21 @@ class WorkSpacePermissionSerializer(ModelSerializer):
         ]
 
 
+class IndustrialActivitySerializer(ModelSerializer):
+    class Meta:
+        model= IndustrialActivity
+        fields = [
+            "id",
+            "title"
+        ]
+
+
 class WorkSpaceSerializer(ModelSerializer):
     industrialactivity_id = serializers.IntegerField(write_only=True,required=True)
     permissions = WorkSpacePermissionSerializer(read_only=True,many=True)
     national_card_image_id = serializers.IntegerField(write_only=True,required=False)
     document_image_id = serializers.IntegerField(write_only=True,required=False)
-
+    industrialactivity = IndustrialActivitySerializer(read_only=True)
     document_image = MainFileSerializer(read_only=True)
     national_card_image = MainFileSerializer(read_only=True)
 
@@ -120,6 +129,7 @@ class WorkSpaceSerializer(ModelSerializer):
         fields =[
             "id",
             "industrialactivity_id",
+            "industrialactivity",
             "personal_information_status",
             "business_type",
             "document_image",
