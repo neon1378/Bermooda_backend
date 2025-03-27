@@ -1305,7 +1305,7 @@ def create_workspace(request):
 
     new_group_crm.members.add(request.user)
     new_group_crm.save()
-    change_current_workspace_jadoo(user_acc=request.user,workspace_obj=new_workspace_obj)
+
     return Response(status=status.HTTP_201_CREATED,data={
         "status":True,
         "message":"succsec",

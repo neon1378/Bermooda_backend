@@ -180,6 +180,7 @@ class WorkspaceManager(APIView):
 
                 workspace_obj.is_authenticated = True
                 workspace_obj.save()
+                change_current_workspace_jadoo(user_acc=request.user, workspace_obj=workspace_obj)
                 # print(response.json())
                 print(serializer_data.data)
                 serializer_data.data['avatar_url'] = workspace_obj.avatar_url()
