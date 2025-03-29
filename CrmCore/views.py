@@ -226,7 +226,7 @@ class LabelMangaer(APIView):
         })
     def delete(self,request,label_id):
         label_obj = get_object_or_404(Label,id=label_id)
-        first_label =Label.objects.filter(group_crm=label_obj.group_crm).first()
+        first_label =Label.objects.filter(group_crm=label_obj.group_crm).last()
         if first_label.id == label_obj.id:
             return Response(status=status.HTTP_400_BAD_REQUEST,data={
                 "status":False,
