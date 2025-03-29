@@ -1,83 +1,44 @@
 
-import requests
-import urllib.parse
-import base64
+from ProjectManager.models import Project,CheckList
+from django.db.models import Avg, Count, Sum
+from django.utils import timezone
 
+def calculate_user_performance(project_id):
+    """
+    Calculate the average performance percentage (1-100) for each user
+    based on their completed checklists.
+    """
+    # Get all users with their completed checklists
+    project_obj =Project.objects.get(id=project_id)
+    users_with_performance = (
+        CheckList.objects
+        .filter(status=True,task__project=project_obj)  # Only completed checklists
+        .values('responsible_for_doing')  # Group by user
+        .annotate(
+            total_tasks=Count('id'),  # Total completed tasks
+            average_difficulty=Avg('difficulty'),  # Average difficulty
+            total_time=Sum(
+                (timezone.now() - timezone.now())  # Placeholder for time calculation
+            )  # Placeholder for total time
+        )
+    )
 
-from urllib.parse import quote
-def send_invite_link (phone_number,workspace_owner,workspace_name):
-    try:
-        convert_url = "https://server.jadoo.app/api/v1/user/auth/convertText"
-        
-        name = workspace_name.replace(" ","\u205f")
-        
-        message = workspace_owner.replace(" ","\u205f")
-        # payload = {
-        #     "title1":name,
-        #     "title2":message
-        # }
-        # habib_response =requests.post(url=convert_url,data=payload)
-        # print(habib_response.json())
+    # Calculate performance percentage for each user
+    performance_data = []
+    for user_data in users_with_performance:
+        user_id = user_data['responsible_for_doing']
+        total_tasks = user_data['total_tasks']
+        average_difficulty = user_data['average_difficulty']
 
+        # Calculate performance percentage (N * E, scaled to 1-100)
+        performance_percentage = min(max((total_tasks * average_difficulty) / 5 * 20, 1), 100)
 
+        performance_data.append({
+            'user_id': user_id,
+            'total_tasks': total_tasks,
+            'average_difficulty': round(average_difficulty, 2),
+            'performance_percentage': round(performance_percentage, 2)
+        })
 
-        api_key ="6865587A4B6D694F2F39556156724B53674F386142593074583545495859734C52414A4B46384C336543383D"
-        print(api_key,"@@@@")
-        url = f"https://api.kavenegar.com/v1/{api_key}/verify/lookup.json?token={name}&token2={message}&receptor={phone_number}&template=invitelink"
-
-        response = requests.get(url=url)
-        print(response.json())
-
-    except:
-        pass
-
-send_invite_link("09388148998","جادو","امین اله قلی")
-
-# def sms_text(text):
-#     return text.replace(' ', '\u2060')
-
-# # مثال استفاده
-# message = "سلام دنیا"
-# print(sms_text(message))
-
-
-# import requests
-
-# class HttpException(Exception):
-#     pass
-
-# class ApiException(Exception):
-#     pass
-
-# def execute(url, data=None):
-#     headers = {
-#         'Accept': 'application/json',
-#         'Content-Type': 'application/x-www-form-urlencoded',
-#         'charset': 'utf-8'
-#     }
-    
-#     try:
-#         response = requests.post(url, data=data, headers=headers, verify=False)
-#         code = response.status_code
-#         content_type = response.headers.get('Content-Type', '')
-        
-#         if response.status_code != 200:
-#             raise HttpException("Request have errors", code)
-
-#         json_response = response.json()
-        
-#         if 'return' not in json_response or json_response['return'].get('status') != 200:
-#             raise ApiException(json_response['return'].get('message', "Unknown error"), json_response['return'].get('status', code))
-        
-#         return json_response.get('entries')
-
-#     except requests.exceptions.RequestException as e:
-#         raise HttpException(str(e))
-
-# مثال استفاده
-# result = execute("https://example.com/api", {"key": "value"})
-# print(result)
-
-
-
-
+    return performance_data
+print(calculate_user_performance(project_id=19))
