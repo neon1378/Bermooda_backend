@@ -94,51 +94,48 @@ class ReusablePaginationMixin:
         return
 
 
-def convert_persian_to_latin_numbers(input_str):
-    """
-    اعداد فارسی را در یک رشته به اعداد لاتین تبدیل می‌کند.
-    """
+def convert_persian_to_latin_numbers(persian_str):
     persian_numbers = "۰۱۲۳۴۵۶۷۸۹"
     latin_numbers = "0123456789"
-
     translation_table = str.maketrans(persian_numbers, latin_numbers)
-    return input_str.translate(translation_table)
+    return persian_str.translate(translation_table)
 
 
 def persian_to_gregorian(persian_date_str):
-    if not persian_date_str:
-        return None
-    # try:
-    persian_date_str = convert_persian_to_latin_numbers(persian_date_str.strip())
+    try:
+        if not persian_date_str:
+            return None
 
-    if len(persian_date_str) > 10:
-            persian_datetime = datetime.strptime(persian_date_str, "%Y/%m/%d %H:%M")
+        persian_date_str = convert_persian_to_latin_numbers(persian_date_str.strip())
+
+        if len(persian_date_str) > 10:
+            # If date includes time
+            persian_datetime = jdatetime.datetime.strptime(persian_date_str, "%Y/%m/%d %H:%M")
             year, month, day = persian_datetime.year, persian_datetime.month, persian_datetime.day
             hour, minute = persian_datetime.hour, persian_datetime.minute
-    else:
-            persian_datetime = datetime.strptime(persian_date_str, "%Y/%m/%d")
-            year, month, day = persian_datetime.year, persian_datetime.month, persian_datetime.day
+        else:
+            # Only date
+            year, month, day = map(int, persian_date_str.split('/'))
             hour, minute = 0, 0
 
-    gregorian_date = jdatetime.date(year, month, day).togregorian()
-    datetime_obj = datetime(
-                gregorian_date.year,
-                gregorian_date.month,
-                gregorian_date.day,
-                hour,
-                minute,
+        # Convert Persian date to Gregorian
+        gregorian_date = jdatetime.date(year, month, day).togregorian()
 
+        datetime_obj = datetime(
+            gregorian_date.year,
+            gregorian_date.month,
+            gregorian_date.day,
+            hour,
+            minute,
         )
 
-        # اگر USE_TZ = False باشد، آن را timezone-naive کنید
-    if is_aware(datetime_obj):
-        return make_naive(datetime_obj)
-    else:
-        return datetime_obj  # اگر از قبل naive است، همان را برگردان
-    # except ValueError:
-    #     return None
-
-
+        # Convert to naive datetime if USE_TZ=False
+        if is_aware(datetime_obj):
+            return make_naive(datetime_obj)
+        else:
+            return datetime_obj
+    except ValueError:
+        return None
 
 
 def change_current_workspace_jadoo(user_acc,workspace_obj):
