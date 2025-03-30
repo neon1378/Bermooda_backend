@@ -188,7 +188,7 @@ class Installment(SoftDeleteModel):
     document_of_payment= models.ForeignKey(MainFile,on_delete=models.SET_NULL,null=True)
     is_delayed= models.BooleanField(default=False)
     class Meta:
-        ordering = ['-date_to_pay']
+        ordering = ['date_to_pay']
 
 
     def days_passed (self):
