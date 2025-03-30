@@ -309,3 +309,20 @@ def create_buyer_signature(request,invoice_id):
             "data":MainFileSerializer(main_file).data
         })
     return Response(status=status.HTTP_404_NOT_FOUND)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_invoice_code (request):
+
+    while True:
+        random_number = random.randint(1, 100000)
+        if not Invoice.objects.filter(invoice_code=f"#{random_number}").exists():
+            return Response(status=status.HTTP_200_OK,data={
+                "status":True,
+                "message":"موفق",
+                "data":{
+                    "invoice_code":f"#{random_number}"
+                }
+            })
+

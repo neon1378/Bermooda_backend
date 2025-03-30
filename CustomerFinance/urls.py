@@ -20,4 +20,8 @@ urlpatterns = [
 
     path("CreateBuyerSignature/<uuid:invoice_id>",views.create_buyer_signature),
 
+    path("GetInvoiceCode",views.get_invoice_code),
+
+
+
 ]

@@ -38,6 +38,8 @@ class ProductInvoice(SoftDeleteModel):
     price = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="تومان",null=True)
     code = models.CharField(max_length=55,null=True)
     unit = models.CharField(max_length=25,null=True)
+    class Meta:
+        ordering = ['-id']
     def __str__(self):
         return f"{self.id}"
 
@@ -185,7 +187,8 @@ class Installment(SoftDeleteModel):
     date_payed =models.DateField(null=True)
     document_of_payment= models.ForeignKey(MainFile,on_delete=models.SET_NULL,null=True)
     is_delayed= models.BooleanField(default=False)
-
+    class Meta:
+        ordering = ['-date_to_pay']
 
 
     def days_passed (self):
