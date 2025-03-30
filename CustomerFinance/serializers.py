@@ -253,17 +253,17 @@ class InvoiceSerializer(ModelSerializer):
             new_product.save()
             new_invoice.product.add(new_product)
         if payment_type == "installment":
-            try:
-                for installment in installment_payments:
-                    new_installment = Installment.objects.create(price=installment['price'],date_to_pay=persian_to_gregorian(installment['date_to_pay']),invoice=new_invoice)
-            except:
-                raise serializers.ValidationError(
-                    {
-                        "status":False,
-                        "message":"Validation Error",
-                        "data":{}
-                    }
-                )
+            # try:
+            for installment in installment_payments:
+                new_installment = Installment.objects.create(price=installment['price'],date_to_pay=persian_to_gregorian(installment['date_to_pay']),invoice=new_invoice)
+            # except:
+            #     raise serializers.ValidationError(
+            #         {
+            #             "status":False,
+            #             "message":"Validation Error",
+            #             "data":{}
+            #         }
+            #     )
 
 
 
