@@ -94,6 +94,7 @@ class CalenderManger(APIView):
         check_list_objs = CheckList.objects.filter(
             task__project__workspace=self.workspace_obj,
             responsible_for_doing=self.user,
+            task__isnull=False
 
         )
         customer_objs = CustomerUser.objects.filter(
@@ -131,6 +132,7 @@ class CalenderManger(APIView):
         check_list_objs = CheckList.objects.filter(
             task__project__workspace=self.workspace_obj,
             responsible_for_doing=self.user,
+            task__isnull = False
 
         )
 
