@@ -153,7 +153,7 @@ class InvoiceSerializer(ModelSerializer):
 
             "installments",
             "seller_information_data",
-            "invoice_code",
+
             "interest_percentage",
 
             "created_date_persian",
@@ -228,7 +228,7 @@ class InvoiceSerializer(ModelSerializer):
             validity_date = persian_to_gregorian(validity_date),
             buyer_information=buyer_information_obj,
             seller_information=seller_information_obj,
-
+            invoice_code = f"#{random.randint(1,100000)}",
 
 
         )
