@@ -119,7 +119,7 @@ class InvoiceSerializer(ModelSerializer):
     signature_buyer_id = serializers.IntegerField(write_only=True,required=False)
     created_date = serializers.CharField(write_only=True,required=True)
 
-    validity_date = serializers.CharField(write_only=True,required=True)
+    validity_date = serializers.CharField(write_only=True,required=False)
     class Meta:
         model = Invoice
         fields = [
