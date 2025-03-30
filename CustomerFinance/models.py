@@ -39,7 +39,7 @@ class ProductInvoice(SoftDeleteModel):
     code = models.CharField(max_length=55,null=True)
     unit = models.CharField(max_length=25,null=True)
     class Meta:
-        ordering = ['-id']
+        ordering = ['id']
     def __str__(self):
         return f"{self.id}"
 
