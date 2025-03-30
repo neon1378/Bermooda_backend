@@ -104,7 +104,7 @@ class CalenderManger(APIView):
         check_list_items =[]
         for check_list in check_list_objs:
 
-            if check_list.date_time_to_start_main and check_list.date_time_to_start_main.date()==date_object and check_list.task != None:
+            if check_list.date_time_to_start_main and check_list.date_time_to_start_main.date()==date_object and check_list.task.is_deleted == False:
                 check_list_items.append(check_list)
 
         customer_items = []
@@ -152,7 +152,7 @@ class CalenderManger(APIView):
 
             check_list_items = [
                 item for item in check_list_objs
-                if item.date_time_to_start_main and item.date_time_to_start_main.date() == g_date and item.task != None
+                if item.date_time_to_start_main and item.date_time_to_start_main.date() == g_date and item.task.is_deleted == False
             ]
 
             data_list.append({
