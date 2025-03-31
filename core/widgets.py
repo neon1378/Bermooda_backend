@@ -246,6 +246,9 @@ class ProgressBarUploadHandler(FileUploadHandler):
     def receive_data_chunk(self, raw_data, start):
         self.uploaded_bytes += len(raw_data)
         print("no")
+        print(self.upload_id and self.content_length)
+        print(self.upload_id,"@!#!@$1")
+        print(self.content_length,"!@$!%%%%")
         if self.upload_id and self.content_length:
             print("yess")
             progress = int((self.uploaded_bytes / self.content_length) * 100)
