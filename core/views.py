@@ -108,7 +108,7 @@ class FileUploadAPIView(APIView):
     permission_classes=[AllowAny]
     def post(self, request, *args, **kwargs):
         # Generate or get upload_id from client
-        upload_id = request.GET.get('upload_id', str(uuid.uuid4()))
+        upload_id = request.GET.get('upload_id')
 
         # Set custom upload handler ONLY for this request
         request.upload_handlers = [ProgressBarUploadHandler(request), TemporaryFileUploadHandler()]
