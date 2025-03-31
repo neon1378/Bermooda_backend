@@ -235,8 +235,8 @@ class ProgressBarUploadHandler(FileUploadHandler):
         # Expect the client to pass an 'upload_id' as a GET parameter.
         self.upload_id = request.GET.get('upload_id')
         self.content_length = int(request.META.get('CONTENT_LENGTH', 0))
-        print(self.content_length,"2@@!#")
-        print(request.headers.get("CONTENT_LENGTH",None),"!!!!$#$!")
+
+        self.content_length_main = request.headers.get("CONTENT_LENGTH",None)
         print(self.upload_id,"!!!!")
         self.uploaded_bytes = 0
         self.channel_layer = get_channel_layer()
@@ -246,6 +246,7 @@ class ProgressBarUploadHandler(FileUploadHandler):
     def receive_data_chunk(self, raw_data, start):
         self.uploaded_bytes += len(raw_data)
         print("no")
+        print(self.content_length_main,"&&&&&")
         print(self.upload_id and self.content_length)
         print(self.upload_id,"@!#!@$1")
         print(self.content_length,"!@$!%%%%")
