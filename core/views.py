@@ -105,6 +105,7 @@ def app_update_detail(request):
 import uuid
 
 class FileUploadAPIView(APIView):
+    permission_classes=[AllowAny]
     def post(self, request, *args, **kwargs):
         # Generate or get upload_id from client
         upload_id = request.GET.get('upload_id', str(uuid.uuid4()))
