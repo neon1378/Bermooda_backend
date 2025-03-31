@@ -236,7 +236,7 @@ class ProgressBarUploadHandler(FileUploadHandler):
         self.upload_id = request.GET.get('upload_id')
         self.content_length = int(request.META.get('CONTENT_LENGTH', 0))
 
-        self.content_length_main = request.headers.get("CONTENT_LENGTH",None)
+        self.content_length_main = int(request.headers.get("CONTENT_LENGTH",0))
 
         self.uploaded_bytes = 0
         self.channel_layer = get_channel_layer()
@@ -248,7 +248,7 @@ class ProgressBarUploadHandler(FileUploadHandler):
 
         if self.upload_id and self.content_length_main:
             print("yess")
-            progress = int((self.uploaded_bytes / self.content_length) * 100)
+            progress = int((self.uploaded_bytes / self.content_length_main) * 100)
             cache.set(self.upload_id, progress, timeout=60*60)
             async_to_sync(self.channel_layer.group_send)(
                 self.upload_id,
