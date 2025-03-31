@@ -241,13 +241,15 @@ class ProgressBarUploadHandler(FileUploadHandler):
 
     def receive_data_chunk(self, raw_data, start):
         self.uploaded_bytes += len(raw_data)
+        print("yess")
         if self.upload_id and self.content_length:
+            print("yess")
             progress = int((self.uploaded_bytes / self.content_length) * 100)
             cache.set(self.upload_id, progress, timeout=60*60)
             async_to_sync(self.channel_layer.group_send)(
                 self.upload_id,
                 {
-                    "type": "upload.progress",  # This method will be called in the consumer.
+                    "type": "upload_progress",  # This method will be called in the consumer.
                     "progress": progress,
                 }
             )
