@@ -1145,3 +1145,8 @@ def completed_tasks(request):
     })
 
 
+
+
+
+
+

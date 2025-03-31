@@ -8,6 +8,10 @@ from dotenv import load_dotenv
 load_dotenv()
 import os
 import locale
+from django.core.files.uploadhandler import FileUploadHandler
+from django.core.cache import cache
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
 import requests
 
 from datetime import datetime
@@ -216,3 +220,38 @@ def get_client_ip(request):
     else:
         ip = request.META.get('REMOTE_ADDR')  # Get direct IP if no proxy
     return ip
+
+
+
+# upload_handlers.py
+
+
+class ProgressBarUploadHandler(FileUploadHandler):
+    """
+    Custom upload handler to track file upload progress and send updates via Channels.
+    """
+    def __init__(self, request=None):
+        super().__init__(request)
+        # Expect the client to pass an 'upload_id' as a GET parameter.
+        self.upload_id = request.GET.get('upload_id')
+        self.uploaded_bytes = 0
+        self.channel_layer = get_channel_layer()
+        if self.upload_id:
+            cache.set(self.upload_id, 0, timeout=60*60)
+
+    def receive_data_chunk(self, raw_data, start):
+        self.uploaded_bytes += len(raw_data)
+        if self.upload_id and self.content_length:
+            progress = int((self.uploaded_bytes / self.content_length) * 100)
+            cache.set(self.upload_id, progress, timeout=60*60)
+            async_to_sync(self.channel_layer.group_send)(
+                self.upload_id,
+                {
+                    "type": "upload.progress",  # This method will be called in the consumer.
+                    "progress": progress,
+                }
+            )
+        return raw_data
+
+    def file_complete(self, file_size):
+        return None

@@ -11,6 +11,16 @@ from rest_framework.permissions import IsAuthenticated,AllowAny
 load_dotenv()
 import re
 from .serializers import AppUpdateSerializer
+
+from django.core.files.uploadhandler import TemporaryFileUploadHandler
+from django.conf import settings
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from django.core.cache import cache
+from .models import MainFile
+
+from .widgets import ProgressBarUploadHandler  # Import your custom handler
 # Create your views here.
 def send_sms (phone_number,verify_code ):
     api_key = "6865587A4B6D694F2F39556156724B53674F386142593074583545495859734C52414A4B46384C336543383D"
@@ -86,3 +96,43 @@ def app_update_detail(request):
         "message":"success",
         "data":serializer_data
     })
+
+
+
+
+
+
+import uuid
+
+class FileUploadAPIView(APIView):
+    def post(self, request, *args, **kwargs):
+        # Generate or get upload_id from client
+        upload_id = request.GET.get('upload_id', str(uuid.uuid4()))
+
+        # Set custom upload handler ONLY for this request
+        request.upload_handlers = [ProgressBarUploadHandler(request), TemporaryFileUploadHandler()]
+
+        # Check if a file is provided
+        file_obj = request.FILES.get('file')
+        if not file_obj:
+            return Response({'error': 'No file provided.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Save file using DRF serializer
+
+        instance = MainFile.objects.create(
+            file =file_obj
+        )
+
+            # Mark upload as complete
+        cache.set(upload_id, 100, timeout=60*60)
+
+        return Response({
+                'upload_id': upload_id,
+                'message': 'File uploaded successfully.',
+
+                'data': {
+                    "url":instance.file.url,
+                    "id":instance.id
+                }
+        }, status=status.HTTP_201_CREATED)
+
