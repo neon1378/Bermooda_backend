@@ -234,6 +234,7 @@ class ProgressBarUploadHandler(FileUploadHandler):
         super().__init__(request)
         # Expect the client to pass an 'upload_id' as a GET parameter.
         self.upload_id = request.GET.get('upload_id')
+        self.content_length = int(request.META.get('CONTENT_LENGTH', 0))
         print(self.upload_id,"!!!!")
         self.uploaded_bytes = 0
         self.channel_layer = get_channel_layer()
