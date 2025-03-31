@@ -109,6 +109,7 @@ class FileUploadAPIView(APIView):
     def post(self, request, *args, **kwargs):
         # Generate or get upload_id from client
         upload_id = request.GET.get('upload_id')
+        workspace_id =request.GET.get("workspace_id")
         print(upload_id,"@@@")
 
         # Set custom upload handler ONLY for this request
@@ -122,7 +123,8 @@ class FileUploadAPIView(APIView):
         # Save file using DRF serializer
 
         instance = MainFile.objects.create(
-            file =file_obj
+            file =file_obj,
+            workspace_id=workspace_id
         )
 
             # Mark upload as complete
