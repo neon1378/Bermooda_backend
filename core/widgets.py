@@ -237,7 +237,7 @@ class ProgressBarUploadHandler(FileUploadHandler):
         self.content_length = int(request.META.get('CONTENT_LENGTH', 0))
 
         self.content_length_main = request.headers.get("CONTENT_LENGTH",None)
-        print(self.upload_id,"!!!!")
+
         self.uploaded_bytes = 0
         self.channel_layer = get_channel_layer()
         if self.upload_id:
@@ -245,12 +245,8 @@ class ProgressBarUploadHandler(FileUploadHandler):
 
     def receive_data_chunk(self, raw_data, start):
         self.uploaded_bytes += len(raw_data)
-        print("no")
-        print(self.content_length_main,"&&&&&")
-        print(self.upload_id and self.content_length)
-        print(self.upload_id,"@!#!@$1")
-        print(self.content_length,"!@$!%%%%")
-        if self.upload_id and self.content_length:
+
+        if self.upload_id and self.content_length_main:
             print("yess")
             progress = int((self.uploaded_bytes / self.content_length) * 100)
             cache.set(self.upload_id, progress, timeout=60*60)
