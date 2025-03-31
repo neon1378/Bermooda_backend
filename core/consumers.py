@@ -16,4 +16,7 @@ class UploadProgressConsumer(AsyncWebsocketConsumer):
     async def upload_progress(self, event):
         # Send the progress update to the WebSocket client.
         progress = event['progress']
-        await self.send(text_data=json.dumps({'progress': progress}))
+        await self.send(text_data=json.dumps({
+            "data_type":"progress_status",
+            "progress_percentage":progress
+        }))
