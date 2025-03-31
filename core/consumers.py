@@ -6,6 +6,7 @@ class UploadProgressConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         # Retrieve upload_id from the URL route.
         self.upload_id = self.scope['url_route']['kwargs']['upload_id']
+        print(self.upload_id)
         await self.channel_layer.group_add(self.upload_id, self.channel_name)
         await self.accept()
 
