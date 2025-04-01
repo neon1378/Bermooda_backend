@@ -1679,6 +1679,7 @@ def send_a_customer_to_board(request,customer_b_id):
         phone_number= customer_bank_obj.phone_number,
         phone_number_static = customer_bank_obj.static_phone_number ,
         city = city ,
+        user_account=request.user,
         state = state ,
         address = customer_bank_obj.address ,
         email = customer_bank_obj.email ,
