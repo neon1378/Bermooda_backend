@@ -1657,7 +1657,7 @@ class CustomerBankManager(APIView):
 def send_a_customer_to_board(request,customer_b_id):
     group_crm_id = request.data.get("group_crm_id")
     customer_bank_obj = get_object_or_404(CustomerBank,id=customer_b_id)
-    first_label = Label.objects.filter(group_crm_id=group_crm_id).first()
+    first_label = Label.objects.filter(group_crm_id=group_crm_id).last()
 
 
 
