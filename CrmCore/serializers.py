@@ -602,6 +602,7 @@ class CustomerDocumentSerializer(serializers.ModelSerializer):
 
         # Define expected columns
         column_mapping = {
+            "fullname_or_company_name":"نام مشتری/شرکت",
             "phone_number": "شماره تماس",
             "static_phone_number": "شماره ثابت",
             "state": "استان",
