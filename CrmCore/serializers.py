@@ -645,7 +645,7 @@ class CustomerStatusSerializer(serializers.Serializer):
     date_time_to_remember = serializers.CharField(max_length=30, required=False, allow_blank=True)
     connection_type = serializers.ChoiceField(choices=CONNECTION_TYPE, required=False, allow_blank=True)
     user_account_id = serializers.IntegerField(required=False, allow_null=True)
-    file_id = serializers.IntegerField(required=False, allow_null=True)
+    file_id_list = serializers.ListField(required=False, allow_null=True)
     follow_up_again = serializers.BooleanField(default=False, allow_null=True)
     invoice_id = serializers.IntegerField(required=False, allow_null=True)
 
@@ -653,17 +653,22 @@ class CustomerStatusSerializer(serializers.Serializer):
         user = self.context.get("user")
         customer_status = validated_data["customer_status"]
         customer_obj = get_object_or_404(CustomerUser, id=validated_data["customer_id"])
-        file_id = validated_data.get("file_id",None)
+        file_id_list = validated_data.get("file_id_list",None)
         # Handle adding report if description exists
         description = validated_data.get("description")
         if description:
             report = Report.objects.create(author=user, description=description)
-            if file_id:
+        if file_id_list:
+
+            if not description:
+
+                report = Report.objects.create(author=user)
+
+            for file_id in file_id_list:
                 main_file = MainFile.objects.get(id=file_id)
                 main_file.its_blong=True,
                 main_file.save()
-                report.main_file.add(main_file)
-            customer_obj.report.add(report)
+                customer_obj.report.add(report)
         if customer_status == "DONT_FOLLOWED":
             customer_obj.customer_status = customer_status
             customer_obj.save()
