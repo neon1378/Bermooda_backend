@@ -620,3 +620,65 @@ class CustomerDocumentSerializer(serializers.ModelSerializer):
             new_customer.save()
 
         return new_customer_document
+
+
+
+
+
+
+class CustomerStatusSerializer(serializers.Serializer):
+    STATUS_TYPE = [
+        ("DONT_FOLLOWED", "dont_followed"),
+        ("FOLLOW_IN_ANOTHER_TIME", "follow_in_another_time"),
+        ("SUCCESSFUL_SELL", "successful_sell"),
+    ]
+    CONNECTION_TYPE = [
+        ("phone", "PHONE"),
+        ("email", "EMAIL"),
+    ]
+
+
+    customer_id = serializers.IntegerField(required=True)
+    customer_status = serializers.ChoiceField(choices=STATUS_TYPE, required=True)
+    description = serializers.CharField(required=False, allow_blank=True)
+    date_time_to_remember = serializers.CharField(max_length=30, required=False, allow_blank=True)
+    connection_type = serializers.ChoiceField(choices=CONNECTION_TYPE, required=False, allow_blank=True)
+    user_account_id = serializers.IntegerField(required=False, allow_null=True)
+    file_id = serializers.IntegerField(required=False, allow_null=True)
+    follow_up_again = serializers.BooleanField(default=False, allow_null=True)
+    invoice_id = serializers.IntegerField(required=False, allow_null=True)
+
+    def create(self, validated_data):
+        user = self.context.get("user")
+        customer_status = validated_data["customer_status"]
+        customer_obj = get_object_or_404(CustomerUser, id=validated_data["customer_id"])
+
+        # Handle adding report if description exists
+        description = validated_data.get("description")
+        if description:
+            report = Report.objects.create(author=user, description=description)
+            customer_obj.report.add(report)
+
+        if customer_status == "DONT_FOLLOWED":
+            customer_obj.customer_status = customer_status
+            customer_obj.save()
+            return customer_obj
+
+        elif customer_status == "FOLLOW_IN_ANOTHER_TIME":
+            customer_obj.customer_status = customer_status
+            customer_obj.date_time_to_remember = validated_data.get("date_time_to_remember")
+            customer_obj.main_date_time_to_remember = persian_to_gregorian(validated_data.get("date_time_to_remember"))
+            customer_obj.connection_type = validated_data.get("connection_type")
+            customer_obj.user_account_id = validated_data.get("user_account_id")
+
+        elif customer_status == "SUCCESSFUL_SELL":
+            customer_obj.customer_status = customer_status
+            customer_obj.last_selling_invoice_id = validated_data.get("invoice_id")
+            if validated_data.get("follow_up_again"):
+                customer_obj.is_followed = False
+                customer_obj.date_time_to_remember = validated_data.get("date_time_to_remember")
+                customer_obj.main_date_time_to_remember = persian_to_gregorian(validated_data.get("date_time_to_remember"))
+                customer_obj.user_account_id = validated_data.get("user_account_id")
+
+        customer_obj.save()
+        return customer_obj

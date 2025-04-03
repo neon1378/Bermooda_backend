@@ -201,10 +201,16 @@ class CustomerUser(SoftDeleteModel):
         ("phone","PHONE"),
         ("email","EMAIL"),
     )
+    STATUS_TYPE = (
+        ("DONT_FOLLOWED","dont_followed"),
+        ("FOLLOW_IN_ANOTHER_TIME","follow_in_another_time"),
+        ("SUCCESSFUL_SELL","successful_sell")
+    )
     PERSONAL_TYPE = (
         ("حقیقی","حقیقی"),
         ("حقوقی","حقوقی")
     )
+    customer_status=  models.CharField(max_length=30,choices=STATUS_TYPE,null=True)
     avatar = models.ForeignKey(MainFile,on_delete=models.SET_NULL,null=True,blank=True)
     personal_type = models.CharField(max_length=9, choices=PERSONAL_TYPE,null=True)
     conection_type = models.CharField(max_length=30,choices=CONECTION_TYPE,default="phone")
@@ -216,7 +222,7 @@ class CustomerUser(SoftDeleteModel):
     label = models.ForeignKey(Label,on_delete=models.SET_NULL,null=True,related_name="customer_label")
     category =models.ForeignKey(Category,on_delete=models.SET_NULL,null=True)
     report =models.ManyToManyField(Report,blank=True,related_name="customer_user")
-
+    last_selling_invoice_id = models.IntegerField(default=0)
     fullname_or_company_name = models.CharField(max_length=100,null=True)
     phone_number = models.CharField(max_length=40,null=True)
     phone_number_static = models.CharField(max_length=50,null=True,blank=True)

@@ -1687,3 +1687,29 @@ def send_a_customer_to_board(request,customer_b_id):
     )
     customer_bank_obj.delete()
     return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+
+class CustomerStatusManager(APIView):
+    permission_classes=[IsAuthenticated]
+
+    def post(self,request,customer_id):
+
+        request.data['customer_id'] = customer_id
+        serializer_data = CustomerStatusSerializer(data=request.data)
+        if serializer_data.is_valid():
+            customer_obj = serializer_data.save()
+            response_data = CustomerSmallSerializer(customer_obj).data
+            return Response(status=status.HTTP_201_CREATED,data={
+                "status":True,
+                "message":"با موفقیت ثبت شد",
+                "data":response_data
+            })
+        return Response(status=status.HTTP_400_BAD_REQUEST,data={
+            "status":False,
+            "message":"Validation Error",
+            "data":serializer_data.errors
+        })
+
+
+
