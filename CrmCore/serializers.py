@@ -666,7 +666,7 @@ class CustomerStatusSerializer(serializers.Serializer):
 
             for file_id in file_id_list:
                 main_file = MainFile.objects.get(id=file_id)
-                main_file.its_blong=True,
+                main_file.its_blong=True
                 main_file.save()
                 customer_obj.report.add(report)
         if customer_status == "DONT_FOLLOWED":
