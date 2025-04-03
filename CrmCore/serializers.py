@@ -629,9 +629,9 @@ class CustomerDocumentSerializer(serializers.ModelSerializer):
 
 class CustomerStatusSerializer(serializers.Serializer):
     STATUS_TYPE = [
-        ("DONT_FOLLOWED", "dont_followed"),
-        ("FOLLOW_IN_ANOTHER_TIME", "follow_in_another_time"),
-        ("SUCCESSFUL_SELL", "successful_sell"),
+        ("dont_followed", "Dont Followed"),
+        ("follow_in_another_time", "Follow In Another Time"),
+        ("successful_sell", "Successful Sell"),
     ]
     CONNECTION_TYPE = [
         ("phone", "PHONE"),

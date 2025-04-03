@@ -201,11 +201,11 @@ class CustomerUser(SoftDeleteModel):
         ("phone","PHONE"),
         ("email","EMAIL"),
     )
-    STATUS_TYPE = (
-        ("DONT_FOLLOWED","dont_followed"),
-        ("FOLLOW_IN_ANOTHER_TIME","follow_in_another_time"),
-        ("SUCCESSFUL_SELL","successful_sell")
-    )
+    STATUS_TYPE = [
+        ("dont_followed", "Dont Followed"),
+        ("follow_in_another_time", "Follow In Another Time"),
+        ("successful_sell", "Successful Sell"),
+    ]
     PERSONAL_TYPE = (
         ("حقیقی","حقیقی"),
         ("حقوقی","حقوقی")
