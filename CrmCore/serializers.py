@@ -652,13 +652,17 @@ class CustomerStatusSerializer(serializers.Serializer):
         user = self.context.get("user")
         customer_status = validated_data["customer_status"]
         customer_obj = get_object_or_404(CustomerUser, id=validated_data["customer_id"])
-
+        file_id = validated_data.get("file_id",None)
         # Handle adding report if description exists
         description = validated_data.get("description")
         if description:
             report = Report.objects.create(author=user, description=description)
+            if file_id:
+                main_file = MainFile.objects.get(id=file_id)
+                main_file.its_blong=True,
+                main_file.save()
+                report.main_file.add(main_file)
             customer_obj.report.add(report)
-
         if customer_status == "DONT_FOLLOWED":
             customer_obj.customer_status = customer_status
             customer_obj.save()

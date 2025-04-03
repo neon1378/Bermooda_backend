@@ -1696,7 +1696,7 @@ class CustomerStatusManager(APIView):
     def post(self,request,customer_id):
 
         request.data['customer_id'] = customer_id
-        serializer_data = CustomerStatusSerializer(data=request.data)
+        serializer_data = CustomerStatusSerializer(data=request.data,context={"user":request.user})
         if serializer_data.is_valid():
             customer_obj = serializer_data.save()
             response_data = CustomerSmallSerializer(customer_obj).data
