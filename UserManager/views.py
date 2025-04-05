@@ -411,91 +411,104 @@ class ReadyTextManager(APIView):
 
 #  client_ip = request.META.get('HTTP_X_FORWARDED_FOR', request.META.get('REMOTE_ADDR')).split(',')[0]
 #User Registeration Begin
-
 @api_view(['POST'])
 @permission_classes([AllowAny])
-def get_phone_number (request):
-    data =request.data
+def get_phone_number(request):
+    data = request.data
     phone_number = data['phone_number']
-    request_type = data.get("request_type",None)
+    request_type = data.get("request_type", None)
     pattern = r"^09\d{9}$"
+
     if not re.match(pattern, phone_number):
-        return Response(status=status.HTTP_400_BAD_REQUEST,data={
-            "status":False,
-            "message":"شماره تلفن وارد شده اشتباه میباشد"
-        })
-
-    try :
-        user_acc = UserAccount.objects.get(phone_number=phone_number)
-
-        user_acc.is_staff=False
-        user_acc.save()
-        if request_type == "change password":
-                if UserAccount.objects.filter(phone_number=phone_number).exists():
-                    verify_code = random.randint(100000, 999999)
-                    send_sms(phone_number=phone_number,verify_code=verify_code)
-                    user_acc.verify_code=verify_code
-                    user_acc.expire_verify_code=datetime.now().time()
-                    user_acc.save()
-                    return Response(status=status.HTTP_200_OK,data={
-                        "status":True,
-                            "message":"کد تایید با موفقیت ارسال شد",
-                            "data":{
-                                "phone_number":phone_number
-                            }
-
-                    })
-                return Response(status=status.HTTP_400_BAD_REQUEST,data={
-                    "status":False,
-                    "message":"کاربر مورد نظر وجود ندارد"
-                })
-        if user_acc.is_register:
-            return Response(status=status.HTTP_400_BAD_REQUEST,data={
-                "status":False,
-                "message":"کاربر از قبل ثبت نام شده است",
-                "data":{}
-            })
-        if not user_acc.is_expired():
-            return Response(status=status.HTTP_400_BAD_REQUEST, data={
+        return Response(
+            status=status.HTTP_400_BAD_REQUEST,
+            data={
                 "status": False,
-                "message": "لطفا چند دقیقه دیگر امتحان کنید"
-            })
-        else:
-            verify_code = random.randint(100000, 999999)
-            send_sms(phone_number=phone_number,verify_code=verify_code)
-            user_acc.verify_code=verify_code
-            user_acc.expire_verify_code=datetime.now().time()
-            user_acc.save()
-            return Response(status=status.HTTP_200_OK,data={
-                "status":True,
-                "message":"کد تایید با موفقیت ارسال شد",
-                "data":{
-                    "phone_number":phone_number
-                }
-
-            })
-    
-    except:
-        verify_code = random.randint(100000, 999999)
-        new_user_acc = UserAccount(
-            phone_number=phone_number,
-            verify_code=verify_code,
-            is_staff=False
-
-        )
-      
-        new_user_acc.expire_verify_code=datetime.now().time()
-        new_user_acc.save()
-        send_sms(phone_number=phone_number,verify_code=verify_code)
-        return Response(status=status.HTTP_200_OK,data={
-            "status":True,
-            "message":"کد تایید با موفقیت ارسال شد",
-            "data":{
-                "phone_number":phone_number
+                "message": "شماره تلفن وارد شده اشتباه میباشد"
             }
-        })
+        )
 
-    
+    if UserAccount.objects.filter(phone_number=phone_number).exists():
+        user_acc = UserAccount.objects.get(phone_number=phone_number)
+        user_acc.is_staff = False
+        user_acc.save()
+
+        if request_type == "change password":
+            verify_code = random.randint(100000, 999999)
+            send_sms(phone_number=phone_number, verify_code=verify_code)
+            user_acc.verify_code = verify_code
+            user_acc.expire_verify_code = datetime.now().time()
+            user_acc.save()
+
+            return Response(
+                status=status.HTTP_200_OK,
+                data={
+                    "status": True,
+                    "message": "کد تایید با موفقیت ارسال شد",
+                    "data": {
+                        "phone_number": phone_number
+                    }
+                }
+            )
+
+        if user_acc.is_register:
+            return Response(
+                status=status.HTTP_400_BAD_REQUEST,
+                data={
+                    "status": False,
+                    "message": "کاربر از قبل ثبت نام شده است",
+                    "data": {}
+                }
+            )
+
+        if not user_acc.is_expired():
+            return Response(
+                status=status.HTTP_400_BAD_REQUEST,
+                data={
+                    "status": False,
+                    "message": "لطفا چند دقیقه دیگر امتحان کنید"
+                }
+            )
+
+        verify_code = random.randint(100000, 999999)
+        send_sms(phone_number=phone_number, verify_code=verify_code)
+        user_acc.verify_code = verify_code
+        user_acc.expire_verify_code = datetime.now().time()
+        user_acc.save()
+
+        return Response(
+            status=status.HTTP_200_OK,
+            data={
+                "status": True,
+                "message": "کد تایید با موفقیت ارسال شد",
+                "data": {
+                    "phone_number": phone_number
+                }
+            }
+        )
+
+    verify_code = random.randint(100000, 999999)
+    new_user_acc = UserAccount(
+        phone_number=phone_number,
+        verify_code=verify_code,
+        is_staff=False
+    )
+    new_user_acc.expire_verify_code = datetime.now().time()
+    new_user_acc.save()
+
+    send_sms(phone_number=phone_number, verify_code=verify_code)
+
+    return Response(
+        status=status.HTTP_200_OK,
+        data={
+            "status": True,
+            "message": "کد تایید با موفقیت ارسال شد",
+            "data": {
+                "phone_number": phone_number
+            }
+        }
+    )
+
 
     
 
