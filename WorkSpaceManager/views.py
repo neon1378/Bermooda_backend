@@ -763,10 +763,12 @@ class WorkSpaceMemberManger(APIView):
         member_obj = get_object_or_404(WorkspaceMember,id=member_id)
         data = request.data
         permission_list= data.get("permission_list")
-
+        first_name = data.get("first_name")
+        last_name = data.get("last_name")
         avatar_id =data.get("avatar_id",None)
         workspace_obj = WorkSpace.objects.get(id=request.user.current_workspace_id)
         if workspace_obj.owner == request.user:
+
             for permission_item in permission_list:
                 permission_member_obj= MemberPermission.objects.get(id=permission_item['id'])
                 with open('main_perm.json', 'r', errors='ignore', encoding='UTF-8') as file:
@@ -802,6 +804,9 @@ class WorkSpaceMemberManger(APIView):
                 main_file.save()
                 member_obj.user_account.avatar=main_file
                 member_obj.user_account.save()
+            member_obj.first_name = first_name
+            member_obj.last_name = last_name
+            member_obj.fullname = f"{first_name} {last_name}"
             return Response(status=status.HTTP_202_ACCEPTED,data={
                 "status":True,
                 "message":"با موفقیت بروزرسانی شد",
