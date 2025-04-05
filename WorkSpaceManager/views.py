@@ -807,6 +807,7 @@ class WorkSpaceMemberManger(APIView):
             member_obj.first_name = first_name
             member_obj.last_name = last_name
             member_obj.fullname = f"{first_name} {last_name}"
+            member_obj.save()
             return Response(status=status.HTTP_202_ACCEPTED,data={
                 "status":True,
                 "message":"با موفقیت بروزرسانی شد",
