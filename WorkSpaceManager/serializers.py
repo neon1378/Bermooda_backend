@@ -272,6 +272,8 @@ class WorkSpaceMemberSerializer(serializers.ModelSerializer):
                 if item.user_account.current_workspace_id == 0 or not WorkSpace.objects.filter(id=item.user_account.current_workspace_id).exists():
                     item.user_account.current_workspace_id=workspace_obj.id
                     item.user_account.save()
+
+                item.is_accepted =False
                 item.save()
                 return item
 
