@@ -34,7 +34,7 @@ def start_payment (request):
         
         
         response = requests.post(url=url,json=payload)
-        print(response)
+        print(response.text)
         # response_data = response.json()
         # price = int(amount)/10
         #
