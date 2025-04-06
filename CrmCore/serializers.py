@@ -235,6 +235,7 @@ class CustomerSmallSerializer(serializers.ModelSerializer):
             "user_account",
             "user_account_id",
             "is_deleted",
+            "group_crm_id_main",
             "avatar_id",
             "group_crm_id",
             "avatar_url",

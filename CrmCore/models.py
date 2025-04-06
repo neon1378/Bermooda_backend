@@ -253,6 +253,12 @@ class CustomerUser(SoftDeleteModel):
 
     order =models.IntegerField(default=0,blank=True)
 
+    def group_crm_id_main(self):
+        try:
+            return self.group_crm.id
+        except:
+            return None
+
     def date_time_formated(self):
         try:
             locale.setlocale(locale.LC_ALL, 'fa_IR')
