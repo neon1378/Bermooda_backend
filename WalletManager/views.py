@@ -16,12 +16,12 @@ from django.shortcuts import get_object_or_404
 @permission_classes([IsAuthenticated])
 def start_payment (request):
 
-    wallet_id = request.data.get("wallet_id")
-    amount= request.data.get("amount")
-    payment_method = request.data.get("payment_method",None)
-    plan_method = request.data.get("plan_method",None)
-    wallet_obj = get_object_or_404(Wallet,id=wallet_id)
-    try:
+        wallet_id = request.data.get("wallet_id")
+        amount= request.data.get("amount")
+        payment_method = request.data.get("payment_method",None)
+        plan_method = request.data.get("plan_method",None)
+        wallet_obj = get_object_or_404(Wallet,id=wallet_id)
+    # try:
         url = "https://gateway.zibal.ir/v1/request"
         call_back_url = "https://api.bermooda.app/v1/WalletManager/end_payment"
         payload = {
@@ -51,19 +51,19 @@ def start_payment (request):
         else:
             new_trans_action.payment_method="wallet"
         new_trans_action.save()
-    except:
-        return Response(status=status.HTTP_400_BAD_REQUEST,data={
-            "status":False,
-            "message":"try again",
-            "data":{}
+    # except:
+    #     return Response(status=status.HTTP_400_BAD_REQUEST,data={
+    #         "status":False,
+    #         "message":"try again",
+    #         "data":{}
+    #     })
+        return Response(status=status.HTTP_200_OK,data={
+            "status":True,
+            "message":"success",
+            "data":{
+                "redirect_url":f"https://api.bermooda.app/v1/WalletManager/waiting_payment_page/{new_trans_action.track_id}"
+            }
         })
-    return Response(status=status.HTTP_200_OK,data={
-        "status":True,
-        "message":"success",
-        "data":{
-            "redirect_url":f"https://api.bermooda.app/v1/WalletManager/waiting_payment_page/{new_trans_action.track_id}"
-        }
-    })
     # return render(request,"WalletManager/start_payment.html",context={"trackId":response_data['trackId']})
     # return render(request,"WalletManager/start_payment.html")
 
