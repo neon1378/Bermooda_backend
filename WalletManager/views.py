@@ -18,6 +18,11 @@ def start_payment (request):
 
     wallet_id = request.data.get("wallet_id")
     amount= request.data.get("amount")
+    if not amount:
+        return Response(status=status.HTTP_400_BAD_REQUEST,data={
+            "status":False,
+            "message":"amount is required field"
+        })
     payment_method = request.data.get("payment_method",None)
     plan_method = request.data.get("plan_method",None)
     wallet_obj = get_object_or_404(Wallet,id=wallet_id)
