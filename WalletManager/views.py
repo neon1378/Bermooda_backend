@@ -35,23 +35,23 @@ def start_payment (request):
         
         response = requests.post(url=url,json=payload)
         print(response)
-        response_data = response.json()
-        price = int(amount)/10
-
-        new_trans_action = WalletTransAction(
-            track_id=response_data['trackId'],
-            wallet=wallet_obj,
-            price=price ,
-            trans_action_status = "deposit",
-            order_id = f"D_{random.randint(9999,100000)}"
-            
-        )
-        if payment_method and payment_method=="plan":
-            new_trans_action.payment_method="plan"
-            new_trans_action.plan_method =plan_method
-        else:
-            new_trans_action.payment_method="wallet"
-        new_trans_action.save()
+        # response_data = response.json()
+        # price = int(amount)/10
+        #
+        # new_trans_action = WalletTransAction(
+        #     track_id=response_data['trackId'],
+        #     wallet=wallet_obj,
+        #     price=price ,
+        #     trans_action_status = "deposit",
+        #     order_id = f"D_{random.randint(9999,100000)}"
+        #
+        # )
+        # if payment_method and payment_method=="plan":
+        #     new_trans_action.payment_method="plan"
+        #     new_trans_action.plan_method =plan_method
+        # else:
+        #     new_trans_action.payment_method="wallet"
+        # new_trans_action.save()
     # except:
     #     return Response(status=status.HTTP_400_BAD_REQUEST,data={
     #         "status":False,
@@ -62,7 +62,7 @@ def start_payment (request):
             "status":True,
             "message":"success",
             "data":{
-                "redirect_url":f"https://api.bermooda.app/v1/WalletManager/waiting_payment_page/{new_trans_action.track_id}"
+                # "redirect_url":f"https://api.bermooda.app/v1/WalletManager/waiting_payment_page/{new_trans_action.track_id}"
             }
         })
     # return render(request,"WalletManager/start_payment.html",context={"trackId":response_data['trackId']})
