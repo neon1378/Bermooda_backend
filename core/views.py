@@ -64,7 +64,14 @@ def send_sms_core(fullname,phone_number):
 @permission_classes([AllowAny])
 def upload_file (request):
     
-    file = request.FILES.get("file")
+    file = request.FILES.get("file",None)
+    print(file)
+    if not file:
+        return Response({
+            "status":False,
+            "message":"File Not Provided",
+            "data":{}
+        }, status=status.HTTP_400_BAD_REQUEST)
     new_file = MainFile(file=file)
     try:
         new_file.workspace_id =request.GET.get("workspace_id")
