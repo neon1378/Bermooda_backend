@@ -29,6 +29,21 @@ class WalletTransAction(models.Model):
 
 
     )
+
+
+    PAYMENT_METHOD= (
+        ("WALLET","wallet"),
+        ("PLAN","plan"),
+    )
+
+    PLAN_METHOD=(
+        ("startup","STARTUP"),
+        ("launching","LUNCHING"),
+        ("growth","GROWTH"),
+        ("professional","PROFESSIONAL"),
+    )
+    payment_method = models.CharField(max_length=30,choices=PAYMENT_METHOD,default="wallet")
+    plan_method = models.CharField(null=True,max_length=30,choices=PLAN_METHOD)
     track_id = models.TextField(null=True)
     wallet = models.ForeignKey(Wallet,on_delete=models.CASCADE,null=True)
     phone = models.CharField(max_length=30,null=True)

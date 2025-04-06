@@ -1,7 +1,7 @@
 from random import choices
 
 from django.db import models
-
+from sqlalchemy import nulls_first
 
 # from CrmCore.models import *
 from UserManager.models import UserAccount
@@ -36,7 +36,19 @@ class WorkSpace (SoftDeleteModel):
         ("legal","LEGAL"),
 
     )
+    PAYMENT_METHOD= (
+        ("WALLET","wallet"),
+        ("PLAN","plan"),
+    )
 
+    PLAN_METHOD=(
+        ("startup","STARTUP"),
+        ("launching","LUNCHING"),
+        ("growth","GROWTH"),
+        ("professional","PROFESSIONAL"),
+    )
+    payment_method = models.CharField(max_length=30,choices=PAYMENT_METHOD,default="wallet")
+    plan_method = models.CharField(null=True,max_length=30,choices=PLAN_METHOD)
     company_name = models.CharField(max_length=55, null=True)
     person_type = models.CharField(max_length=6,choices=PERSONAL_TYPE,null=True)
     jadoo_workspace_id = models.PositiveBigIntegerField(default=0)

@@ -18,6 +18,8 @@ def start_payment (request):
 
     wallet_id = request.data.get("wallet_id")
     amount= request.data.get("amount")
+    payment_method = request.data.get("payment_method",None)
+    plan_method = request.data.get("plan_method",None)
     wallet_obj = get_object_or_404(Wallet,id=wallet_id)
     try:
         url = "https://gateway.zibal.ir/v1/request"
@@ -34,6 +36,7 @@ def start_payment (request):
         response = requests.post(url=url,json=payload)
         response_data = response.json()
         price = int(amount)/10
+
         new_trans_action = WalletTransAction(
             track_id=response_data['trackId'],
             wallet=wallet_obj,
@@ -42,6 +45,11 @@ def start_payment (request):
             order_id = f"D_{random.randint(9999,100000)}"
             
         )
+        if payment_method and payment_method=="plan":
+            new_trans_action.payment_method="plan"
+            new_trans_action.plan_method =plan_method
+        else:
+            new_trans_action.payment_method="wallet"
         new_trans_action.save()
     except:
         return Response(status=status.HTTP_400_BAD_REQUEST,data={
@@ -92,6 +100,8 @@ def end_payment (request):
                         if trans_action_obj.wallet.balance > 0:
                             trans_action_obj.wallet.workspace.is_active = True
                             trans_action_obj.wallet.workspace.save()
+                        trans_action_obj.wallet.workspace.payment_method = trans_action_obj.payment_method
+                        trans_action_obj.wallet.workspace.plan_method = trans_action_obj.plan_method
                         trans_action_obj.save()
                         #redirect to success
                         
