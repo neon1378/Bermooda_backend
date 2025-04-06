@@ -63,7 +63,7 @@ def start_payment (request):
             "status":True,
             "message":"success",
             "data":{
-                "redirect_url":f"https://api.bermooda.app/v1/WalletManager/waiting_payment_page/{new_trans_action.track_id}"
+                # "redirect_url":f"https://api.bermooda.app/v1/WalletManager/waiting_payment_page/{.track_id}"
             }
         })
     # return render(request,"WalletManager/start_payment.html",context={"trackId":response_data['trackId']})
