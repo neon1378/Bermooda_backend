@@ -102,6 +102,7 @@ def end_payment (request):
                             trans_action_obj.wallet.workspace.save()
                         trans_action_obj.wallet.workspace.payment_method = trans_action_obj.payment_method
                         trans_action_obj.wallet.workspace.plan_method = trans_action_obj.plan_method
+                        trans_action_obj.wallet.workspace.save()
                         trans_action_obj.save()
                         #redirect to success
                         
