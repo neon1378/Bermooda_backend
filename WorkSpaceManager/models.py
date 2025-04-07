@@ -47,6 +47,7 @@ class WorkSpace (SoftDeleteModel):
         ("growth","GROWTH"),
         ("professional","PROFESSIONAL"),
     )
+    plan_started_date = models.DateTimeField(null=True)
     payment_method = models.CharField(max_length=30,choices=PAYMENT_METHOD,default="wallet")
     plan_method = models.CharField(null=True,max_length=30,choices=PLAN_METHOD)
     company_name = models.CharField(max_length=55, null=True)

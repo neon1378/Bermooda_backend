@@ -4,6 +4,7 @@ from rest_framework.permissions import AllowAny,IsAuthenticated
 from rest_framework.decorators import api_view,permission_classes
 import requests
 import time
+from datetime import datetime
 from rest_framework import status
 from .models import *
 import random
@@ -108,6 +109,8 @@ def end_payment (request):
                             trans_action_obj.wallet.workspace.save()
                         trans_action_obj.wallet.workspace.payment_method = trans_action_obj.payment_method
                         trans_action_obj.wallet.workspace.plan_method = trans_action_obj.plan_method
+                        trans_action_obj.wallet.workspace.plan_started_date = datetime.now()
+
                         trans_action_obj.wallet.workspace.save()
                         trans_action_obj.save()
                         #redirect to success
