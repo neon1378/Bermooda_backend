@@ -1523,7 +1523,7 @@ class LabelStepManager(APIView):
 
 def get_customers_by_role(user, workspace,group_crm_obj):
     if workspace.owner == user:
-        return CustomerUser.objects.filter(is_followed=True)
+        return CustomerUser.objects.filter(is_followed=True,group_crm=group_crm_obj)
 
     workspace_member = get_object_or_404(WorkspaceMember, user_account=user, workspace=workspace)
 
