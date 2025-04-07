@@ -15,7 +15,7 @@ from django.shortcuts import get_object_or_404
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def start_payment (request):
-
+    print(request.data,"!$@!@4")
     wallet_id = request.data.get("wallet_id")
     amount= request.data.get("amount")
     if not amount:
