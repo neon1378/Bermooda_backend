@@ -25,7 +25,7 @@ decrease_price = (mb_used * price_per_mb) + (user_member_count * price_per_user)
 print(user_member_count, "@@")
 if decrease_price > 0:
         # Deduct the price from the wallet balance
-    wallet.balance -= decrease_price
+    wallet.balance -= int(decrease_price)
     wallet.save()
 
         # Create a wallet transaction record
@@ -38,3 +38,6 @@ if decrease_price > 0:
             status_deposit=True,
             order_id=f"D_{random.randint(9999, 100000)}"
     )
+for item in MainFile.objects.all():
+    if not item.file:
+        item.delete()
