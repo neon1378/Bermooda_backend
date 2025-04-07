@@ -25,6 +25,7 @@ def start_payment (request):
         })
     payment_method = request.data.get("payment_method",None)
     plan_method = request.data.get("plan_method",None)
+    print(payment_method,plan_method,"@@#!@#")
     wallet_obj = get_object_or_404(Wallet,id=wallet_id)
     try:
         url = "https://gateway.zibal.ir/v1/request"
