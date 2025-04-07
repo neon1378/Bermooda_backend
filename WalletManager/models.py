@@ -132,3 +132,6 @@ class WalletTransAction(models.Model):
         except:
             pass
 
+
+class DateTest(models.Model):
+    date = models.DateTimeField(null=True)
