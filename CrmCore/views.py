@@ -1077,7 +1077,9 @@ class CustomerUserView(APIView):
         request.data['user_account_id'] = int(customer_obj.user_account.id)
         serializer_data = CustomerSmallSerializer(data=request.data,instance=customer_obj)
         if serializer_data.is_valid():
-            serializer_data.save()
+            updated_customer =serializer_data.save()
+            updated_customer.main_date_time_to_remember = persian_to_gregorian(updated_customer.date_time_to_remember)
+            updated_customer.save()
             channel_layer = get_channel_layer()
             event = {
                 "type": "send_data"
