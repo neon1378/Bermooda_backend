@@ -42,7 +42,7 @@ class WalletTransAction(models.Model):
         ("growth","GROWTH"),
         ("professional","PROFESSIONAL"),
     )
-    payment_method = models.CharField(max_length=30,choices=PAYMENT_METHOD,default="wallet")
+    payment_method = models.CharField(max_length=30,choices=PAYMENT_METHOD,default="wallet",null=True)
     plan_method = models.CharField(null=True,max_length=30,choices=PLAN_METHOD)
     track_id = models.TextField(null=True)
     wallet = models.ForeignKey(Wallet,on_delete=models.CASCADE,null=True)
