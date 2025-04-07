@@ -1725,7 +1725,7 @@ def resell_a_customer(request,customer_id):
         customer_obj.order = last_customer_in_label.order +1
     customer_obj.label = last_label
     customer_obj.is_followed = False
-
+    customer_obj.save()
     serializer_data = CustomerSmallSerializer(customer_obj)
     return Response(status=status.HTTP_200_OK,data={
         "status":True,
