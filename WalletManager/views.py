@@ -52,7 +52,7 @@ def start_payment (request):
 
         )
         if payment_method and payment_method=="plan":
-            new_trans_action.payment_method=payment_method
+            new_trans_action.payment_method="PLAN"
             new_trans_action.plan_method =plan_method
         else:
             new_trans_action.payment_method="wallet"
