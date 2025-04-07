@@ -49,13 +49,13 @@ def decrease_wallet():
         print(user_member_count,"@@")
         if decrease_price > 0:
             # Deduct the price from the wallet balance
-            wallet.balance -= decrease_price
+            wallet.balance -= int(decrease_price)
             wallet.save()
 
             # Create a wallet transaction record
             WalletTransAction.objects.create(
                 wallet=wallet,
-                price=decrease_price,
+                price=int(decrease_price),
                 trans_action_status="decrease",
                 total_gb=mb_used,
                 total_user=user_member_count,
