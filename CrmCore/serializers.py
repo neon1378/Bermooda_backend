@@ -670,19 +670,19 @@ class CustomerStatusSerializer(serializers.Serializer):
                 main_file.its_blong=True
                 main_file.save()
                 customer_obj.report.add(report)
-        if customer_status == "DONT_FOLLOWED":
+        if customer_status == "dont_followed":
             customer_obj.customer_status = customer_status
             customer_obj.save()
             return customer_obj
 
-        elif customer_status == "FOLLOW_IN_ANOTHER_TIME":
+        elif customer_status == "follow_in_another_time":
             customer_obj.customer_status = customer_status
             customer_obj.date_time_to_remember = validated_data.get("date_time_to_remember")
             customer_obj.main_date_time_to_remember = persian_to_gregorian(validated_data.get("date_time_to_remember"))
             customer_obj.connection_type = validated_data.get("connection_type")
             customer_obj.user_account_id = validated_data.get("user_account_id")
 
-        elif customer_status == "SUCCESSFUL_SELL":
+        elif customer_status == "successful_sell":
             customer_obj.customer_status = customer_status
             customer_obj.last_selling_invoice_id = validated_data.get("invoice_id")
             if validated_data.get("follow_up_again"):
