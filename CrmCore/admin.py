@@ -67,7 +67,7 @@ class ReportAdmin(admin.ModelAdmin):
         self.message_user(request, f'{queryset.count()} items restored successfully.')
 @admin.register(CustomerUser)
 class CustomerUserAdmin(admin.ModelAdmin):
-    list_display = ( 'is_deleted', 'deleted_at',"fullname_or_company_name")
+    list_display = ( "id",'is_deleted', 'deleted_at',"fullname_or_company_name")
     list_filter = ('is_deleted',)
     actions = ['restore_selected']
 
