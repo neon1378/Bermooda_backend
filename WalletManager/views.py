@@ -23,8 +23,8 @@ def start_payment (request):
             "status":False,
             "message":"amount is required field"
         })
-    payment_method = request.data.get("payment_method",None)
-    plan_method = request.data.get("plan_method",None)
+    payment_method = request.data.get("payment_methods",None)
+    plan_method = request.data.get("Plan_method",None)
     print(payment_method,plan_method,"@@#!@#")
     wallet_obj = get_object_or_404(Wallet,id=wallet_id)
     try:
