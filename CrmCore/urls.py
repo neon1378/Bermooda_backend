@@ -62,6 +62,7 @@ urlpatterns = [
     path("SendCustomerToTheBoard/<int:customer_b_id>", views.send_a_customer_to_board),
 
     path("CustomerStatusManager/<int:customer_id>", views.CustomerStatusManager.as_view()),
+    path("ReSellACustomer/<int:customer_id>", views.resell_a_customer),
 
 
 ]

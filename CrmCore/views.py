@@ -1713,3 +1713,24 @@ class CustomerStatusManager(APIView):
 
 
 
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def resell_a_customer(request,customer_id):
+    customer_obj = get_object_or_404(CustomerUser,id=customer_id)
+
+    last_label = Label.objects.filter(group_crm=customer_obj.group_crm).last()
+    last_customer_in_label = CustomerUser.objects.filter(label=last_label).order_by("order").last()
+    if last_customer_in_label:
+        customer_obj.order = last_customer_in_label.order +1
+    customer_obj.label = last_label
+    customer_obj.is_followed = False
+
+    serializer_data = CustomerSmallSerializer(customer_obj)
+    return Response(status=status.HTTP_200_OK,data={
+        "status":True,
+        "message":"با موفقیت ارسال شد",
+        "data":serializer_data.data
+    })
+
+

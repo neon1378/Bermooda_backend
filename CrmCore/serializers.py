@@ -642,7 +642,7 @@ class CustomerStatusSerializer(serializers.Serializer):
 
     customer_id = serializers.IntegerField(required=True)
     customer_status = serializers.ChoiceField(choices=STATUS_TYPE, required=True)
-    description = serializers.CharField(required=False, allow_blank=True)
+    description = serializers.CharField(required=False, allow_blank=True,allow_null=True)
     date_time_to_remember = serializers.CharField(max_length=30, required=False, allow_blank=True)
     connection_type = serializers.ChoiceField(choices=CONNECTION_TYPE, required=False, allow_blank=True)
     user_account_id = serializers.IntegerField(required=False, allow_null=True)
