@@ -46,7 +46,7 @@ def decrease_wallet():
 
         # Calculate the total price to deduct
         decrease_price = (mb_used * price_per_mb) + (user_member_count * price_per_user)
-
+        print(user_member_count,"@@")
         if decrease_price > 0:
             # Deduct the price from the wallet balance
             wallet.balance -= decrease_price
