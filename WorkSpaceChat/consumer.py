@@ -8,6 +8,8 @@ from django.utils.timezone import localtime
 from django.utils.timezone import is_naive, make_aware, get_current_timezone
 from datetime import datetime
 import pytz
+from pkg_resources import working_set
+
 from WorkSpaceManager.models import WorkSpace
 from .models import GroupMessage,TextMessage
 from .serializers import GroupSerializer,TextMessageSerializer
@@ -34,7 +36,7 @@ class GroupMessageWs(AsyncWebsocketConsumer):
         await sync_to_async(self.user.save)()
 
         self.workspace_id = self.user.current_workspace_id
-        self.workspace_obj = await sync_to_async(WorkSpace.objects.get)(id=self.workspace_id)
+        self.workspace_obj = await self.get_workspace_obj()
         self.workspace_group_name = f"group_ws_{self.workspace_obj.id}"
 
         await self.channel_layer.group_add(self.workspace_group_name, self.channel_name)
@@ -49,6 +51,11 @@ class GroupMessageWs(AsyncWebsocketConsumer):
             }
         ))
 
+    @sync_to_async
+    def get_workspace_obj(self):
+        self.workspace_id = self.user.current_workspace_id
+        self.workspace_obj = WorkSpace.objects.get(id=self.workspace_id)
+        return self.workspace_obj
     @sync_to_async
     def _get_all_group_unread_messages(self):
         groups = GroupMessage.objects.filter(members=self.user,workspace= self.workspace_obj).only('id')
