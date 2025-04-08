@@ -40,7 +40,7 @@ class ProductInvoice(SoftDeleteModel):
     code = models.CharField(max_length=55,null=True)
     unit = models.CharField(max_length=25,null=True)
     def formated_price (self):
-        formatted_value = "{:,}".format(self.price)
+        formatted_value = "{:,}".format(int(self.price))
 
         return formatted_value
 
