@@ -53,9 +53,9 @@ class GroupMessageWs(AsyncWebsocketConsumer):
 
     @sync_to_async
     def get_workspace_obj(self):
-        self.workspace_id = self.user.current_workspace_id
-        self.workspace_obj = WorkSpace.objects.get(id=self.workspace_id)
-        return self.workspace_obj
+        workspace_id = self.user.current_workspace_id
+        workspace_obj = WorkSpace.objects.get(id=self.workspace_id)
+        return workspace_obj
     @sync_to_async
     def _get_all_group_unread_messages(self):
         groups = GroupMessage.objects.filter(members=self.user,workspace= self.workspace_obj).only('id')
@@ -74,7 +74,7 @@ class GroupMessageWs(AsyncWebsocketConsumer):
 
 
     async def disconnect(self, code=None):
-        await self.channel_layer.group_discard(f"group_ws_{self.workspace_obj.id}", self.channel_name)
+        await self.channel_layer.group_discard(f"group_ws_{self.workspace_id}", self.channel_name)
 
     async def receive(self, text_data=None, bytes_data=None):
         if not text_data:
