@@ -10,5 +10,5 @@ class MeetingPlan(SoftDeleteModel):
     title = models.CharField(max_length=50,null=True)
     files = models.ManyToManyField(MainFile)
     date_to_start = models.DateField(null=True)
-    remember_type = models.CharField(choices=REMEMBER_TYPE,null=True)
+    remember_type = models.CharField(max_length=50,choices=REMEMBER_TYPE,null=True)
     remember_time = models.IntegerField(default=0)
