@@ -14,6 +14,7 @@ from django.shortcuts import get_object_or_404
 # BuyerInformation
 # Product
 #Invoice
+
 import random
 
 from WorkSpaceManager.models import WorkSpace
@@ -125,6 +126,7 @@ class InvoiceSerializer(ModelSerializer):
         model = Invoice
         fields = [
             "status",
+            "qr_coder_data",
             "invoice_type",
             "status_id",
             "qr_code",

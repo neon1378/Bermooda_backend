@@ -4,6 +4,7 @@ from django.utils import timezone
 from extensions.utils import costum_date
 import os
 from datetime import datetime
+from core.serializers import MainFileSerializer
 from core.models import City,State,MainFile,SoftDeleteModel
 import uuid
 from core.widgets import persian_to_gregorian,gregorian_to_persian
@@ -42,6 +43,7 @@ class ProductInvoice(SoftDeleteModel):
         formatted_value = "{:,}".format(self.price)
 
         return formatted_value
+
 
     class Meta:
         ordering = ['id']
@@ -92,6 +94,12 @@ class Invoice(SoftDeleteModel):
     installment_count = models.IntegerField(default=1)
     interest_percentage =models.PositiveIntegerField(default=0,blank=True)
 
+
+    def qr_coder_data(self):
+        try:
+            return MainFileSerializer(self.qr_code).data
+        except:
+            return {}
     def is_expired(self):
         if not self.date_time_to_login:
             return True  # Consider expired if the value is missing
