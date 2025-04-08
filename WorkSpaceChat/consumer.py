@@ -246,7 +246,8 @@ class GroupMessageWs(AsyncWebsocketConsumer):
             event = {
                 "type":"send_groups"
             }
-            await self.channel_layer.group_send(self.workspace_group_name, event)
+
+            await self.channel_layer.group_send(f"group_ws_{self.workspace_obj.id}", event)
 
             event = {
                 "type":"send_all_unread_messages"
