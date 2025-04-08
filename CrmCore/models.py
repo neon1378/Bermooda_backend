@@ -43,11 +43,7 @@ class Step(SoftDeleteModel):
 
 
 
-class Category (SoftDeleteModel):
-    workspace = models.ForeignKey(WorkSpace,null=True,on_delete=models.CASCADE,related_name="category_customer")
-    title =models.CharField(max_length=50,null=True)
 
-    created = models.DateField(auto_now_add=True)
 class ActionData(SoftDeleteModel):
     CHOICE =(
         ("status","status"),
@@ -195,7 +191,12 @@ class GroupCrm (SoftDeleteModel):
         except:
             return ""   
 
+class Category (SoftDeleteModel):
+    workspace = models.ForeignKey(WorkSpace,null=True,on_delete=models.CASCADE,related_name="category_customer")
+    title =models.CharField(max_length=50,null=True)
+    group_crm = models.ForeignKey(GroupCrm,on_delete=models.CASCADE,null=True,related_name="categories")
 
+    created = models.DateField(auto_now_add=True)
 class CustomerUser(SoftDeleteModel):
     CONECTION_TYPE = (
         ("phone","PHONE"),

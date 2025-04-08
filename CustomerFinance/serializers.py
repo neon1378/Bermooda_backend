@@ -28,6 +28,7 @@ class ProductInvoiceSerializer(ModelSerializer):
             "price",
             "code",
             "unit",
+            "formated_price",
         ]
 
 class InformationSerializer(ModelSerializer):
