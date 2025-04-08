@@ -176,10 +176,19 @@ class Invoice(SoftDeleteModel):
             taxes_price =int(factor_price) *  (self.taxes/100)
             return {
                 "final_price":final_price,
+                "formated_final_price":"{:,}".format(int(final_price)),
+
                 "factor_price":factor_price,
+
+                "formated_factor_price":"{:,}".format(int(factor_price)),
+
                 "discount_price":discount_price,
+
+                "formated_discount_price":"{:,}".format(int(discount_price)),
+
                 "taxes_price":taxes_price,
 
+                "formated_taxes_price":"{:,}".format(int(taxes_price)),
             }
 
 
