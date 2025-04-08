@@ -1,3 +1,4 @@
+from MySQLdb.constants.ER import WRONG_TABLE_NAME
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from rest_framework import serializers
@@ -291,8 +292,21 @@ class CustomerSmallSerializer(serializers.ModelSerializer):
             email = validated_data.pop("email",None)
             date_time_to_remember=validated_data.get("date_time_to_remember",None)
             new_customer = CustomerUser.objects.create(**validated_data)
-
-
+            workspace_obj = WorkSpace.objects.get(id=workspace_id)
+            if CustomerUser.objects.filter(group_crm__workspace=workspace_obj,phone_number=phone_number).exists():
+                raise serializers.ValidationError(
+                    {
+                        "status":False,
+                        "message":"شماره تلفن وارد شده در حال حاضر در کسب و کار شما وجود دارد"
+                    }
+                )
+            if CustomerUser.objects.filter(group_crm__workspace=workspace_obj,email=email).exists():
+                raise serializers.ValidationError(
+                    {
+                        "status":False,
+                        "message":"ایمیل وارد شده در حال حاضر در کسب و کار شما وجود دارد"
+                    }
+                )
             if avatar_id :
                 main_file = MainFile.objects.get(id=avatar_id)
                 main_file.its_blong =True
@@ -344,7 +358,21 @@ class CustomerSmallSerializer(serializers.ModelSerializer):
             conection_type = validated_data.pop("conection_type", None)
             phone_number = validated_data.pop("phone_number", None)
             email = validated_data.pop("email", None)
-
+            workspace_obj = WorkSpace.objects.get(id=workspace_id)
+            if CustomerUser.objects.filter(group_crm__workspace=workspace_obj,phone_number=phone_number).exists() and instance.phone_number != phone_number:
+                raise serializers.ValidationError(
+                    {
+                        "status":False,
+                        "message":"شماره تلفن وارد شده در حال حاضر در کسب و کار شما وجود دارد"
+                    }
+                )
+            if CustomerUser.objects.filter(group_crm__workspace=workspace_obj,email=email).exists() and instance.email != email:
+                raise serializers.ValidationError(
+                    {
+                        "status":False,
+                        "message":"ایمیل وارد شده در حال حاضر در کسب و کار شما وجود دارد"
+                    }
+                )
             for attr, value in validated_data.items():
                 setattr(instance, attr, value)
 
