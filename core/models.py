@@ -13,6 +13,8 @@ class MainFile(models.Model):
     created = models.DateTimeField(auto_now_add=True,null=True)
     workspace_id = models.CharField(max_length=200,null=True)
 
+    def file_id(self):
+        return self.id
     def file_url(self):
         base_url = os.getenv("BASE_URL")
         try:
@@ -20,7 +22,12 @@ class MainFile(models.Model):
         except:
             return ""
 
-
+    def url(self):
+        base_url = os.getenv("BASE_URL")
+        try:
+            return f"{base_url}{self.file.url}"
+        except:
+            return ""
 class City (models.Model):
     code = models.PositiveIntegerField(null=True)
     name = models.CharField(max_length=40,null=True)

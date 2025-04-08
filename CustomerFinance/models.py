@@ -95,11 +95,7 @@ class Invoice(SoftDeleteModel):
     interest_percentage =models.PositiveIntegerField(default=0,blank=True)
 
 
-    def qr_coder_data(self):
-        try:
-            return MainFileSerializer(self.qr_code).data
-        except:
-            return {}
+
     def is_expired(self):
         if not self.date_time_to_login:
             return True  # Consider expired if the value is missing

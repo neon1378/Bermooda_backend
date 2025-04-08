@@ -51,8 +51,10 @@ class MainFileSerializer(serializers.ModelSerializer):
         model = MainFile
         fields = [
             "id",
+            "file_id",
             "file_url",
-            "file_name"
+            "file_name",
+            "url",
         ]
     def get_file_name(self, obj):
         return os.path.basename(obj.file.name) if obj.file else None
