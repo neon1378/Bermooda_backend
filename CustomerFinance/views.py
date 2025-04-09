@@ -326,3 +326,30 @@ def get_invoice_code (request):
                 }
             })
 
+
+
+
+
+
+
+class InstallMentView(APIView):
+    def get(self,request,installment_id=None):
+        if installment_id:
+            installment_obj = get_object_or_404(Installment,id=installment_id)
+            serializer_data = InstallMentSerializer(installment_obj)
+            return Response(status=status.HTTP_200_OK,data={
+                "status":True,
+                "message":"موفق",
+                "data":serializer_data.data
+            })
+        invoice_id = request.GET.get("invoice_id")
+        invoice_obj = get_object_or_404(Invoice,id=invoice_id)
+        installment_objs = Installment.objects.filter(invoice=invoice_obj)
+        serializer_data = InstallMentSerializer(installment_objs,many=True)
+        return Response(status=status.HTTP_200_OK,data={
+            "status":True,
+            "message":"با موفقیت انجام شد",
+            "data":serializer_data.data
+        })
+
+

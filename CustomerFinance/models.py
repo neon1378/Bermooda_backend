@@ -69,6 +69,8 @@ class Invoice(SoftDeleteModel):
     )
     invoice_type = models.CharField(choices=INVOICE_TYPE,null=True,max_length=20)
     payment_type = models.CharField(choices=PAYMENT_TYPE,null=True,default="cash",max_length=22)
+    date_to_pay = models.DateField(null=True)
+    date_payed = models.DateField(null=True)
     status = models.ForeignKey(InvoiceStatus,on_delete=models.SET_NULL,null=True)
     customer = models.ForeignKey(CustomerUser,on_delete=models.CASCADE,null=True)
     login_ip = models.GenericIPAddressField(null=True)
