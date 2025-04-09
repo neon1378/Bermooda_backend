@@ -75,8 +75,8 @@ class InvoiceStatusSerializer(ModelSerializer):
 
 
 class InstallMentSerializer(ModelSerializer):
-    document_of_payment = MainFileSerializer(read_only=True)
-    document_of_payment_id =serializers.IntegerField(write_only=True,required=False)
+    document_of_payment = MainFileSerializer(read_only=True,many=True)
+    document_of_payment_id_list =serializers.ListField(write_only=True,required=False)
 
     class Meta:
         model = Installment
@@ -89,7 +89,7 @@ class InstallMentSerializer(ModelSerializer):
             "date_payed",
             "is_delayed",
             "document_of_payment",
-            "document_of_payment_id",
+            "document_of_payment_id_list",
             "days_passed",
             "created_persian",
             "date_to_pay_persian",
