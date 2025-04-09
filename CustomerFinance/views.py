@@ -353,18 +353,29 @@ class InstallMentView(APIView):
         })
 
 
-    def put(self,request,installment_id):
-        installment_obj = get_object_or_404(Installment,id=installment_id)
-        serializer_data = InstallMentSerializer(instance=installment_obj,data=request.data)
-        if serializer_data.is_valid():
-            serializer_data.save()
-            return Response(status=status.HTTP_202_ACCEPTED,data={
-                "status":True,
-                "message":"با موفقیت بروزرسانی شد",
-                "data":serializer_data.data
-            })
-        return Response(status=status.HTTP_400_BAD_REQUEST,data={
-            "status":False,
-            "message":"Validation Error",
-            "data":serializer_data.errors
+    def post(self,request):
+        data= request.data
+        installment_list= data.get("installment_list")
+        installment_objs = []
+        for installment in installment_list:
+            installment_id = installment.get("installment_id")
+            installment_obj = get_object_or_404(Installment,id=installment_id)
+            installment_objs.append(installment_obj)
+            document_of_payment_id = installment.get("document_of_payment_id",None)
+            is_paid = installment.get("is_paid")
+            date_payed_jalali = installment.get("date_payed_jalali")
+            if document_of_payment_id:
+                main_file = MainFile.objects.get(id=date_payed_jalali)
+                main_file.its_blong = True
+                main_file.save()
+                installment_obj.document_of_payment_id = document_of_payment_id
+
+            installment_obj.date_payed = persian_to_gregorian(date_payed_jalali)
+            installment_obj.is_paid = is_paid
+            installment_obj.save()
+        serializer_data= InstallMentSerializer(installment_objs,many=True)
+        return Response(status=status.HTTP_200_OK,data={
+            "status":True,
+            "message":"با موفقیت ثبت شد",
+            "data":serializer_data.data
         })
