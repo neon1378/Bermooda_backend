@@ -345,6 +345,12 @@ class InstallMentView(APIView):
         invoice_id = request.GET.get("invoice_id")
         invoice_obj = get_object_or_404(Invoice,id=invoice_id)
         installment_objs = Installment.objects.filter(invoice=invoice_obj).order_by("-date_to_pay")
+        order= 1
+        for obj in installment_objs:
+            obj.order=order
+            obj.save()
+            order+=1
+
         serializer_data = InstallMentSerializer(installment_objs,many=True)
         return Response(status=status.HTTP_200_OK,data={
             "status":True,

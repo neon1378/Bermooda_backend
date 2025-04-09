@@ -199,7 +199,7 @@ class Invoice(SoftDeleteModel):
 class Installment(SoftDeleteModel):
     price = models.DecimalField(max_digits=20,blank=True, decimal_places=0, help_text="Price in Tomans")
     date_to_pay = models.DateField(null=True,blank=True)
-
+    order =models.IntegerField(default=0)
     created = models.DateField(auto_now_add=True,blank=True)
 
     invoice = models.ForeignKey(Invoice,on_delete=models.CASCADE,null=True,related_name="installments",blank=True)

@@ -82,6 +82,7 @@ class InstallMentSerializer(ModelSerializer):
         model = Installment
         fields =[
             "id",
+            "order",
             "price",
             "date_to_pay",
             "invoice",
