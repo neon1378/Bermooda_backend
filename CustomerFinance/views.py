@@ -353,3 +353,18 @@ class InstallMentView(APIView):
         })
 
 
+    def put(self,request,installment_id):
+        installment_obj = get_object_or_404(Installment,id=installment_id)
+        serializer_data = InstallMentSerializer(instance=installment_obj,data=request.data)
+        if serializer_data.is_valid():
+            serializer_data.save()
+            return Response(status=status.HTTP_202_ACCEPTED,data={
+                "status":True,
+                "message":"با موفقیت بروزرسانی شد",
+                "data":serializer_data.data
+            })
+        return Response(status=status.HTTP_400_BAD_REQUEST,data={
+            "status":False,
+            "message":"Validation Error",
+            "data":serializer_data.errors
+        })

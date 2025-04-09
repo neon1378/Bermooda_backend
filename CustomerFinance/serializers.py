@@ -77,7 +77,7 @@ class InvoiceStatusSerializer(ModelSerializer):
 class InstallMentSerializer(ModelSerializer):
     document_of_payment = MainFileSerializer(read_only=True)
     document_of_payment_id =serializers.IntegerField(write_only=True,required=False)
-
+    date_payed_jalali = serializers.IntegerField(write_only=True,required=True)
     class Meta:
         model = Installment
         fields =[
@@ -97,6 +97,22 @@ class InstallMentSerializer(ModelSerializer):
         ]
 
 
+
+
+    def update(self, instance, validated_data):
+        document_of_payment_id = validated_data.pop("document_of_payment_id",None)
+        is_paid = validated_data.pop("is_paid")
+        date_payed_jalali = validated_data.pop("date_payed_jalali")
+        if document_of_payment_id:
+            main_file = MainFile.objects.get(id=date_payed_jalali)
+            main_file.its_blong=True
+            main_file.save()
+            instance.document_of_payment_id=document_of_payment_id
+
+        instance.date_payed = persian_to_gregorian(date_payed_jalali)
+        instance.is_paid=is_paid
+        instance.save()
+        return instance
 
 
 

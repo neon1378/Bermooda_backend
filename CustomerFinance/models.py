@@ -197,16 +197,16 @@ class Invoice(SoftDeleteModel):
 
 
 class Installment(SoftDeleteModel):
-    price = models.DecimalField(max_digits=20, decimal_places=0, help_text="Price in Tomans")
-    date_to_pay = models.DateField(null=True)
+    price = models.DecimalField(max_digits=20,blank=True, decimal_places=0, help_text="Price in Tomans")
+    date_to_pay = models.DateField(null=True,blank=True)
 
-    created = models.DateField(auto_now_add=True)
+    created = models.DateField(auto_now_add=True,blank=True)
 
-    invoice = models.ForeignKey(Invoice,on_delete=models.CASCADE,null=True,related_name="installments")
-    is_paid = models.BooleanField(default=False)
-    date_payed =models.DateField(null=True)
-    document_of_payment= models.ForeignKey(MainFile,on_delete=models.SET_NULL,null=True)
-    is_delayed= models.BooleanField(default=False)
+    invoice = models.ForeignKey(Invoice,on_delete=models.CASCADE,null=True,related_name="installments",blank=True)
+    is_paid = models.BooleanField(default=False,blank=True)
+    date_payed =models.DateField(null=True,blank=True)
+    document_of_payment= models.ForeignKey(MainFile,blank=True,on_delete=models.SET_NULL,null=True)
+    is_delayed= models.BooleanField(default=False,blank=True)
     class Meta:
         ordering = ['date_to_pay']
 
