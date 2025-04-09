@@ -1750,7 +1750,7 @@ def resell_a_customer(request,customer_id):
 def change_customer_step(request,customer_id):
     data = request.data
     step = int(data['step'])
-    customer_obj = CustomerUser.objects.get(customer_id)
+    customer_obj = CustomerUser.objects.get(id=customer_id)
     step_obj = None
     for step_item in customer_obj.label.label_step.steps.all():
         if step_item.step == step:
