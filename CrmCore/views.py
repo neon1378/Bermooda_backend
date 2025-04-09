@@ -1,3 +1,4 @@
+from celery.worker.state import reserved_requests
 from django.core.paginator import Paginator
 from django.shortcuts import render
 from rest_framework.permissions import AllowAny,IsAuthenticated,DjangoModelPermissions
@@ -1741,3 +1742,31 @@ def resell_a_customer(request,customer_id):
     })
 
 
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def change_customer_step(request,customer_id):
+    data = request.data
+    step = int(data['step'])
+    customer_obj = CustomerUser.objects.get(customer_id)
+    step_obj = None
+    for step_item in customer_obj.label.label_step.steps.all():
+        if step_item.step == step:
+            step_obj = step_item
+
+    new_step_customer = CustomerStep.objects.create(
+        customer=customer_obj,
+        label=customer_obj.label,
+        step=step_obj
+    )
+    channel_layer = get_channel_layer()
+    event = {
+        "type": "send_data"
+    }
+    async_to_sync(channel_layer.group_send)(f"{customer_obj.group_crm.id}_crm", event)
+    serializer_data = CustomerSmallSerializer(customer_obj)
+    return Response(status=status.HTTP_200_OK,data={
+        "status":True,
+        "message":"با موفقیت انجام شد",
+        "data":serializer_data.data
+    })

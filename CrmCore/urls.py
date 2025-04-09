@@ -63,6 +63,7 @@ urlpatterns = [
 
     path("CustomerStatusManager/<int:customer_id>", views.CustomerStatusManager.as_view()),
     path("ReSellACustomer/<int:customer_id>", views.resell_a_customer),
+    path("ChangeCustomerStep/<int:customer_id>", views.change_customer_step),
 
 
 ]
