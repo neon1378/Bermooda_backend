@@ -368,7 +368,7 @@ class InstallMentView(APIView):
             installment_obj = get_object_or_404(Installment,id=installment_id)
             installment_objs.append(installment_obj)
             document_of_payment_id_list = installment.get("document_of_payment_id_list",[])
-            is_paid = installment.get("is_paid")
+            # is_paid = installment.get("is_paid")
             date_payed_jalali = installment.get("date_payed_jalali")
             for  document_of_payment_id in document_of_payment_id_list:
                 main_file = MainFile.objects.get(id=document_of_payment_id)
@@ -377,7 +377,7 @@ class InstallMentView(APIView):
                 installment_obj.document_of_payment.add(main_file)
 
             installment_obj.date_payed = persian_to_gregorian(date_payed_jalali)
-            installment_obj.is_paid = is_paid
+            installment_obj.is_paid = True
             installment_obj.save()
         serializer_data= InstallMentSerializer(installment_objs,many=True)
         return Response(status=status.HTTP_200_OK,data={
