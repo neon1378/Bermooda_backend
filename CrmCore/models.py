@@ -4,7 +4,8 @@ from core.models import MainFile
 from UserManager.models import UserAccount
 import jdatetime
 import locale
-from WorkSpaceManager.models import WorkSpace
+
+from WorkSpaceManager.models import WorkSpace,IndustrialActivity
 import uuid
 from django.db.models import Max
 import os 
@@ -211,6 +212,13 @@ class CustomerUser(SoftDeleteModel):
         ("حقیقی","حقیقی"),
         ("حقوقی","حقوقی")
     )
+    GENDER = (
+        ("male","MALE"),
+        ("female","FEMALE"),
+
+    )
+    gender = models.CharField(max_length=12,choices=GENDER,null=True,blank=True)
+    industrial_activity = models.ForeignKey(IndustrialActivity,on_delete=models.SET_NULL,null=True,blank=True)
     customer_status=  models.CharField(max_length=30,choices=STATUS_TYPE,null=True)
     avatar = models.ForeignKey(MainFile,on_delete=models.SET_NULL,null=True,blank=True)
     personal_type = models.CharField(max_length=9, choices=PERSONAL_TYPE,null=True)

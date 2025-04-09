@@ -59,7 +59,7 @@ urlpatterns = [
 
     path("CustomerBankManager", views.CustomerBankManager.as_view()),
     path("CustomerBankManager/<int:customer_b_id>", views.CustomerBankManager.as_view()),
-    path("SendCustomerToTheBoard/<int:customer_b_id>", views.send_a_customer_to_board),
+    path("SendCustomerToTheBoard", views.send_a_customer_to_board),
 
     path("CustomerStatusManager/<int:customer_id>", views.CustomerStatusManager.as_view()),
     path("ReSellACustomer/<int:customer_id>", views.resell_a_customer),

@@ -272,6 +272,8 @@ class CustomerSmallSerializer(serializers.ModelSerializer):
             "state",
             "link",
             "fax",
+            "gender",
+            "industrial_activity",
             "manager_national_code",
             "economic_code",
             "manager_phone_number",
@@ -291,7 +293,6 @@ class CustomerSmallSerializer(serializers.ModelSerializer):
             phone_number = validated_data.pop("phone_number",None)
             email = validated_data.pop("email",None)
             date_time_to_remember=validated_data.get("date_time_to_remember",None)
-            new_customer = CustomerUser.objects.create(**validated_data)
             workspace_obj = WorkSpace.objects.get(id=workspace_id)
             if CustomerUser.objects.filter(group_crm__workspace=workspace_obj,phone_number=phone_number).exists():
                 raise serializers.ValidationError(
@@ -307,6 +308,7 @@ class CustomerSmallSerializer(serializers.ModelSerializer):
                         "message":"ایمیل وارد شده در حال حاضر در کسب و کار شما وجود دارد"
                     }
                 )
+            new_customer = CustomerUser.objects.create(**validated_data)
             if avatar_id :
                 main_file = MainFile.objects.get(id=avatar_id)
                 main_file.its_blong =True
