@@ -2,6 +2,7 @@ from MySQLdb.constants.ER import WRONG_TABLE_NAME
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from rest_framework import serializers
+from WorkSpaceManager.serializers import IndustrialActivitySerializer
 from sqlalchemy.util import ellipses_string
 
 from .models import *
@@ -228,6 +229,8 @@ class CustomerSmallSerializer(serializers.ModelSerializer):
     category_id = serializers.IntegerField(write_only=True,required=False)
     city = CitySerializer(read_only=True)
     state = StateSerializer(read_only=True)
+    industrial_activity_id =serializers.IntegerField(required=False,write_only=True,allow_null=True)
+    industrial_activity=IndustrialActivitySerializer(read_only=True)
     city_id =serializers.IntegerField(write_only=True,required=False)
     state_id =serializers.IntegerField(write_only=True,required=False)
     class Meta:
@@ -274,6 +277,7 @@ class CustomerSmallSerializer(serializers.ModelSerializer):
             "fax",
             "gender",
             "industrial_activity",
+            "industrial_activity_id",
             "manager_national_code",
             "economic_code",
             "manager_phone_number",
@@ -282,6 +286,7 @@ class CustomerSmallSerializer(serializers.ModelSerializer):
         def create(self,validated_data):
             workspace_id = validated_data.pop("workspace_id")
             avatar_id = validated_data.pop("avatar_id",None)
+            industrial_activity_id=validated_data.pop("industrial_activity_id",None)
             city_id =validated_data.pop("city_id",None)
             state_id =validated_data.pop("state_id",None)
             agent_email_or_link=validated_data.pop("agent_email_or_link",None)
@@ -309,6 +314,8 @@ class CustomerSmallSerializer(serializers.ModelSerializer):
                     }
                 )
             new_customer = CustomerUser.objects.create(**validated_data)
+            if industrial_activity_id:
+                new_customer.industrial_activity_id=industrial_activity_id
             if avatar_id :
                 main_file = MainFile.objects.get(id=avatar_id)
                 main_file.its_blong =True
