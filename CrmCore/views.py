@@ -1674,7 +1674,7 @@ def send_a_customer_to_board(request):
                     state = State.objects.filter(name=customer_bank_obj.state).first()
             if customer_bank_obj.city:
                 if City.objects.filter(name=customer_bank_obj.city).exists():
-                    state = City.objects.filter(name=customer_bank_obj.city).first()
+                    city = City.objects.filter(name=customer_bank_obj.city).first()
         else:
             state = customer_bank_obj.main_state
             city = customer_bank_obj.main_city
