@@ -204,7 +204,7 @@ class Installment(SoftDeleteModel):
 
     invoice = models.ForeignKey(Invoice,on_delete=models.CASCADE,null=True,related_name="installments",blank=True)
     is_paid = models.BooleanField(default=False,blank=True)
-    date_payed =models.DateField(null=True,blank=True)
+    date_payed =models.DateTimeField(null=True,blank=True)
     document_of_payment= models.ManyToManyField(MainFile)
     is_delayed= models.BooleanField(default=False,blank=True)
     class Meta:
