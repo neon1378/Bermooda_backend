@@ -145,6 +145,8 @@ class Task(SoftDeleteModel):
     category_task = models.ForeignKey(CategoryProject, on_delete=models.SET_NULL, null=True,
                                       related_name="task_category")
     project = models.ForeignKey(Project, on_delete=models.SET_NULL, null=True, related_name="task")
+    def project_id_main(self):
+        return self.project.id
 
     def category_task_id(self):
         return self.category_task.id if self.category_task else 0

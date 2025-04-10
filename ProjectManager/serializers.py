@@ -75,6 +75,7 @@ class TaskSerializer(ModelSerializer):
         fields = [
             "id",
             "done_status",
+            "project_id_main",
             "check_list",
             "title",
             "order",
