@@ -1405,7 +1405,7 @@ def get_user_data (request):
     })
 
 
-@api_view(['PUT'])
+@api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def change_current_worksapce (request):
     data = request.data
