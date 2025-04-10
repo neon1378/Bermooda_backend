@@ -1410,6 +1410,7 @@ def get_user_data (request):
 def change_current_worksapce (request):
     data = request.data
     print(data,"@@@")
+    print(request.user.phone_number)
     workspace_obj = get_object_or_404(WorkSpace,id=data.get("workspace_id"))
     change_current_workspace_jadoo(user_acc=request.user,workspace_obj=workspace_obj)
     print(request.user.current_workspace_id,"!!!")
