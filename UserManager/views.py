@@ -1337,7 +1337,7 @@ def create_workspace(request):
 @permission_classes([IsAuthenticated])
 def get_user_data (request):
     data=request.data
-
+    print(request.user.current_workspace_id)
     user_data = {
         "id":request.user.id,
         "fullname":request.user.fullname,
