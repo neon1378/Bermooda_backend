@@ -1412,10 +1412,12 @@ def change_current_worksapce (request):
     print(data,"@@@")
     workspace_obj = get_object_or_404(WorkSpace,id=data.get("workspace_id"))
     change_current_workspace_jadoo(user_acc=request.user,workspace_obj=workspace_obj)
+    print(request.user.current_workspace_id,"!!!")
     request.user.current_workspace_id= workspace_obj.id
     print(data.get("workspace_id"))
-
     request.user.save()
+    print(request.user.current_workspace_id,"@$@$")
+
     return Response(status=status.HTTP_202_ACCEPTED)
 
 
