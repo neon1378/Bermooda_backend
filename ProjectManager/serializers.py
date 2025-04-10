@@ -63,6 +63,7 @@ class CheckListSerializer(ModelSerializer):
             "responsible_for_doing",
             "date_to_start",
             "time_to_start",
+            "project_id_main",
             "date_to_end",
             "time_to_end",
         ]

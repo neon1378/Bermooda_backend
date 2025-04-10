@@ -212,6 +212,9 @@ class CheckList(SoftDeleteModel):
     date_time_to_start_main = models.DateTimeField(null=True)
     date_time_to_end_main = models.DateTimeField(null=True)
     file = models.ManyToManyField(MainFile, blank=True)
+
+    def project_id_main(self):
+        return self.task.project.id
     def task_data (self):
         try:
             return {
