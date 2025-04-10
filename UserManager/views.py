@@ -1409,6 +1409,7 @@ def get_user_data (request):
 @permission_classes([IsAuthenticated])
 def change_current_worksapce (request):
     data = request.data
+    print(data)
     workspace_obj = get_object_or_404(WorkSpace,id=data.get("workspace_id"))
     change_current_workspace_jadoo(user_acc=request.user,workspace_obj=workspace_obj)
     request.user.current_workspace_id= data.get("workspace_id")
