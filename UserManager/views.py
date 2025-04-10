@@ -1417,6 +1417,8 @@ def change_current_worksapce (request):
     request.user.current_workspace_id= workspace_obj.id
     print(data.get("workspace_id"))
     request.user.save()
+    request.user.save()
+    request.user.save()
     print(request.user.current_workspace_id,"@$@$")
 
     return Response(status=status.HTTP_202_ACCEPTED)
