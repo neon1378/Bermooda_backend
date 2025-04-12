@@ -26,6 +26,12 @@ import locale
 import jdatetime
 
 class GroupMessageWs(AsyncWebsocketConsumer):
+
+    @sync_to_async
+    def change_user_online(self,status):
+        self.user.is_online=status
+        self.user.save()
+
     async def connect(self):
         self.user = self.scope['user']
         if not self.user.is_authenticated:
@@ -34,7 +40,7 @@ class GroupMessageWs(AsyncWebsocketConsumer):
         #
         # self.user.is_online = True
         # await sync_to_async(self.user.save)()
-
+        await self.change_user_online(status=True)
         self.workspace_id = self.user.current_workspace_id
         self.workspace_obj = await self.get_workspace_obj()
         self.workspace_group_name = f"group_ws_{self.workspace_obj.id}"
@@ -77,6 +83,7 @@ class GroupMessageWs(AsyncWebsocketConsumer):
         #
         # self.user.is_online = False
         # await sync_to_async(self.user.save)()
+        await self.change_user_online(status=False)
         await self.channel_layer.group_discard(f"group_ws_{self.workspace_id}", self.channel_name)
 
     async def receive(self, text_data=None, bytes_data=None):
