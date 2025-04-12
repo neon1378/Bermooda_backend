@@ -2,11 +2,13 @@ from django.db import models
 from WorkSpaceManager.models import WorkSpace
 from UserManager.models import UserAccount
 from core.models import MainFile,SoftDeleteModel
+from WorkSpaceManager.models import WorkSpace
 
-
-class MetingLabel(SoftDeleteModel):
+class MeetingLabel(SoftDeleteModel):
     title = models.CharField(max_length=20,null=True)
     color_code = models.CharField(max_length=12,null=True)
+    workspace= models.ForeignKey(WorkSpace,on_delete=models.CASCADE,null=True)
+
 # Create your models here.
 
 class Meeting(SoftDeleteModel):
@@ -25,7 +27,7 @@ class Meeting(SoftDeleteModel):
     )
 
     reaped_type = models.CharField(max_length=100, choices=REAPED_TYPE, null=True)
-    label = models.ForeignKey(MetingLabel,on_delete=models.SET_NULL,null=True)
+    label = models.ForeignKey(MeetingLabel,on_delete=models.SET_NULL,null=True)
     files = models.ManyToManyField(MainFile)
 
     date_to_start = models.DateTimeField(null=True,blank=True)

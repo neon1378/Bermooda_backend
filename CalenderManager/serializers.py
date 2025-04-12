@@ -46,18 +46,29 @@ class MeetingMemberSerializer(serializers.ModelSerializer):
         ]
 
 
-class MetingLabelSerializer(serializers.ModelSerializer):
+class MeetingLabelSerializer(serializers.ModelSerializer):
+    workspace_id = serializers.IntegerField(write_only=True,required=True)
     class Meta:
-        model= MetingLabel
+        model= MeetingLabel
+
         fields =[
             "id",
+            "workspace_id",
             "title",
             "color_code"
         ]
+    def create(self, validated_data):
+        new_label = MeetingLabel.objects.create(**validated_data)
+        return new_label
+    def update(self, instance, validated_data):
+        instance.title = validated_data.get("title")
+        instance.color_code = validated_data.get("color_code")
+        instance.save()
+        return instance
 
 
 class MeetingSerializer(serializers.ModelSerializer):
-    label = MetingLabelSerializer(read_only=True)
+    label = MeetingLabelSerializer(read_only=True)
     meeting_hashtags =  MeetingHashtagSerializer(many=True,read_only=True)
     meeting_phone_numbers = MeetingPhoneNumberSerializer(many=True,read_only=True)
     meeting_emails = MeetingEmailSerializer(many=True,read_only=True)

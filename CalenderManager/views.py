@@ -1,3 +1,4 @@
+from celery.bin.worker import worker
 from django.shortcuts import render
 from ProjectManager.models import Task, Project, CheckList
 from rest_framework import status
@@ -15,6 +16,66 @@ from ProjectManager.serializers import CheckListSerializer
 from django.shortcuts import get_object_or_404
 from CrmCore.serializers import CustomerSmallSerializer
 from CrmCore.models import CustomerUser
+
+class MeetingLabelManager(APIView):
+    permission_classes=[IsAuthenticated]
+    def get(self,request,label_id=None):
+        if label_id:
+            label_obj = get_object_or_404(MeetingLabel,id=label_id)
+            serializer_data = MeetingLabelSerializer(label_obj)
+            return Response(status=status.HTTP_200_OK,data={
+                "status":True,
+                "message":"موفق",
+                "data":serializer_data.data
+            })
+
+        workspace_obj = WorkSpace.objects.get(id=request.user.current_workspace_id)
+
+        label_objs = MeetingLabel.objects.filter(workwpace= workspace_obj)
+
+        serializer_data = MeetingLabelSerializer(label_objs,many=True)
+        return Response(status=status.HTTP_200_OK, data={
+            "status": True,
+            "message": "موفق",
+            "data": serializer_data.data
+        })
+    def post(self,request):
+        request.data['workspace_id']=request.user.id
+        serializer_data= MeetingLabelSerializer(data=request.data)
+        if serializer_data.is_valid():
+            serializer_data.save()
+            return Response(status=status.HTTP_201_CREATED,data={
+                "status":True,
+                "message":"با موفقیت ساخته شد",
+                "data":serializer_data.data
+            })
+        return Response(status=status.HTTP_400_BAD_REQUEST,data={
+            "status":False,
+            "message":"Validation Error",
+            "data":serializer_data.errors
+        })
+    def put(self,request,label_id):
+        request.data['workspace_id']=1
+
+
+        instance =get_object_or_404(MeetingLabel,id=label_id)
+        serializer_data = MeetingLabelSerializer(instance=instance,data=request.data)
+        if serializer_data.is_valid():
+            serializer_data.save()
+            return Response(status=status.HTTP_202_ACCEPTED,data={
+                "status":True,
+                "message":"با موفقیت ساخته شد",
+                "data":serializer_data.data
+            })
+        return Response(status=status.HTTP_400_BAD_REQUEST,data={
+            "status":False,
+            "message":"Validation Error",
+            "data":serializer_data.errors
+        })
+    def delete(self,request,label_id):
+        instance = get_object_or_404(MeetingLabel, id=label_id)
+        instance.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 class CalenderManger(APIView):
 
     permission_classes=[IsAuthenticated]
