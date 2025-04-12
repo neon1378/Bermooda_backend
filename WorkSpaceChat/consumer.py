@@ -31,9 +31,9 @@ class GroupMessageWs(AsyncWebsocketConsumer):
         if not self.user.is_authenticated:
             await self.close(code=1001)
             return
-
-        self.user.is_online = True
-        await sync_to_async(self.user.save)()
+        #
+        # self.user.is_online = True
+        # await sync_to_async(self.user.save)()
 
         self.workspace_id = self.user.current_workspace_id
         self.workspace_obj = await self.get_workspace_obj()
@@ -74,9 +74,9 @@ class GroupMessageWs(AsyncWebsocketConsumer):
 
 
     async def disconnect(self, code=None):
-
-        self.user.is_online = False
-        await sync_to_async(self.user.save)()
+        #
+        # self.user.is_online = False
+        # await sync_to_async(self.user.save)()
         await self.channel_layer.group_discard(f"group_ws_{self.workspace_id}", self.channel_name)
 
     async def receive(self, text_data=None, bytes_data=None):
