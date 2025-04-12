@@ -1,5 +1,5 @@
 import json
-
+from UserManager.models import UserAccount
 from channels.generic.websocket import AsyncWebsocketConsumer
 from asgiref.sync import sync_to_async, async_to_sync
 from django.core.paginator import Paginator
@@ -29,8 +29,11 @@ class GroupMessageWs(AsyncWebsocketConsumer):
 
     @sync_to_async
     def change_user_online(self,status):
+        print(self.user.current_workspace_id,"2!!!!")
         self.user.online_status=status
-        self.user.save()
+        user= UserAccount.objects.get(id=self.user.id)
+        print(user.current_workspace_id,"2@@@")
+        # self.user.save()
 
     async def connect(self):
         self.user = self.scope['user']
