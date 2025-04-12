@@ -228,7 +228,7 @@ class CalenderManger(APIView):
 
     def post(self,request):
         request.data['workspace_id'] = request.user.current_workspace_id
-        serializer_data= MeetingSerializer(data=request.data)
+        serializer_data= MeetingSerializer(data=request.data,context={"user":request.user})
         if serializer_data.is_valid():
             serializer_data.save()
             return Response(status=status.HTTP_201_CREATED,data={
