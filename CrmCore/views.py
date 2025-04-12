@@ -29,6 +29,7 @@ load_dotenv()
 class CrmDepartmentManager(APIView):
     permission_classes=[IsAuthenticated]
     def get(self,request,department_id=None):
+
         if department_id:
             department_obj = get_object_or_404(CrmDepartment,id=department_id)
             serializer_data = CrmDepartmentSerializer(department_obj)
