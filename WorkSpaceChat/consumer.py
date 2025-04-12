@@ -32,7 +32,8 @@ class GroupMessageWs(AsyncWebsocketConsumer):
         # print(self.user.current_workspace_id,"2!!!!")
         # self.user.online_status=status
         user= UserAccount.objects.get(id=self.user.id)
-        print(user.current_workspace_id,"2@@@")
+        user.is_online=status
+
         # self.user.save()
 
     async def connect(self):
