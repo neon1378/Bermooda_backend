@@ -98,7 +98,9 @@ class UserAccount(AbstractBaseUser,PermissionsMixin):
 
 
     objects = UserAccountManager()
-
+    def save(self, *args, **kwargs):
+        print(f"Saving user: {self.current_workspace_id}")
+        super().save(*args, **kwargs)
     def __str__(self):
         if self.phone_number == "09360604115":
 
