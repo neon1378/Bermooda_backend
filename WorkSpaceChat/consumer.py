@@ -29,8 +29,8 @@ class GroupMessageWs(AsyncWebsocketConsumer):
 
     @sync_to_async
     def change_user_online(self,status):
-        print(self.user.current_workspace_id,"2!!!!")
-        self.user.online_status=status
+        # print(self.user.current_workspace_id,"2!!!!")
+        # self.user.online_status=status
         user= UserAccount.objects.get(id=self.user.id)
         print(user.current_workspace_id,"2@@@")
         # self.user.save()
