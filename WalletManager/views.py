@@ -344,7 +344,7 @@ def success_payment(request,trans_action_id=None):
 
 
 
-@api_view(['GET'])
+@api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def check_discount_code(request):
     code = request.GET.get("code")
