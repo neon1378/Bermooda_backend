@@ -3,6 +3,7 @@ from ProjectManager.models import Task, Project, CheckList
 from rest_framework import status
 import jdatetime
 from rest_framework.response import Response
+from .serializers import *
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -44,7 +45,7 @@ class CalenderManger(APIView):
 
         return all_dates
 
-    def get(self, request, date=None):
+    def get(self, request):
         self.workspace_obj = get_object_or_404(WorkSpace, id=request.user.current_workspace_id)
         self.user = request.user
         command = request.GET.get("command")
@@ -125,6 +126,7 @@ class CalenderManger(APIView):
             status=status.HTTP_200_OK,
         )
 
+
     def get_list_data(self,month_list):
         """Returns checklist count for each day in a month."""
 
@@ -161,3 +163,21 @@ class CalenderManger(APIView):
             })
 
         return data_list
+
+
+    def post(self,request):
+        request.data['workspace_id'] = request.user.current_workspace_id
+        serializer_data= MeetingSerializer(data=request.data)
+        if serializer_data.is_valid():
+            serializer_data.save()
+            return Response(status=status.HTTP_201_CREATED,data={
+                "status":True,
+                "message":"با موفقیت ثبت شد",
+                "data":serializer_data.data
+
+            })
+        return Response(status=status.HTTP_400_BAD_REQUEST,data={
+            "status":False,
+            "message":"Validation Error",
+            "data":serializer_data.errors
+        })
