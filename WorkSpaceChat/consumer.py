@@ -29,12 +29,11 @@ class GroupMessageWs(AsyncWebsocketConsumer):
 
     @sync_to_async
     def change_user_online(self,status):
-        # print(self.user.current_workspace_id,"2!!!!")
-        # self.user.online_status=status
+
         user= UserAccount.objects.get(id=self.user.id)
         user.is_online=status
         user.save()
-        # self.user.save()
+
 
     async def connect(self):
         self.user = self.scope['user']
