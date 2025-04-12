@@ -16,17 +16,36 @@ from django.shortcuts import get_object_or_404
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def start_payment (request):
-    print(request.data,"!$@!@4")
+
     wallet_id = request.data.get("wallet_id")
-    amount= request.data.get("amount")
-    if not amount:
-        return Response(status=status.HTTP_400_BAD_REQUEST,data={
-            "status":False,
-            "message":"amount is required field"
-        })
+    amount= request.data.get("amount",None)
+    discount_id =request.data.get("discount_id",None)
+
     payment_method = request.data.get("payment_methods",None)
     plan_method = request.data.get("Plan_method",None)
-    print(payment_method,plan_method,"@@#!@#")
+
+    if payment_method and payment_method == "plan":
+        if plan_method == "startup":
+            amount= 6500000
+        elif plan_method == "launching":
+            amount = 13000000
+        elif plan_method == "growth":
+            amount = 28000000
+        elif plan_method == "professional":
+            amount = 45000000
+        elif plan_method == "magician":
+            amount =80000000
+        elif plan_method == "ruby":
+            amount =130000000
+        elif plan_method == "diamond":
+            amount = 260000000
+        elif plan_method == "star":
+            amount = 500000000
+    main_amount = amount
+    if discount_id:
+        discount_obj =Discount.objects.get(id=discount_id)
+        amount = amount - (amount * discount_obj.percentage // 100)
+
     wallet_obj = get_object_or_404(Wallet,id=wallet_id)
     try:
         url = "https://gateway.zibal.ir/v1/request"
@@ -42,12 +61,13 @@ def start_payment (request):
         
         response = requests.post(url=url,json=payload)
         response_data = response.json()
+
         price = int(amount)/10
 
         new_trans_action = WalletTransAction(
             track_id=response_data['trackId'],
             wallet=wallet_obj,
-            price=price ,
+            price=main_amount,
             trans_action_status = "deposit",
             order_id = f"D_{random.randint(9999,100000)}"
 
@@ -57,6 +77,9 @@ def start_payment (request):
             new_trans_action.plan_method =plan_method
         else:
             new_trans_action.payment_method="wallet"
+        if discount_id:
+            new_trans_action.discount_id=discount_id
+
         new_trans_action.save()
     except:
         return Response(status=status.HTTP_400_BAD_REQUEST,data={
@@ -318,3 +341,39 @@ def success_payment(request,trans_action_id=None):
         "trans_action_status":trans_action.trans_action_status,
     }
     return render(request,"WalletManager/success_payment.html",context=context)
+
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def check_discount_code(request):
+    code = request.GET.get("code")
+    if not code:
+        return Response(status=status.HTTP_400_BAD_REQUEST,data={
+            "status":False,
+            "message":"کد تخفیف اجباری میباشد",
+
+        })
+    try:
+        discount_obj =Discount.objects.get(code=code)
+        if not discount_obj.is_active:
+            return Response(status=status.HTTP_400_BAD_REQUEST,data={
+                "status":False,
+                "message":"کد تخفیف وارد شده قبلا استفاده شده است"
+            })
+        return Response(status=status.HTTP_200_OK,data={
+            "status":True,
+            "message":"تخفیف با موفقیت به صورت حساب شما اضافه شد",
+            "data":{
+                "id":discount_obj.id,
+                "code":discount_obj.code,
+                "percentage":discount_obj.percentage
+
+            }
+        })
+    except:
+        return Response(status=status.HTTP_400_BAD_REQUEST,data={
+            "status":False,
+            "message":"کد تخفیف معتبر نمیباشد",
+
+        })

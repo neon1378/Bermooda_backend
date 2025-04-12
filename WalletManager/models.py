@@ -3,7 +3,14 @@ from WorkSpaceManager.models import WorkSpace
 from UserManager.models import UserAccount
 import jdatetime
 from datetime import datetime
+from core.models import SoftDeleteModel
 # Create your models here.
+
+class Discount(SoftDeleteModel):
+    percentage = models.IntegerField(default=50)
+    code = models.CharField(max_length=8)
+    is_active = models.BooleanField(default=True)
+
 class Wallet (models.Model):
     balance = models.DecimalField(max_digits=20, decimal_places=0, help_text="Price in Tomans")
     workspace = models.OneToOneField(WorkSpace,on_delete=models.CASCADE,null=True,related_name="wallet")
@@ -41,7 +48,16 @@ class WalletTransAction(models.Model):
         ("launching","LUNCHING"),
         ("growth","GROWTH"),
         ("professional","PROFESSIONAL"),
+
+        ("magician", "MAHICIAN"),
+        ("ruby", "RUBY"),
+        ("diamond", "DIAMOND"),
+
+        ("star", "STAR"),
+
     )
+
+    discount = models.ForeignKey(Discount,on_delete=models.SET_NULL,null=True)
     payment_method = models.CharField(max_length=30,choices=PAYMENT_METHOD,default="wallet",null=True)
     plan_method = models.CharField(null=True,max_length=30,choices=PLAN_METHOD)
     track_id = models.TextField(null=True)
@@ -135,3 +151,5 @@ class WalletTransAction(models.Model):
 
 class DateTest(models.Model):
     date = models.DateTimeField(null=True)
+
+

@@ -12,5 +12,7 @@ urlpatterns = [
     path("waiting_payment_page/<str:track_id>",views.waiting_payment_page),
     path("unsuccess_payment/<int:trans_action_id>",views.unsuccess_payment),
     path("success_payment/<int:trans_action_id>",views.success_payment),
-    
+    path("CheckDiscountCode", views.check_discount_code),
+
+
 ]
