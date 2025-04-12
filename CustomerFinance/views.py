@@ -385,3 +385,7 @@ class InstallMentView(APIView):
             "message":"با موفقیت ثبت شد",
             "data":serializer_data.data
         })
+
+
+
+
