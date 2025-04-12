@@ -83,6 +83,7 @@ class UserAccount(AbstractBaseUser,PermissionsMixin):
     is_super_manager = models.BooleanField(default=False)
     ready_text = models.ManyToManyField(ReadyText)
     is_online = models.BooleanField(default=False)
+    online_status = models.BooleanField(default=False)
     is_register = models.BooleanField(default=False)
     phone_incripted = models.TextField(null=True)
     current_ip_address = models.CharField(max_length=70,null=True)

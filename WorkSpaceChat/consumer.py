@@ -29,7 +29,7 @@ class GroupMessageWs(AsyncWebsocketConsumer):
 
     @sync_to_async
     def change_user_online(self,status):
-        self.user.is_online=status
+        self.user.online_status=status
         self.user.save()
 
     async def connect(self):
