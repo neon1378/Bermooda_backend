@@ -41,7 +41,7 @@ class MeetingLabelManager(APIView):
             "data": serializer_data.data
         })
     def post(self,request):
-        request.data['workspace_id']=request.user.id
+        request.data['workspace_id']=request.user.current_workspace_id
         serializer_data= MeetingLabelSerializer(data=request.data)
         if serializer_data.is_valid():
             serializer_data.save()
