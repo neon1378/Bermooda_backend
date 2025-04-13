@@ -3,6 +3,7 @@ from django.shortcuts import render
 from ProjectManager.models import Task, Project, CheckList
 from rest_framework import status
 import jdatetime
+from datetime import timedelta, date, datetime
 from rest_framework.response import Response
 from .serializers import *
 from rest_framework.decorators import api_view, permission_classes
@@ -278,7 +279,7 @@ class CalenderManger(APIView):
         محاسبه تاریخ‌های وقوع برنامه (Schedule) در یک ماه مشخص بر اساس start_date و repeat_type.
         فرض می‌شود که start_date برنامه به میلادی ذخیره شده است.
         """
-        start_date = schedule.date_to_start
+        start_date = schedule.date_to_start.date()
         month_start = date(year, month, 1)
         _, last_day = calendar.monthrange(year, month)
         month_end = date(year, month, last_day)
