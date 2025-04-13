@@ -278,7 +278,7 @@ class CalenderManger(APIView):
         محاسبه تاریخ‌های وقوع برنامه (Schedule) در یک ماه مشخص بر اساس start_date و repeat_type.
         فرض می‌شود که start_date برنامه به میلادی ذخیره شده است.
         """
-        start_date = schedule.start_date
+        start_date = schedule.date_to_start
         month_start = date(year, month, 1)
         _, last_day = calendar.monthrange(year, month)
         month_end = date(year, month, last_day)
