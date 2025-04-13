@@ -312,3 +312,4 @@ class PayTheInvoiceSerializer(serializers.ModelSerializer):
                 instance.payment_documents.add(main_file)
         instance.is_paid=True
         instance.save()
+        return instance
