@@ -1603,6 +1603,7 @@ class CustomerDocumentManager(APIView):
 class CustomerBankManager(APIView):
     permission_classes=[IsAuthenticated]
     def get(self,request,customer_b_id=None):
+        page_number =request.GET.get("page_number",1)
         if customer_b_id:
             customer_bank_obj =get_object_or_404(CustomerBank,id=customer_b_id)
             serializer_data = CustomerBankSerializer(customer_bank_obj)
@@ -1615,7 +1616,7 @@ class CustomerBankManager(APIView):
         document_id =request.GET.get("document_id")
         document_obj= get_object_or_404(CustomerDocument,id=document_id)
         customer_bank_objs = CustomerBank.objects.filter(document=document_obj)
-        paginate_data = pagination(customer_bank_objs)
+        paginate_data = pagination(page_number=page_number,query_set=customer_bank_objs)
         paginate_data['list'] = CustomerBankSerializer(paginate_data['list'],many=True).data
 
 
