@@ -109,7 +109,9 @@ class Invoice(SoftDeleteModel):
 
     def date_payed_persian(self):
         try:
-            return gregorian_to_persian(self.date_payed)
+
+            jalali_date = jdatetime.datetime.fromgregorian(datetime=self.date_payed)
+            return jalali_date.strftime('%Y/%m/%d')
         except:
             return None
 
