@@ -15,6 +15,7 @@ from core.permission import IsWorkSpaceMemberAccess
 from WorkSpaceManager.models import WorkSpace,WorkspaceMember
 from UserManager.models import UserAccount
 from rest_framework.permissions import BasePermission
+from core.widgets import pagination
 # Create your views here.
 from core.permission import IsAccess
 from dotenv import load_dotenv
@@ -1614,12 +1615,14 @@ class CustomerBankManager(APIView):
         document_id =request.GET.get("document_id")
         document_obj= get_object_or_404(CustomerDocument,id=document_id)
         customer_bank_objs = CustomerBank.objects.filter(document=document_obj)
-        serializer_data = CustomerBankSerializer(customer_bank_objs,many=True)
+        paginate_data = pagination(customer_bank_objs)
+        paginate_data['list'] = CustomerBankSerializer(paginate_data['list'],many=True).data
+
 
         return Response(status=status.HTTP_200_OK, data={
             "status": True,
             "message": "موفق",
-            "data": serializer_data.data
+            "data": paginate_data
         })
     def post(self,request):
         serializer_data = CustomerBankSerializer(data=request.data)
