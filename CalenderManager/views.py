@@ -31,7 +31,7 @@ class MeetingLabelManager(APIView):
 
         workspace_obj = WorkSpace.objects.get(id=request.user.current_workspace_id)
 
-        label_objs = MeetingLabel.objects.filter(workwpace= workspace_obj)
+        label_objs = MeetingLabel.objects.filter(workspace= workspace_obj)
 
         serializer_data = MeetingLabelSerializer(label_objs,many=True)
         return Response(status=status.HTTP_200_OK, data={
