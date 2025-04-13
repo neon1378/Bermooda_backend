@@ -284,7 +284,7 @@ class CalenderManger(APIView):
         month_end = date(year, month, last_day)
 
         occurrences = []
-        repeat_type = schedule.repeat_type
+        repeat_type = schedule.reaped_type
 
         if repeat_type == "no_repetition":
             if month_start <= start_date <= month_end:
