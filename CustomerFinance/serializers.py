@@ -298,6 +298,7 @@ class PayTheInvoiceSerializer(serializers.ModelSerializer):
             "is_paid",
             "payment_documents",
             "date_to_pay_persian",
+            "payment_document_id_list",
             "date_payed_persian",
         ]
     def update(self, instance, validated_data):
