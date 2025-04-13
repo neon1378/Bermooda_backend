@@ -26,21 +26,21 @@ def start_payment (request):
 
     if payment_method and payment_method == "plan":
         if plan_method == "startup":
-            amount= 6500000
+            amount= 65000000
         elif plan_method == "launching":
-            amount = 13000000
+            amount = 130000000
         elif plan_method == "growth":
-            amount = 28000000
+            amount = 280000000
         elif plan_method == "professional":
-            amount = 45000000
+            amount = 450000000
         elif plan_method == "magician":
-            amount =80000000
+            amount =800000000
         elif plan_method == "ruby":
-            amount =130000000
+            amount =1300000000
         elif plan_method == "diamond":
-            amount = 260000000
+            amount = 2600000000
         elif plan_method == "star":
-            amount = 500000000
+            amount = 5000000000
     main_amount = amount
     if discount_id:
         discount_obj =Discount.objects.get(id=discount_id)
@@ -67,7 +67,7 @@ def start_payment (request):
         new_trans_action = WalletTransAction(
             track_id=response_data['trackId'],
             wallet=wallet_obj,
-            price=main_amount,
+            price=int(main_amount)/10,
             trans_action_status = "deposit",
             order_id = f"D_{random.randint(9999,100000)}"
 
@@ -133,6 +133,9 @@ def end_payment (request):
                         trans_action_obj.wallet.workspace.payment_method = trans_action_obj.payment_method
                         trans_action_obj.wallet.workspace.plan_method = trans_action_obj.plan_method
                         trans_action_obj.wallet.workspace.plan_started_date = datetime.now()
+                        if trans_action_obj.discount:
+                            trans_action_obj.discount.is_active=False
+                            trans_action_obj.discount.save()
 
                         trans_action_obj.wallet.workspace.save()
                         trans_action_obj.save()
