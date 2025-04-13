@@ -347,7 +347,7 @@ class CalenderManger(APIView):
         data = self.get_list_data(month_list=all_day_in_month)
 
         # دریافت تمامی برنامه‌های موجود؛ در صورت نیاز می‌توانید بر اساس workspace یا کاربر فیلتر کنید
-        schedules = Meeting.objects.filter(workspace=self.workspace_obj,members__user=requests.user)  # یا .filter(workspace=self.workspace_obj) اگر ارتباطی وجود دارد
+        schedules = Meeting.objects.filter(workspace=self.workspace_obj,members__user=request.user)  # یا .filter(workspace=self.workspace_obj) اگر ارتباطی وجود دارد
 
         # بررسی هر برنامه و اضافه کردن اطلاعات وقوع آن در هر روز
         for schedule in schedules:
