@@ -351,6 +351,7 @@ class CalenderManger(APIView):
         schedules = Meeting.objects.filter(workspace=self.workspace_obj,members__user=request.user)  # یا .filter(workspace=self.workspace_obj) اگر ارتباطی وجود دارد
 
         # بررسی هر برنامه و اضافه کردن اطلاعات وقوع آن در هر روز
+
         for schedule in schedules:
             occurrences = self.get_occurrences_in_month(schedule, year, month)
             for occ in occurrences:
@@ -359,7 +360,7 @@ class CalenderManger(APIView):
                 for day in data:
                     if day["date"] == occ_str:
                         # اگر کلید schedule_occurrences موجود نیست، آن را به صورت لیست ایجاد می‌کنیم
-                        day.setdefault("schedule_occurrences", []).append(MeetingSerializer(schedule).data)
+                        day['count'] += 1
 
         return Response({"status": True, "message": "Success", "data": data},
                         status=status.HTTP_200_OK)
