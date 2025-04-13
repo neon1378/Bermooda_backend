@@ -81,7 +81,8 @@ class InvoiceManager(APIView):
 
         if serializer_data.is_valid():
             invoice_obj = serializer_data.create(validated_data=request.data)
-            qr = qrcode.make("https://google.com")
+            front_base_url = os.getenv("FRONT_BASE_URL")
+            qr = qrcode.make(f"{front_base_url}/factor/{invoice_obj.main_id}")
             buffer = BytesIO()
             qr.save(buffer, format="PNG")
             random_number = random.randint(1,2312313)
