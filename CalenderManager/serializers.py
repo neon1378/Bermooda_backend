@@ -134,28 +134,32 @@ class MeetingSerializer(serializers.ModelSerializer):
             new_meeting.files.add(main_file)
 
         new_meeting.save()
-        for hashtag in hashtag_list:
-            MeetingHashtag.objects.create(
-                name = hashtag,
-                meeting= new_meeting
-            )
-        for phone in phone_number_list:
-            MeetingPhoneNumber.objects.create(
-                phone_number=phone,
-                meeting=new_meeting
-            )
-        for email in email_list:
-            MeetingEmail.objects.create(
-                email =email,
-                meeting=new_meeting
-            )
-        for member in member_id_list:
-            if member != user.id:
-                MeetingMember.objects.create(
-                    user_type ="member",
-                    user_id=member,
-                    meeting = new_meeting
+        if hashtag_list:
+            for hashtag in hashtag_list:
+                MeetingHashtag.objects.create(
+                    name = hashtag,
+                    meeting= new_meeting
                 )
+        if phone_number_list:
+            for phone in phone_number_list:
+                MeetingPhoneNumber.objects.create(
+                    phone_number=phone,
+                    meeting=new_meeting
+                )
+        if email_list:
+            for email in email_list:
+                MeetingEmail.objects.create(
+                    email =email,
+                    meeting=new_meeting
+                )
+        if member_id_list:
+            for member in member_id_list:
+                if member != user.id:
+                    MeetingMember.objects.create(
+                        user_type ="member",
+                        user_id=member,
+                        meeting = new_meeting
+                    )
 
         MeetingMember.objects.create(
             user_type="owner",
