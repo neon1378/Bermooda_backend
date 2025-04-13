@@ -1,5 +1,6 @@
 from django.db import models
 from dotenv import load_dotenv
+import jdatetime
 from django.utils import timezone
 from extensions.utils import costum_date
 import os
@@ -100,7 +101,8 @@ class Invoice(SoftDeleteModel):
 
     def date_to_pay_persian(self):
         try:
-            return gregorian_to_persian(self.date_to_pay)
+            jalali_date = jdatetime.datetime.fromgregorian(datetime=self.date_to_pay)
+            return jalali_date.strftime('%Y/%m/%d')
         except:
             return None
 
