@@ -122,19 +122,20 @@ class InvoiceSerializer(ModelSerializer):
     seller_information_data =serializers.JSONField(write_only=True,required=True)
     signature_buyer_id = serializers.IntegerField(write_only=True,required=False)
     created_date = serializers.CharField(write_only=True,required=True)
-
+    date_to_pay_jalali = serializers.CharField(write_only=True,required=False,allow_null=True)
     validity_date = serializers.CharField(write_only=True,required=False)
     class Meta:
         model = Invoice
         fields = [
             "status",
-
+            "date_to_pay_jalali",
             "invoice_type",
             "status_id",
             "qr_code",
             "id",
             "main_id",
             "signature_url",
+            "is_paid",
             "signature_buyer_id",
             "logo_url",
             "payment_type",
@@ -164,6 +165,8 @@ class InvoiceSerializer(ModelSerializer):
             "created_date_persian",
             "validity_date_persian",
             "is_over",
+            "date_to_pay_persian",
+            "date_payed_persian",
       
         ]
 
@@ -187,6 +190,8 @@ class InvoiceSerializer(ModelSerializer):
         state_seller = seller_information.pop("state",None)
         city_seller = seller_information.pop("city",None)
         payment_type = validated_data.get("payment_type",None)
+
+        date_to_pay_jalali = validity_date.pop("date_to_pay_persian",None)
         if products == [] or products == None:
             raise serializers.ValidationError(
                 {
@@ -237,6 +242,8 @@ class InvoiceSerializer(ModelSerializer):
 
 
         )
+        if date_to_pay_jalali:
+            new_invoice.date_to_pay=persian_to_gregorian(date_to_pay_jalali)
 
 
         if workspace_obj.avatar:
@@ -274,3 +281,33 @@ class InvoiceSerializer(ModelSerializer):
 
 
         return new_invoice
+
+
+
+
+
+class PayTheInvoiceSerializer(serializers.ModelSerializer):
+    payment_documents = MainFileSerializer(many=True,read_only=True)
+    payment_document_id_list = serializers.ListField(write_only=True,required=False,allow_null=True)
+    date_payed_jalali = serializers.CharField(write_only=True,required=True)
+    class Meta:
+        model = Invoice
+        fields =[
+            "id",
+            "date_payed_jalali",
+            "is_paid",
+            "payment_documents",
+            "date_to_pay_persian",
+            "date_payed_persian",
+        ]
+    def update(self, instance, validated_data):
+        instance.date_payed = persian_to_gregorian(validated_data.get("date_payed_jalali"))
+        payment_document_id_list  = validated_data.pop("payment_document_id_list",None)
+        if payment_document_id_list:
+            for file_id in payment_document_id_list:
+                main_file= MainFile.objects.get(id=file_id)
+                main_file.its_blong=True
+                main_file.save()
+                instance.payment_documents.add(main_file)
+        instance.is_paid=True
+        instance.save()

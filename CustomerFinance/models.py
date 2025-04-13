@@ -71,6 +71,8 @@ class Invoice(SoftDeleteModel):
     payment_type = models.CharField(choices=PAYMENT_TYPE,null=True,default="cash",max_length=22)
     date_to_pay = models.DateField(null=True)
     date_payed = models.DateField(null=True)
+    is_paid = models.BooleanField(default=False)
+    payment_documents = models.ManyToManyField(MainFile,related_name="invoice_documents")
     status = models.ForeignKey(InvoiceStatus,on_delete=models.SET_NULL,null=True)
     customer = models.ForeignKey(CustomerUser,on_delete=models.CASCADE,null=True)
     login_ip = models.GenericIPAddressField(null=True)
@@ -88,7 +90,7 @@ class Invoice(SoftDeleteModel):
     taxes = models.PositiveIntegerField(default=0)
     created = models.DateField(auto_now_add=True)
     invoice_code = models.CharField(max_length=90,null=True)
-    qr_code = models.ForeignKey(MainFile,on_delete=models.SET_NULL,null=True,blank=True)
+    qr_code = models.ForeignKey(MainFile,on_delete=models.SET_NULL,null=True,blank=True,related_name="invoice_qr_codes")
     created_date = models.DateField(null=True,blank=True)
 
     validity_date = models.DateField(null=True,blank=True)
@@ -96,7 +98,18 @@ class Invoice(SoftDeleteModel):
     installment_count = models.IntegerField(default=1)
     interest_percentage =models.PositiveIntegerField(default=0,blank=True)
 
+    def date_to_pay_persian(self):
+        try:
+            return gregorian_to_persian(self.date_to_pay)
+        except:
+            return None
 
+
+    def date_payed_persian(self):
+        try:
+            return gregorian_to_persian(self.date_payed)
+        except:
+            return None
 
     def is_expired(self):
         if not self.date_time_to_login:
@@ -152,6 +165,7 @@ class Invoice(SoftDeleteModel):
             return False
         except:
             return False
+
 
     def created_date_persian(self):
 

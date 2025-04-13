@@ -23,7 +23,7 @@ urlpatterns = [
     path("GetInvoiceCode",views.get_invoice_code),
     path("InstallMentView",views.InstallMentView.as_view()),
     path("InstallMentView/<int:installment_id>",views.InstallMentView.as_view()),
-
+    path("PayTheInvoiceManager/<int:invoice_id>", views.PayTheInvoiceView.as_view()),
 
 
 ]

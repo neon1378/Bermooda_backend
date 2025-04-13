@@ -389,3 +389,35 @@ class InstallMentView(APIView):
 
 
 
+
+class PayTheInvoiceView(APIView):
+    def get(self,request,invoice_id=None):
+        if not invoice_id:
+            return Response(status=status.HTTP_400_BAD_REQUEST,data={
+                "status":False,
+                "message":"شناسه فاکتور الزامی میباشد",
+
+            })
+        invoice_obj = get_object_or_404(Invoice,id=invoice_id)
+        serializer_data =PayTheInvoiceSerializer(invoice_obj)
+        return Response(status=status.HTTP_200_OK,data={
+            "status":True,
+            "message":"موفق",
+            "data":serializer_data.data
+        })
+    def put(self,request,invoice_id):
+        invoice_obj= get_object_or_404(Invoice,id=invoice_id)
+        serializer_data = PayTheInvoiceSerializer(instance=invoice_obj,data=request.data)
+        if serializer_data.is_valid():
+            serializer_data.save()
+            return Response(status=status.HTTP_202_ACCEPTED,data={
+                "status":True,
+                "message":"با موفقیت انجام شد",
+                "data":serializer_data.data
+            })
+
+        return Response(status=status.HTTP_400_BAD_REQUEST, data={
+            "status": False,
+            "message": "Validation Error",
+            "data": serializer_data.errors
+        })
