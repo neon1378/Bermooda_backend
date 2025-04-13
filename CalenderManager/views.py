@@ -79,184 +79,17 @@ class MeetingLabelManager(APIView):
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-#
-#
-# class CalenderManger(APIView):
-#
-#     permission_classes=[IsAuthenticated]
-#
-#     def is_jalali_leap_year(self,year):
-#         """
-#         Determine if a Jalali year is a leap year.
-#         Leap years in the Jalali calendar occur in years where:
-#         year % 33 is in [1, 5, 9, 13, 17, 22, 26, 30].
-#         """
-#         return year % 33 in {1, 5, 9, 13, 17, 22, 26, 30}
-#
-#     def get_all_dates_of_month(self, year, month):
-#         start_date = jdatetime.date(year, month, 1)
-#
-#         if month < 12:
-#             # For months other than Esfand (month 12), the end date is the last day of the month
-#             end_date = jdatetime.date(year, month + 1, 1) - jdatetime.timedelta(days=1)
-#         else:
-#             # For Esfand (month 12), check if it's a leap year using the custom function
-#             if self.is_jalali_leap_year(year):  # Use custom leap year function
-#                 end_date = jdatetime.date(year, month, 30)  # 30 days in Esfand for leap years
-#             else:
-#                 end_date = jdatetime.date(year, month, 29)  # 29 days in Esfand for non-leap years
-#
-#         # Generate all dates in the month
-#         all_dates = [start_date + jdatetime.timedelta(days=i) for i in range((end_date - start_date).days + 1)]
-#
-#         return all_dates
-#
-#     def get(self, request):
-#         self.workspace_obj = get_object_or_404(WorkSpace, id=request.user.current_workspace_id)
-#         self.user = request.user
-#         command = request.GET.get("command")
-#
-#         if command == "get_all_days":
-#             return self.handle_get_all_days(request)
-#
-#         if command == "get_a_day":
-#             return self.handle_get_a_day(request)
-#
-#         return Response({"status": False, "message": "Invalid command."}, status=status.HTTP_400_BAD_REQUEST)
-#
-#     def handle_get_all_days(self, request):
-#         """Handles the get_all_days command."""
-#         year = request.GET.get("year")
-#         month = request.GET.get("month")
-#
-#         if not year or not month:
-#             return Response({"status": False, "message": "Year and month are required."},
-#                             status=status.HTTP_400_BAD_REQUEST)
-#
-#         try:
-#             year, month = int(year), int(month)
-#         except ValueError:
-#             return Response({"status": False, "message": "Year and month must be integers."},
-#                             status=status.HTTP_400_BAD_REQUEST)
-#
-#
-#         all_day_in_month =  self.get_all_dates_of_month(year=year, month=month)
-#         data = self.get_list_data(month_list=all_day_in_month)
-#         return Response({"status": True, "message": "Success", "data": data}, status=status.HTTP_200_OK)
-#
-#     def handle_get_a_day(self, request):
-#         """Handles the get_a_day command."""
-#         specific_date = request.GET.get("specific_date")
-#
-#         if not specific_date:
-#             return Response({"status": False, "message": "specific_date is required."},
-#                             status=status.HTTP_400_BAD_REQUEST)
-#
-#         try:
-#             date_object = datetime.strptime(specific_date, "%Y/%m/%d").date()
-#         except ValueError:
-#             return Response({"status": False, "message": "Invalid date format. Use YYYY/MM/DD."},
-#                             status=status.HTTP_400_BAD_REQUEST)
-#
-#         check_list_objs = CheckList.objects.filter(
-#             task__project__workspace=self.workspace_obj,
-#             responsible_for_doing=self.user,
-#
-#         )
-#         customer_objs = CustomerUser.objects.filter(
-#             workspace =self.workspace_obj,
-#             user_account = self.user
-#
-#         )
-#         check_list_items =[]
-#         for check_list in check_list_objs:
-#
-#             if check_list.date_time_to_start_main and check_list.date_time_to_start_main.date()==date_object and check_list.task.is_deleted == False:
-#                 check_list_items.append(check_list)
-#
-#         customer_items = []
-#         for customer in customer_objs:
-#             if customer.main_date_time_to_remember and customer.main_date_time_to_remember.date() == date_object:
-#                 customer_items.append(customer)
-#         check_list_serializer = CheckListSerializer(check_list_items, many=True)
-#         customer_serializer  =CustomerSmallSerializer(customer_items,many=True)
-#         return Response(
-#             {
-#                 "status": True,
-#                 "message": "موفق",
-#                 "data": {
-#                     "task_list":check_list_serializer.data,
-#                     "customer_list":customer_serializer.data
-#                 },
-#             },
-#             status=status.HTTP_200_OK,
-#         )
-#
-#
-#     def get_list_data(self,month_list):
-#         """Returns checklist count for each day in a month."""
-#
-#         check_list_objs = CheckList.objects.filter(
-#             task__project__workspace=self.workspace_obj,
-#             responsible_for_doing=self.user,
-#
-#
-#         )
-#
-#         customer_objs = CustomerUser.objects.filter(
-#             workspace =self.workspace_obj,
-#             user_account = self.user
-#
-#         )
-#
-#         data_list = []
-#         for jdate in month_list:
-#             g_date = jdate.togregorian()
-#
-#             customer_list = [
-#                 customer for customer in customer_objs
-#                 if customer.main_date_time_to_remember and customer.main_date_time_to_remember.date() == g_date
-#             ]
-#
-#             check_list_items = [
-#                 item for item in check_list_objs
-#                 if item.date_time_to_start_main and item.date_time_to_start_main.date() == g_date and item.task.is_deleted == False
-#             ]
-#
-#             data_list.append({
-#                 "date": jdate.strftime("%Y/%m/%d"),
-#                 "count": len(customer_list) + len(check_list_items)
-#             })
-#
-#         return data_list
-#
-#
-#     def post(self,request):
-#         request.data['workspace_id'] = request.user.current_workspace_id
-#         serializer_data= MeetingSerializer(data=request.data,context={"user":request.user})
-#         if serializer_data.is_valid():
-#             serializer_data.save()
-#             return Response(status=status.HTTP_201_CREATED,data={
-#                 "status":True,
-#                 "message":"با موفقیت ثبت شد",
-#                 "data":serializer_data.data
-#
-#             })
-#         return Response(status=status.HTTP_400_BAD_REQUEST,data={
-#             "status":False,
-#             "message":"Validation Error",
-#             "data":serializer_data.errors
-#         })
-
-
 
 
 class CalenderManger(APIView):
-    permission_classes = [IsAuthenticated]
 
-    def is_jalali_leap_year(self, year):
+    permission_classes=[IsAuthenticated]
+
+    def is_jalali_leap_year(self,year):
         """
-        تعیین سال کبیسه در تقویم جلالی:
+        Determine if a Jalali year is a leap year.
+        Leap years in the Jalali calendar occur in years where:
+        year % 33 is in [1, 5, 9, 13, 17, 22, 26, 30].
         """
         return year % 33 in {1, 5, 9, 13, 17, 22, 26, 30}
 
@@ -264,56 +97,19 @@ class CalenderManger(APIView):
         start_date = jdatetime.date(year, month, 1)
 
         if month < 12:
+            # For months other than Esfand (month 12), the end date is the last day of the month
             end_date = jdatetime.date(year, month + 1, 1) - jdatetime.timedelta(days=1)
         else:
-            if self.is_jalali_leap_year(year):
-                end_date = jdatetime.date(year, month, 30)
+            # For Esfand (month 12), check if it's a leap year using the custom function
+            if self.is_jalali_leap_year(year):  # Use custom leap year function
+                end_date = jdatetime.date(year, month, 30)  # 30 days in Esfand for leap years
             else:
-                end_date = jdatetime.date(year, month, 29)
+                end_date = jdatetime.date(year, month, 29)  # 29 days in Esfand for non-leap years
 
+        # Generate all dates in the month
         all_dates = [start_date + jdatetime.timedelta(days=i) for i in range((end_date - start_date).days + 1)]
+
         return all_dates
-
-    def get_occurrences_in_month(self, schedule, year, month):
-        """
-        محاسبه تاریخ‌های وقوع برنامه (Schedule) در یک ماه مشخص بر اساس start_date و repeat_type.
-        فرض می‌شود که start_date برنامه به میلادی ذخیره شده است.
-        """
-        start_date = schedule.date_to_start.date()
-        month_start = date(year, month, 1)
-        _, last_day = calendar.monthrange(year, month)
-        month_end = date(year, month, last_day)
-
-        occurrences = []
-        repeat_type = schedule.reaped_type
-
-        if repeat_type == "no_repetition":
-            if month_start <= start_date <= month_end:
-                occurrences.append(start_date)
-
-        elif repeat_type == "daily":
-            current = max(start_date, month_start)
-            while current <= month_end:
-                occurrences.append(current)
-                current += timedelta(days=1)
-
-        elif repeat_type == "weekly":
-            current = start_date
-            # اگر start_date قبل از ماه مورد نظر است، اولین وقوع در ماه را پیدا می‌کنیم.
-            while current < month_start:
-                current += timedelta(days=7)
-            while current <= month_end:
-                occurrences.append(current)
-                current += timedelta(days=7)
-
-        elif repeat_type == "monthly":
-            # در هر ماه، اگر روز start_date معتبر باشد.
-            if start_date.day <= last_day:
-                occurrence = date(year, month, start_date.day)
-                if occurrence >= start_date:
-                    occurrences.append(occurrence)
-
-        return occurrences
 
     def get(self, request):
         self.workspace_obj = get_object_or_404(WorkSpace, id=request.user.current_workspace_id)
@@ -322,11 +118,11 @@ class CalenderManger(APIView):
 
         if command == "get_all_days":
             return self.handle_get_all_days(request)
+
         if command == "get_a_day":
             return self.handle_get_a_day(request)
 
-        return Response({"status": False, "message": "Invalid command."},
-                        status=status.HTTP_400_BAD_REQUEST)
+        return Response({"status": False, "message": "Invalid command."}, status=status.HTTP_400_BAD_REQUEST)
 
     def handle_get_all_days(self, request):
         """Handles the get_all_days command."""
@@ -343,37 +139,20 @@ class CalenderManger(APIView):
             return Response({"status": False, "message": "Year and month must be integers."},
                             status=status.HTTP_400_BAD_REQUEST)
 
-        # دریافت لیست تمامی روزهای ماه به صورت jdatetime و لیست اولیه برای نمایش داده‌ها
-        all_day_in_month = self.get_all_dates_of_month(year=year, month=month)
+
+        all_day_in_month =  self.get_all_dates_of_month(year=year, month=month)
         data = self.get_list_data(month_list=all_day_in_month)
-
-        # دریافت تمامی برنامه‌های موجود؛ در صورت نیاز می‌توانید بر اساس workspace یا کاربر فیلتر کنید
-        schedules = Meeting.objects.filter(workspace=self.workspace_obj,members__user=request.user)  # یا .filter(workspace=self.workspace_obj) اگر ارتباطی وجود دارد
-
-        # بررسی هر برنامه و اضافه کردن اطلاعات وقوع آن در هر روز
-
-        for schedule in schedules:
-            occurrences = self.get_occurrences_in_month(schedule, year, month)
-            for occ in occurrences:
-                occ_str = occ.strftime("%Y/%m/%d")
-                # پیدا کردن روز مورد نظر در data (که شامل key "date" است)
-                for day in data:
-                    if day["date"] == occ_str:
-                        # اگر کلید schedule_occurrences موجود نیست، آن را به صورت لیست ایجاد می‌کنیم
-                        day['count'] += 1
-
-        return Response({"status": True, "message": "Success", "data": data},
-                        status=status.HTTP_200_OK)
+        return Response({"status": True, "message": "Success", "data": data}, status=status.HTTP_200_OK)
 
     def handle_get_a_day(self, request):
         """Handles the get_a_day command."""
         specific_date = request.GET.get("specific_date")
+
         if not specific_date:
             return Response({"status": False, "message": "specific_date is required."},
                             status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            # فرض شده فرمت تاریخ به شکل YYYY/MM/DD است.
             date_object = datetime.strptime(specific_date, "%Y/%m/%d").date()
         except ValueError:
             return Response({"status": False, "message": "Invalid date format. Use YYYY/MM/DD."},
@@ -382,87 +161,308 @@ class CalenderManger(APIView):
         check_list_objs = CheckList.objects.filter(
             task__project__workspace=self.workspace_obj,
             responsible_for_doing=self.user,
+
         )
         customer_objs = CustomerUser.objects.filter(
-            workspace=self.workspace_obj,
-            user_account=self.user
+            workspace =self.workspace_obj,
+            user_account = self.user
+
         )
+        check_list_items =[]
+        for check_list in check_list_objs:
 
-        check_list_items = [
-            item for item in check_list_objs
-            if item.date_time_to_start_main and item.date_time_to_start_main.date() == date_object and not item.task.is_deleted
-        ]
-        customer_items = [
-            customer for customer in customer_objs
-            if customer.main_date_time_to_remember and customer.main_date_time_to_remember.date() == date_object
-        ]
+            if check_list.date_time_to_start_main and check_list.date_time_to_start_main.date()==date_object and check_list.task.is_deleted == False:
+                check_list_items.append(check_list)
 
+        customer_items = []
+        for customer in customer_objs:
+            if customer.main_date_time_to_remember and customer.main_date_time_to_remember.date() == date_object:
+                customer_items.append(customer)
         check_list_serializer = CheckListSerializer(check_list_items, many=True)
-        customer_serializer = CustomerSmallSerializer(customer_items, many=True)
-
-        # دریافت تمامی برنامه‌های موجود (می‌توانید بر اساس workspace فیلتر کنید)
-        schedules = Schedule.objects.all()
-        schedule_occurrences = []
-        for schedule in schedules:
-            occurrences = self.get_occurrences_in_month(schedule, date_object.year, date_object.month)
-            if any(occ == date_object for occ in occurrences):
-                schedule_occurrences.append({
-                    "schedule_id": schedule.id,
-                    "repeat_type": schedule.repeat_type,
-                    "start_date": schedule.start_date.strftime("%Y/%m/%d")
-                })
-
-        response_data = {
-            "task_list": check_list_serializer.data,
-            "customer_list": customer_serializer.data,
-            "schedule_occurrences": schedule_occurrences
-        }
-
+        customer_serializer  =CustomerSmallSerializer(customer_items,many=True)
         return Response(
-            {"status": True, "message": "موفق", "data": response_data},
+            {
+                "status": True,
+                "message": "موفق",
+                "data": {
+                    "task_list":check_list_serializer.data,
+                    "customer_list":customer_serializer.data
+                },
+            },
             status=status.HTTP_200_OK,
         )
 
-    def get_list_data(self, month_list):
+
+    def get_list_data(self,month_list):
         """Returns checklist count for each day in a month."""
+
         check_list_objs = CheckList.objects.filter(
             task__project__workspace=self.workspace_obj,
             responsible_for_doing=self.user,
+
+
         )
+
         customer_objs = CustomerUser.objects.filter(
-            workspace=self.workspace_obj,
-            user_account=self.user
+            workspace =self.workspace_obj,
+            user_account = self.user
+
         )
 
         data_list = []
         for jdate in month_list:
             g_date = jdate.togregorian()
+
             customer_list = [
                 customer for customer in customer_objs
                 if customer.main_date_time_to_remember and customer.main_date_time_to_remember.date() == g_date
             ]
+
             check_list_items = [
                 item for item in check_list_objs
-                if item.date_time_to_start_main and item.date_time_to_start_main.date() == g_date and not item.task.is_deleted
+                if item.date_time_to_start_main and item.date_time_to_start_main.date() == g_date and item.task.is_deleted == False
             ]
+
             data_list.append({
                 "date": jdate.strftime("%Y/%m/%d"),
                 "count": len(customer_list) + len(check_list_items)
             })
+
         return data_list
 
-    def post(self, request):
+
+    def post(self,request):
         request.data['workspace_id'] = request.user.current_workspace_id
-        serializer_data = MeetingSerializer(data=request.data, context={"user": request.user})
+        serializer_data= MeetingSerializer(data=request.data,context={"user":request.user})
         if serializer_data.is_valid():
             serializer_data.save()
-            return Response(status=status.HTTP_201_CREATED, data={
-                "status": True,
-                "message": "با موفقیت ثبت شد",
-                "data": serializer_data.data
+            return Response(status=status.HTTP_201_CREATED,data={
+                "status":True,
+                "message":"با موفقیت ثبت شد",
+                "data":serializer_data.data
+
             })
-        return Response(status=status.HTTP_400_BAD_REQUEST, data={
-            "status": False,
-            "message": "Validation Error",
-            "data": serializer_data.errors
+        return Response(status=status.HTTP_400_BAD_REQUEST,data={
+            "status":False,
+            "message":"Validation Error",
+            "data":serializer_data.errors
         })
+
+
+
+#
+# class CalenderManger(APIView):
+#     permission_classes = [IsAuthenticated]
+#
+#     def is_jalali_leap_year(self, year):
+#         """
+#         تعیین سال کبیسه در تقویم جلالی:
+#         """
+#         return year % 33 in {1, 5, 9, 13, 17, 22, 26, 30}
+#
+#     def get_all_dates_of_month(self, year, month):
+#         start_date = jdatetime.date(year, month, 1)
+#
+#         if month < 12:
+#             end_date = jdatetime.date(year, month + 1, 1) - jdatetime.timedelta(days=1)
+#         else:
+#             if self.is_jalali_leap_year(year):
+#                 end_date = jdatetime.date(year, month, 30)
+#             else:
+#                 end_date = jdatetime.date(year, month, 29)
+#
+#         all_dates = [start_date + jdatetime.timedelta(days=i) for i in range((end_date - start_date).days + 1)]
+#         return all_dates
+#
+#     def get_occurrences_in_month(self, schedule, year, month):
+#         """
+#         محاسبه تاریخ‌های وقوع برنامه (Schedule) در یک ماه مشخص بر اساس start_date و repeat_type.
+#         فرض می‌شود که start_date برنامه به میلادی ذخیره شده است.
+#         """
+#         start_date = schedule.date_to_start.date()
+#         month_start = date(year, month, 1)
+#         _, last_day = calendar.monthrange(year, month)
+#         month_end = date(year, month, last_day)
+#
+#         occurrences = []
+#         repeat_type = schedule.reaped_type
+#
+#         if repeat_type == "no_repetition":
+#             if month_start <= start_date <= month_end:
+#                 occurrences.append(start_date)
+#
+#         elif repeat_type == "daily":
+#             current = max(start_date, month_start)
+#             while current <= month_end:
+#                 occurrences.append(current)
+#                 current += timedelta(days=1)
+#
+#         elif repeat_type == "weekly":
+#             current = start_date
+#             # اگر start_date قبل از ماه مورد نظر است، اولین وقوع در ماه را پیدا می‌کنیم.
+#             while current < month_start:
+#                 current += timedelta(days=7)
+#             while current <= month_end:
+#                 occurrences.append(current)
+#                 current += timedelta(days=7)
+#
+#         elif repeat_type == "monthly":
+#             # در هر ماه، اگر روز start_date معتبر باشد.
+#             if start_date.day <= last_day:
+#                 occurrence = date(year, month, start_date.day)
+#                 if occurrence >= start_date:
+#                     occurrences.append(occurrence)
+#
+#         return occurrences
+#
+#     def get(self, request):
+#         self.workspace_obj = get_object_or_404(WorkSpace, id=request.user.current_workspace_id)
+#         self.user = request.user
+#         command = request.GET.get("command")
+#
+#         if command == "get_all_days":
+#             return self.handle_get_all_days(request)
+#         if command == "get_a_day":
+#             return self.handle_get_a_day(request)
+#
+#         return Response({"status": False, "message": "Invalid command."},
+#                         status=status.HTTP_400_BAD_REQUEST)
+#
+#     def handle_get_all_days(self, request):
+#         """Handles the get_all_days command."""
+#         year = request.GET.get("year")
+#         month = request.GET.get("month")
+#
+#         if not year or not month:
+#             return Response({"status": False, "message": "Year and month are required."},
+#                             status=status.HTTP_400_BAD_REQUEST)
+#
+#         try:
+#             year, month = int(year), int(month)
+#         except ValueError:
+#             return Response({"status": False, "message": "Year and month must be integers."},
+#                             status=status.HTTP_400_BAD_REQUEST)
+#
+#         # دریافت لیست تمامی روزهای ماه به صورت jdatetime و لیست اولیه برای نمایش داده‌ها
+#         all_day_in_month = self.get_all_dates_of_month(year=year, month=month)
+#         data = self.get_list_data(month_list=all_day_in_month)
+#
+#         # دریافت تمامی برنامه‌های موجود؛ در صورت نیاز می‌توانید بر اساس workspace یا کاربر فیلتر کنید
+#         schedules = Meeting.objects.filter(workspace=self.workspace_obj,members__user=request.user)  # یا .filter(workspace=self.workspace_obj) اگر ارتباطی وجود دارد
+#
+#         # بررسی هر برنامه و اضافه کردن اطلاعات وقوع آن در هر روز
+#
+#         for schedule in schedules:
+#             occurrences = self.get_occurrences_in_month(schedule, year, month)
+#             for occ in occurrences:
+#                 occ_str = occ.strftime("%Y/%m/%d")
+#                 # پیدا کردن روز مورد نظر در data (که شامل key "date" است)
+#                 for day in data:
+#                     if day["date"] == occ_str:
+#                         # اگر کلید schedule_occurrences موجود نیست، آن را به صورت لیست ایجاد می‌کنیم
+#                         day['count'] += 1
+#
+#         return Response({"status": True, "message": "Success", "data": data},
+#                         status=status.HTTP_200_OK)
+#
+#     def handle_get_a_day(self, request):
+#         """Handles the get_a_day command."""
+#         specific_date = request.GET.get("specific_date")
+#         if not specific_date:
+#             return Response({"status": False, "message": "specific_date is required."},
+#                             status=status.HTTP_400_BAD_REQUEST)
+#
+#         try:
+#             # فرض شده فرمت تاریخ به شکل YYYY/MM/DD است.
+#             date_object = datetime.strptime(specific_date, "%Y/%m/%d").date()
+#         except ValueError:
+#             return Response({"status": False, "message": "Invalid date format. Use YYYY/MM/DD."},
+#                             status=status.HTTP_400_BAD_REQUEST)
+#
+#         check_list_objs = CheckList.objects.filter(
+#             task__project__workspace=self.workspace_obj,
+#             responsible_for_doing=self.user,
+#         )
+#         customer_objs = CustomerUser.objects.filter(
+#             workspace=self.workspace_obj,
+#             user_account=self.user
+#         )
+#
+#         check_list_items = [
+#             item for item in check_list_objs
+#             if item.date_time_to_start_main and item.date_time_to_start_main.date() == date_object and not item.task.is_deleted
+#         ]
+#         customer_items = [
+#             customer for customer in customer_objs
+#             if customer.main_date_time_to_remember and customer.main_date_time_to_remember.date() == date_object
+#         ]
+#
+#         check_list_serializer = CheckListSerializer(check_list_items, many=True)
+#         customer_serializer = CustomerSmallSerializer(customer_items, many=True)
+#
+#         # دریافت تمامی برنامه‌های موجود (می‌توانید بر اساس workspace فیلتر کنید)
+#         schedules = Schedule.objects.all()
+#         schedule_occurrences = []
+#         for schedule in schedules:
+#             occurrences = self.get_occurrences_in_month(schedule, date_object.year, date_object.month)
+#             if any(occ == date_object for occ in occurrences):
+#                 schedule_occurrences.append({
+#                     "schedule_id": schedule.id,
+#                     "repeat_type": schedule.repeat_type,
+#                     "start_date": schedule.start_date.strftime("%Y/%m/%d")
+#                 })
+#
+#         response_data = {
+#             "task_list": check_list_serializer.data,
+#             "customer_list": customer_serializer.data,
+#             "schedule_occurrences": schedule_occurrences
+#         }
+#
+#         return Response(
+#             {"status": True, "message": "موفق", "data": response_data},
+#             status=status.HTTP_200_OK,
+#         )
+#
+#     def get_list_data(self, month_list):
+#         """Returns checklist count for each day in a month."""
+#         check_list_objs = CheckList.objects.filter(
+#             task__project__workspace=self.workspace_obj,
+#             responsible_for_doing=self.user,
+#         )
+#         customer_objs = CustomerUser.objects.filter(
+#             workspace=self.workspace_obj,
+#             user_account=self.user
+#         )
+#
+#         data_list = []
+#         for jdate in month_list:
+#             g_date = jdate.togregorian()
+#             customer_list = [
+#                 customer for customer in customer_objs
+#                 if customer.main_date_time_to_remember and customer.main_date_time_to_remember.date() == g_date
+#             ]
+#             check_list_items = [
+#                 item for item in check_list_objs
+#                 if item.date_time_to_start_main and item.date_time_to_start_main.date() == g_date and not item.task.is_deleted
+#             ]
+#             data_list.append({
+#                 "date": jdate.strftime("%Y/%m/%d"),
+#                 "count": len(customer_list) + len(check_list_items)
+#             })
+#         return data_list
+#
+#     def post(self, request):
+#         request.data['workspace_id'] = request.user.current_workspace_id
+#         serializer_data = MeetingSerializer(data=request.data, context={"user": request.user})
+#         if serializer_data.is_valid():
+#             serializer_data.save()
+#             return Response(status=status.HTTP_201_CREATED, data={
+#                 "status": True,
+#                 "message": "با موفقیت ثبت شد",
+#                 "data": serializer_data.data
+#             })
+#         return Response(status=status.HTTP_400_BAD_REQUEST, data={
+#             "status": False,
+#             "message": "Validation Error",
+#             "data": serializer_data.errors
+#         })
