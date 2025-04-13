@@ -401,16 +401,12 @@ class CalenderManger(APIView):
         customer_serializer = CustomerSmallSerializer(customer_items, many=True)
 
         # دریافت تمامی برنامه‌های موجود (می‌توانید بر اساس workspace فیلتر کنید)
-        schedules = Schedule.objects.all()
+        schedules = Meeting.objects.filter(workspace=self.workspace,members__user=request.user)
         schedule_occurrences = []
         for schedule in schedules:
             occurrences = self.get_occurrences_in_month(schedule, date_object.year, date_object.month)
             if any(occ == date_object for occ in occurrences):
-                schedule_occurrences.append({
-                    "schedule_id": schedule.id,
-                    "repeat_type": schedule.repeat_type,
-                    "start_date": schedule.start_date.strftime("%Y/%m/%d")
-                })
+                schedule_occurrences.append(MeetingSerializer(schedule).data)
 
         response_data = {
             "task_list": check_list_serializer.data,
