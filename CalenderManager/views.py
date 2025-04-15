@@ -448,6 +448,7 @@ class CalenderManger(APIView):
         return data_list
 
     def post(self, request):
+        print(request.data)
         request.data['workspace_id'] = request.user.current_workspace_id
         serializer_data = MeetingSerializer(data=request.data, context={"user": request.user})
         if serializer_data.is_valid():
