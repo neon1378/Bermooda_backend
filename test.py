@@ -12,7 +12,7 @@ def get_occurrences_in_month(schedule, year, month):
     فرض می‌شود که start_date برنامه به میلادی ذخیره شده است.
     """
     start_date = schedule.date_to_start.date()
-    print(start_date)
+
     month_start = date(year, month, 1)
     _, last_day = calendar.monthrange(year, month)
     month_end = date(year, month, last_day)
@@ -50,7 +50,7 @@ def get_occurrences_in_month(schedule, year, month):
 specific_date="2025/4/15"
 date_object = datetime.strptime(specific_date, "%Y/%m/%d").date()
 schedules = Meeting.objects.filter(workspace_id=32, members__user=user)
-print(schedules)
+
 schedule_occurrences = []
 for schedule in schedules:
     if schedule.reaped_type != "no_repetition":
@@ -58,6 +58,7 @@ for schedule in schedules:
         if any(occ == date_object for occ in occurrences):
             schedule_occurrences.append(MeetingSerializer(schedule).data)
     else:
+        print(schedule.date_to_start.date(),date_object,"@@!!")
         if schedule.date_to_start.date() ==  date_object:
             schedule_occurrences.append(MeetingSerializer(schedule).data)
 print(schedule_occurrences)
