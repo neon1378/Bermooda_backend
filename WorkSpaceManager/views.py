@@ -1035,6 +1035,7 @@ def create_workspace_to_jadoo(request):
 
 
 class WorkSpacePermissionManager(APIView):
+    permission_classes = [IsAuthenticated]
     def get(self,request,permission_id=None):
         if permission_id:
             permission_obj = get_object_or_404(WorkSpacePermission, id=permission_id)

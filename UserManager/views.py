@@ -1080,6 +1080,7 @@ def create_workspace(request):
         "group_chat",
         "letters",
         "planing",
+        "marketing"
     ]
     for permission in permission_list:
         WorkSpacePermission.objects.create(

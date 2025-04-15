@@ -133,6 +133,7 @@ class WorkSpacePermission(SoftDeleteModel):
             ("group_chat","GROUP_CHAT"),
             ("letters","LETTERS"),
             ("planing","PLANING"),
+            ("marketing","MARKETING")
         )
 
 

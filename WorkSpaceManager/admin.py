@@ -100,5 +100,21 @@ class MethodPermissionAdmin(admin.ModelAdmin):
 
 # Register your models here.
 
+@admin.register(WorkSpacePermission)
+class MethodPermissionAdmin(admin.ModelAdmin):
+    list_display = ( "id",'is_deleted', 'deleted_at',"permission_type","is_active")
+    list_filter = ('is_deleted',)
+    actions = ['restore_selected']
+
+    def get_queryset(self, request):
+        # Use the custom manager's queryset
+        return self.model.all_objects.get_queryset()
+
+    @admin.action(description='Restore selected items')
+    def restore_selected(self, request, queryset):
+        # Restore soft-deleted items
+        queryset.update(is_deleted=False, deleted_at=None)
+        self.message_user(request, f'{queryset.count()} items restored successfully.')
+
 
 
