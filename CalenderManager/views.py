@@ -448,11 +448,13 @@ class CalenderManger(APIView):
         return data_list
 
     def post(self, request):
-        print(request.data)
+        print(request.data,"@@@")
+
         request.data['workspace_id'] = request.user.current_workspace_id
         serializer_data = MeetingSerializer(data=request.data, context={"user": request.user})
         if serializer_data.is_valid():
-            serializer_data.save()
+            meeting_obj =serializer_data.save()
+            print(meeting_obj.remember_number,"!!!!")
             return Response(status=status.HTTP_201_CREATED, data={
                 "status": True,
                 "message": "با موفقیت ثبت شد",
