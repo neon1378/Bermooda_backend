@@ -123,17 +123,20 @@ class MeetingSerializer(serializers.ModelSerializer):
         email_list = validated_data.pop("email_list",[])
         label_id = validated_data.pop("label_id",None)
         date_to_start_persian= validated_data.pop("date_to_start_persian")
+        remember_number = validated_data.pop("remember_number",None)
         new_meeting  = Meeting.objects.create(**validated_data)
         new_meeting.date_to_start= persian_to_gregorian(date_to_start_persian)
 
         if label_id:
             new_meeting.label_id=label_id
+        if remember_number:
+            new_meeting.remember_number=remember_number
         for file_id in file_id_list:
             main_file= MainFile.objects.get(id=file_id)
             main_file.its_blong=True
             new_meeting.files.add(main_file)
 
-        new_meeting.save()
+
         if hashtag_list:
             for hashtag in hashtag_list:
                 MeetingHashtag.objects.create(
@@ -166,4 +169,5 @@ class MeetingSerializer(serializers.ModelSerializer):
             user=user,
             meeting=new_meeting
         )
+        new_meeting.save()
         return new_meeting
