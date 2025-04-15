@@ -463,3 +463,15 @@ class CalenderManger(APIView):
             "message": "Validation Error",
             "data": serializer_data.errors
         })
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_a_meeting(request,meeting_id):
+    meeting_obj = get_object_or_404(Meeting,id=meeting_id)
+    serializer_data = MeetingSerializer(meeting_obj)
+    return Response(status=status.HTTP_200_OK,data={
+        "status":True,
+        "message":"موفق",
+        "data":serializer_data.data
+    })
