@@ -120,7 +120,7 @@ def persian_to_gregorian(persian_date_str):
         else:
             # Only date
             year, month, day = map(int, persian_date_str.split('/'))
-            hour, minute = 0, 0
+            hour, minute = 16, 0
 
         # Convert Persian date to Gregorian
         gregorian_date = jdatetime.date(year, month, day).togregorian()
