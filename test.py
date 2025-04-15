@@ -1,43 +1,63 @@
+from CalenderManager.models import  MeetingMember,Meeting
+from datetime import date, datetime,timedelta
+from UserManager.models import UserAccount
+from CalenderManager.serializers import MeetingSerializer
+import calendar
+me = MeetingMember.objects.filter(meeting_id=6)
+user = UserAccount.objects.get(phone_number="09140299074")
 
+def get_occurrences_in_month(schedule, year, month):
+    """
+    محاسبه تاریخ‌های وقوع برنامه (Schedule) در یک ماه مشخص بر اساس start_date و repeat_type.
+    فرض می‌شود که start_date برنامه به میلادی ذخیره شده است.
+    """
+    start_date = schedule.date_to_start.date()
+    print(start_date)
+    month_start = date(year, month, 1)
+    _, last_day = calendar.monthrange(year, month)
+    month_end = date(year, month, last_day)
 
-from WalletManager.models import Wallet,WalletTransAction
-import os
-from dotenv import load_dotenv
-import random
-load_dotenv()
-from core.models import MainFile
-wallet = Wallet.objects.get(id=32)
+    occurrences = []
+    repeat_type = schedule.reaped_type
 
-price_per_mb = int(os.getenv("PRICE_FOR_ANY_MB", 0))  # Default to 0 if not set
-price_per_user = int(os.getenv("PRICE_FOR_ANY_USER", 0))  # Default to 0 if not set
-    # Calculate total MB used by the workspace
-mb_used = sum(
-        file.file.size / (1024 * 1024)  # Convert bytes to MB
-        for file in MainFile.objects.filter(its_blong=True, workspace_id=wallet.workspace.id)
-        if file.file  # Ensure the file exists
-)
+    if repeat_type == "no_repetition":
+        if month_start <= start_date <= month_end:
+            occurrences.append(start_date)
 
-    # Calculate total users in the workspace
-user_member_count = wallet.workspace.workspace_member.count()
+    elif repeat_type == "daily":
+        current = max(start_date, month_start)
+        while current <= month_end:
+            occurrences.append(current)
+            current += timedelta(days=1)
 
-    # Calculate the total price to deduct
-decrease_price = (mb_used * price_per_mb) + (user_member_count * price_per_user)
-print(user_member_count, "@@")
-if decrease_price > 0:
-        # Deduct the price from the wallet balance
-    wallet.balance -= int(decrease_price)
-    wallet.save()
+    elif repeat_type == "weekly":
+        current = start_date
+        # اگر start_date قبل از ماه مورد نظر است، اولین وقوع در ماه را پیدا می‌کنیم.
+        while current < month_start:
+            current += timedelta(days=7)
+        while current <= month_end:
+            occurrences.append(current)
+            current += timedelta(days=7)
 
-        # Create a wallet transaction record
-    WalletTransAction.objects.create(
-            wallet=wallet,
-            price=decrease_price,
-            trans_action_status="decrease",
-            total_gb=mb_used,
-            total_user=user_member_count,
-            status_deposit=True,
-            order_id=f"D_{random.randint(9999, 100000)}"
-    )
-for item in MainFile.objects.all():
-    if not item.file:
-        item.delete()
+    elif repeat_type == "monthly":
+        # در هر ماه، اگر روز start_date معتبر باشد.
+        if start_date.day <= last_day:
+            occurrence = date(year, month, start_date.day)
+            if occurrence >= start_date:
+                occurrences.append(occurrence)
+
+    return occurrences
+specific_date="2025/4/15"
+date_object = datetime.strptime(specific_date, "%Y/%m/%d").date()
+schedules = Meeting.objects.filter(workspace_id=32, members__user=user)
+print(schedules)
+schedule_occurrences = []
+for schedule in schedules:
+    if schedule.reaped_type != "no_repetition":
+        occurrences = get_occurrences_in_month(schedule, date_object.year,date_object.month)
+        if any(occ == date_object for occ in occurrences):
+            schedule_occurrences.append(MeetingSerializer(schedule).data)
+    else:
+        if schedule.date_to_start.date() ==  date_object:
+            schedule_occurrences.append(MeetingSerializer(schedule).data)
+print(schedule_occurrences)
