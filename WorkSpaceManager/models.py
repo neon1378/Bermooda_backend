@@ -148,6 +148,12 @@ class Link(SoftDeleteModel):
     url = models.URLField(null=True)
 class WorkspaceMember(SoftDeleteModel):
 
+
+    GENDER = (
+        ("male","MALE"),
+        ("female","FEMALE")
+    )
+
     workspace = models.ForeignKey(WorkSpace,on_delete=models.CASCADE,null=True,related_name="workspace_member")
     user_account = models.ForeignKey(UserAccount,on_delete=models.CASCADE,null=True,related_name="user_member")
     fullname=models.CharField(max_length=200,null=True)
@@ -159,6 +165,25 @@ class WorkspaceMember(SoftDeleteModel):
     is_accepted = models.BooleanField(default=True)
     avatar = models.ForeignKey(MainFile,on_delete=models.SET_NULL,null=True)
 
+    more_information = models.BooleanField(default=False)
+    employee_code = models.CharField(max_length=20,null=True,blank=True)
+    phone_number= models.CharField(max_length=11,null=True)
+    email = models.EmailField(null=True)
+    date_of_birth = models.DateTimeField(null=True)
+    national_code = models.CharField(max_length=10,null=True)
+    certificate_number = models.CharField(max_length=10,null=True)
+    gender = models.CharField(max_length=10,choices=GENDER,null=True)
+    state = models.ForeignKey(State,on_delete=models.SET_NULL,null=True)
+    city = models.ForeignKey(City,on_delete=models.SET_NULL,null=True)
+    address = models.TextField(null=True)
+    postal_code = models.CharField(max_length=10,null=True)
+    marriage = models.BooleanField(default=False)
+    number_of_children = models.IntegerField(default=0)
+    shaba_number = models.CharField(max_length=40,null=True)
+    date_of_start_to_work = models.DateTimeField(null=True)
+    contract_end_date = models.DateTimeField(null=True)
+    bad_record_status = models.BooleanField(default=False)
+    insurance_status = models.BooleanField(default=False)
     def is_team_bonos_status(self):
         return self.workspace.is_team_bonos
 

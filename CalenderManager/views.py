@@ -30,9 +30,9 @@ class MeetingLabelManager(APIView):
                 "data":serializer_data.data
             })
 
-        workspace_obj = WorkSpace.objects.get(id=request.user.current_workspace_id)
 
-        label_objs = MeetingLabel.objects.filter(workspace= workspace_obj)
+
+        label_objs = MeetingLabel.objects.all()
 
         serializer_data = MeetingLabelSerializer(label_objs,many=True)
         return Response(status=status.HTTP_200_OK, data={
@@ -41,7 +41,7 @@ class MeetingLabelManager(APIView):
             "data": serializer_data.data
         })
     def post(self,request):
-        request.data['workspace_id']=request.user.current_workspace_id
+
         serializer_data= MeetingLabelSerializer(data=request.data)
         if serializer_data.is_valid():
             serializer_data.save()
@@ -56,7 +56,7 @@ class MeetingLabelManager(APIView):
             "data":serializer_data.errors
         })
     def put(self,request,label_id):
-        request.data['workspace_id']=1
+
 
 
         instance =get_object_or_404(MeetingLabel,id=label_id)

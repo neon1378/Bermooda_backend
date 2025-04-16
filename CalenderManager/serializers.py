@@ -47,15 +47,16 @@ class MeetingMemberSerializer(serializers.ModelSerializer):
 
 
 class MeetingLabelSerializer(serializers.ModelSerializer):
-    workspace_id = serializers.IntegerField(write_only=True,required=True)
+
     class Meta:
         model= MeetingLabel
 
         fields =[
             "id",
-            "workspace_id",
             "title",
-            "color_code"
+            "color_code",
+            "icon",
+            "key_name",
         ]
     def create(self, validated_data):
         new_label = MeetingLabel.objects.create(**validated_data)
