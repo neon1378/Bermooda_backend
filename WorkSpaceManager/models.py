@@ -187,7 +187,7 @@ class WorkspaceMember(SoftDeleteModel):
     bad_record_status = models.BooleanField(default=False)
     insurance_status = models.BooleanField(default=False)
     study_category = models.ForeignKey(StudyCategory,on_delete=models.SET_NULL,null=True)
-
+    job_position = models.CharField(max_length=40,null=True)
     def is_team_bonos_status(self):
         return self.workspace.is_team_bonos
 

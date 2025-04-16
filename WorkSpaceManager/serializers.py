@@ -250,6 +250,26 @@ class WorkSpaceMemberSerializer(serializers.ModelSerializer):
             user_acc = UserAccount(phone_number=user_account.get("phone_number"))
             user_acc.is_register=False
             user_acc.save()
+            try:
+                jadoo_base_url = os.getenv("JADOO_BASE_URL")
+                # send user to jadoo
+
+                url = f"{jadoo_base_url}/user/auth/createBusinessUser"
+                payload = {
+                    "mobile": user_acc.phone_number,
+
+                    "password": "asdlaskjd",
+
+                }
+                response_data = requests.post(url=url, data=payload)
+                print(response_data.json())
+                recive_data = response_data.json()
+
+                user_acc.refrence_id = int(recive_data['data']['id'])
+                user_acc.refrence_token = recive_data['data']['token']
+                user_acc.save()
+            except:
+                pass
         if WorkspaceMember.objects.filter(workspace=workspace_obj,user_account=user_acc).exists() or workspace_obj.owner == user_acc:
             raise serializers.ValidationError({
                 "status": False,
