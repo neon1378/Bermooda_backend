@@ -289,6 +289,7 @@ class CalenderManger(APIView):
                 print(occurrences,"2!!!!")
                 for occ in occurrences:
                     print(occ,"3$$$$")
+                    print(g_date,"3&&&")
                     occ_str = occ.strftime("%Y/%m/%d")
                     # پیدا کردن روز مورد نظر در data (که شامل key "date" است)
 
