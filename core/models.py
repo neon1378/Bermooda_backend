@@ -174,3 +174,7 @@ class AppUpdate(SoftDeleteModel):
     cafe_bazar_link = models.URLField(null=True)
     myket_link = models.URLField(null=True)
     download_link = models.URLField(null=True)
+
+
+class StudyCategory(SoftDeleteModel):
+    title = models.CharField(max_length=60,null=True)

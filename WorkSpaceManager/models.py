@@ -2,7 +2,7 @@ from random import choices
 
 from django.db import models
 from sqlalchemy import nulls_first
-
+from core.models import  StudyCategory
 # from CrmCore.models import *
 from UserManager.models import UserAccount
 from django.contrib.contenttypes.models import ContentType
@@ -142,6 +142,8 @@ class WorkSpacePermission(SoftDeleteModel):
         is_active = models.BooleanField(default=True)
 
         workspace = models.ForeignKey(WorkSpace,on_delete=models.CASCADE,null=True,related_name="permissions")
+
+
 class Link(SoftDeleteModel):
     workspace = models.ForeignKey(WorkSpace,on_delete=models.CASCADE,null=True,related_name="links")
 
@@ -184,6 +186,8 @@ class WorkspaceMember(SoftDeleteModel):
     contract_end_date = models.DateTimeField(null=True)
     bad_record_status = models.BooleanField(default=False)
     insurance_status = models.BooleanField(default=False)
+    study_category = models.ForeignKey(StudyCategory,on_delete=models.SET_NULL,null=True)
+
     def is_team_bonos_status(self):
         return self.workspace.is_team_bonos
 

@@ -173,3 +173,96 @@ class MeetingSerializer(serializers.ModelSerializer):
         )
         new_meeting.save()
         return new_meeting
+
+    def update(self, instance, validated_data):
+        hashtag_list = validated_data.pop("hashtag_list", None)
+        file_id_list = validated_data.pop("file_id_list", None)
+        member_id_list = validated_data.pop("member_id_list", None)
+        phone_number_list = validated_data.pop("phone_number_list", None)
+        email_list = validated_data.pop("email_list", None)
+        label_id = validated_data.pop("label_id", None)
+        date_to_start_persian = validated_data.pop("date_to_start_persian", None)
+        remember_number = validated_data.pop("remember_number", None)
+
+        # Update simple fields
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+
+        if date_to_start_persian:
+            instance.date_to_start = persian_to_gregorian(date_to_start_persian)
+
+        if label_id is not None:
+            instance.label_id = label_id
+
+        if remember_number is not None:
+            instance.remember_number = remember_number
+
+        instance.save()
+
+        # === Update files ===
+        if file_id_list is not None:
+            current_file_ids = set(instance.files.values_list("id", flat=True))
+            new_file_ids = set(file_id_list)
+
+            to_remove_ids = current_file_ids - new_file_ids
+            if to_remove_ids:
+                instance.files.remove(*to_remove_ids)
+
+            to_add_ids = new_file_ids - current_file_ids
+            for file_id in to_add_ids:
+                main_file = MainFile.objects.get(id=file_id)
+                main_file.its_blong = True
+                main_file.save()
+                instance.files.add(main_file)
+
+        # === Update hashtags ===
+        if hashtag_list is not None:
+            current_hashtags = set(instance.meeting_hashtags.values_list("name", flat=True))
+            new_hashtags = set(hashtag_list)
+
+            # حذف هشتگ‌هایی که دیگه نیستن
+            instance.meeting_hashtags.filter(name__in=(current_hashtags - new_hashtags)).delete()
+
+            # اضافه کردن هشتگ‌های جدید
+            for tag in new_hashtags - current_hashtags:
+                MeetingHashtag.objects.create(name=tag, meeting=instance)
+
+        # === Update phone numbers ===
+        if phone_number_list is not None:
+            current_phones = set(instance.meeting_phone_numbers.values_list("phone_number", flat=True))
+            new_phones = set(phone_number_list)
+
+            instance.meeting_phone_numbers.filter(phone_number__in=(current_phones - new_phones)).delete()
+            for phone in new_phones - current_phones:
+                MeetingPhoneNumber.objects.create(phone_number=phone, meeting=instance)
+
+        # === Update emails ===
+        if email_list is not None:
+            current_emails = set(instance.meeting_emails.values_list("email", flat=True))
+            new_emails = set(email_list)
+
+            instance.meeting_emails.filter(email__in=(current_emails - new_emails)).delete()
+            for email in new_emails - current_emails:
+                MeetingEmail.objects.create(email=email, meeting=instance)
+
+        # === Update members (only user_type="member") ===
+        if member_id_list is not None:
+            user = self.context["user"]
+            current_member_ids = set(
+                instance.members.filter(user_type="member").values_list("user_id", flat=True)
+            )
+            new_member_ids = set(member_id_list) - {user.id}
+
+            members_to_remove = current_member_ids - new_member_ids
+            if members_to_remove:
+                instance.members.filter(user_type="member", user_id__in=members_to_remove).delete()
+
+            members_to_add = new_member_ids - current_member_ids
+            for member_id in members_to_add:
+                MeetingMember.objects.create(
+                    user_type="member",
+                    user_id=member_id,
+                    meeting=instance
+                )
+
+        return instance
