@@ -189,6 +189,10 @@ class CalenderManger(APIView):
                     if day["date"] == occ_str:
                         # اگر کلید schedule_occurrences موجود نیست، آن را به صورت لیست ایجاد می‌کنیم
                         day['count'] += 1
+                        try:
+                            day['schedule_list'].append(MeetingSerializer(occ).data)
+                        except:
+                            day['schedule_list'] = [MeetingSerializer(occ).data]
 
         return Response({"status": True, "message": "Success", "data": data},
                         status=status.HTTP_200_OK)
@@ -271,7 +275,11 @@ class CalenderManger(APIView):
             ]
             data_list.append({
                 "date": jdate.strftime("%Y/%m/%d"),
-                "count": len(customer_list) + len(check_list_items)
+                "count": len(customer_list) + len(check_list_items),
+                "customer_list":CustomerSmallSerializer(customer_objs,many=True),
+                "task_list":CheckListSerializer(check_list_objs,many=True)
+
+
             })
         return data_list
 
