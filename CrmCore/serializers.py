@@ -244,6 +244,7 @@ class CustomerSmallSerializer(serializers.ModelSerializer):
             "group_crm_id",
             "avatar_url",
             "workspace_id",
+            "datetime_to_remember_persian",
             "id",
             "step_status",
             "order",

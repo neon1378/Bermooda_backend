@@ -282,6 +282,15 @@ class CustomerUser(SoftDeleteModel):
         except:
             return  ""
 
+
+    def datetime_to_remember_persian (self):
+        try:
+
+            jalali_date = jdatetime.datetime.fromgregorian(datetime=self.main_date_time_to_remember)
+            return jalali_date.strftime('%Y/%m/%d %H:%M')
+        except:
+            return None
+
     def app_avatar_url(self):
         try:
             base_url = os.getenv("BASE_URL")
