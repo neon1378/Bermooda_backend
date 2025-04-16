@@ -419,6 +419,7 @@ class WorkSpaceMemberFullDataSerializer(serializers.ModelSerializer):
             "insurance_status",
             "job_position",
             "study_category",
+            "study_category_id",
             #not done
 
 
