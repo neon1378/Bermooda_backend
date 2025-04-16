@@ -119,7 +119,7 @@ class MeetingSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         user = self.context['user']
         hashtag_list = validated_data.pop("hashtag_list",[])
-        file_id_list = validated_data.pop("file_id_list",[])
+        file_id_list = validated_data.pop("file_id_list",None)
         member_id_list = validated_data.pop("member_id_list",[])
         phone_number_list = validated_data.pop("phone_number_list",[])
         email_list = validated_data.pop("email_list",[])
@@ -133,10 +133,11 @@ class MeetingSerializer(serializers.ModelSerializer):
             new_meeting.label_id=label_id
         if remember_number:
             new_meeting.remember_number=remember_number
-        for file_id in file_id_list:
-            main_file= MainFile.objects.get(id=file_id)
-            main_file.its_blong=True
-            new_meeting.files.add(main_file)
+        if file_id_list or file_id_list != []:
+            for file_id in file_id_list:
+                main_file= MainFile.objects.get(id=file_id)
+                main_file.its_blong=True
+                new_meeting.files.add(main_file)
 
 
         if phone_number_list:
