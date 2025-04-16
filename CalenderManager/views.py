@@ -173,24 +173,24 @@ class CalenderManger(APIView):
 
         # دریافت لیست تمامی روزهای ماه به صورت jdatetime و لیست اولیه برای نمایش داده‌ها
         all_day_in_month = self.get_all_dates_of_month(year=year, month=month)
-        data = self.get_list_data(month_list=all_day_in_month)
+        data = self.get_list_data(month_list=all_day_in_month,request=request)
 
         # دریافت تمامی برنامه‌های موجود؛ در صورت نیاز می‌توانید بر اساس workspace یا کاربر فیلتر کنید
-        schedules = Meeting.objects.filter(workspace=self.workspace_obj,members__user=request.user)  # یا .filter(workspace=self.workspace_obj) اگر ارتباطی وجود دارد
-
-        # بررسی هر برنامه و اضافه کردن اطلاعات وقوع آن در هر روز
-
-        for schedule in schedules:
-            occurrences = self.get_occurrences_in_month(schedule, year, month)
-            for occ in occurrences:
-                occ_str = occ.strftime("%Y/%m/%d")
-                # پیدا کردن روز مورد نظر در data (که شامل key "date" است)
-                for day in data:
-                    if day["date"] == occ_str:
-                        # اگر کلید schedule_occurrences موجود نیست، آن را به صورت لیست ایجاد می‌کنیم
-                        day['count'] += 1
-
-                        day['schedule_occurrences'].append(MeetingSerializer(occ).data)
+        # schedules = Meeting.objects.filter(workspace=self.workspace_obj,members__user=request.user)  # یا .filter(workspace=self.workspace_obj) اگر ارتباطی وجود دارد
+        #
+        # # بررسی هر برنامه و اضافه کردن اطلاعات وقوع آن در هر روز
+        #
+        # for schedule in schedules:
+        #     occurrences = self.get_occurrences_in_month(schedule, year, month)
+        #     for occ in occurrences:
+        #         occ_str = occ.strftime("%Y/%m/%d")
+        #         # پیدا کردن روز مورد نظر در data (که شامل key "date" است)
+        #         for day in data:
+        #             if day["date"] == occ_str:
+        #                 # اگر کلید schedule_occurrences موجود نیست، آن را به صورت لیست ایجاد می‌کنیم
+        #                 day['count'] += 1
+        #
+        #                 day['schedule_occurrences'].append(MeetingSerializer(occ).data)
 
 
         return Response({"status": True, "message": "Success", "data": data},
@@ -250,7 +250,7 @@ class CalenderManger(APIView):
             status=status.HTTP_200_OK,
         )
 
-    def get_list_data(self, month_list):
+    def get_list_data(self, month_list,request):
         """Returns checklist count for each day in a month."""
         check_list_objs = CheckList.objects.filter(
             task__project__workspace=self.workspace_obj,
@@ -272,7 +272,7 @@ class CalenderManger(APIView):
                 item for item in check_list_objs
                 if item.date_time_to_start_main and item.date_time_to_start_main.date() == g_date and not item.task.is_deleted
             ]
-            data_list.append({
+            dic = {
                 "date": jdate.strftime("%Y/%m/%d"),
                 "count": len(customer_list) + len(check_list_items),
                 "customer_list":CustomerSmallSerializer(customer_objs,many=True).data,
@@ -280,7 +280,20 @@ class CalenderManger(APIView):
                 "schedule_occurrences":[]
 
 
-            })
+            }
+            schedules = Meeting.objects.filter(workspace=self.workspace_obj, members__user=request.user)
+            for schedule in schedules:
+                occurrences = self.get_occurrences_in_month(schedule, g_date.year, g_date.month)
+                for occ in occurrences:
+                    occ_str = occ.strftime("%Y/%m/%d")
+                    # پیدا کردن روز مورد نظر در data (که شامل key "date" است)
+
+                    if dic["date"] == occ_str:
+                            # اگر کلید schedule_occurrences موجود نیست، آن را به صورت لیست ایجاد می‌کنیم
+                        dic['count'] += 1
+
+                        dic['schedule_occurrences'].append(MeetingSerializer(occ).data)
+            data_list.append(dic)
         return data_list
 
     def post(self, request):
