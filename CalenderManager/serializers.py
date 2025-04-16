@@ -133,12 +133,13 @@ class MeetingSerializer(serializers.ModelSerializer):
             new_meeting.label_id=label_id
         if remember_number:
             new_meeting.remember_number=remember_number
-        if file_id_list or file_id_list != []:
+        try:
             for file_id in file_id_list:
                 main_file= MainFile.objects.get(id=file_id)
                 main_file.its_blong=True
                 new_meeting.files.add(main_file)
-
+        except:
+            pass
 
         if phone_number_list:
             for phone in phone_number_list:
