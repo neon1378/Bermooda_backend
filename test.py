@@ -1,7 +1,8 @@
 from CalenderManager.models import MeetingLabel
 
 all_label= MeetingLabel.objects.all()
-all_label.hard_delete()
+for i in all_label:
+    i.hard_delete()
 
 data =[
     {
