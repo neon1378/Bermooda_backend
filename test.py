@@ -1,3 +1,8 @@
+from CalenderManager.models import MeetingLabel
+
+all_label= MeetingLabel.objects.all()
+all_label.hard_delete()
+
 data =[
     {
         "title":"برنامه شخصی",
@@ -93,3 +98,11 @@ data =[
         """
     },
 ]
+for item in data:
+    MeetingLabel.objects.create(
+        title = item['title'],
+        titleTr1 = item['titleTr1'],
+        color_code = item['color_code'],
+        icon =  item['icon'],
+        key_name = item['key_name'],
+    )

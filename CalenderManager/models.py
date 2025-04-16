@@ -6,6 +6,7 @@ from WorkSpaceManager.models import WorkSpace
 
 class MeetingLabel(SoftDeleteModel):
     title = models.CharField(max_length=20,null=True)
+    titleTr1= models.CharField(max_length=20,null=True)
     color_code = models.CharField(max_length=12,null=True)
     workspace= models.ForeignKey(WorkSpace,on_delete=models.CASCADE,null=True)
     icon = models.TextField(null=True,blank=True)

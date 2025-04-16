@@ -56,6 +56,7 @@ class MeetingLabelSerializer(serializers.ModelSerializer):
             "title",
             "color_code",
             "icon",
+            "titleTr1",
             "key_name",
         ]
     def create(self, validated_data):
