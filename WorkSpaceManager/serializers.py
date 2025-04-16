@@ -1,10 +1,11 @@
 import os
-from multiprocessing.util import is_exiting
-from core.serializers import MainFileSerializer
+
+from core.serializers import MainFileSerializer,StateSerializer,CitySerializer
 from rest_framework.serializers import ModelSerializer
 from rest_framework import serializers
+import jdatetime
 
-from core.widgets import change_current_workspace_jadoo
+from core.widgets import change_current_workspace_jadoo,persian_to_gregorian
 from .models import *
 import requests
 from django.shortcuts import get_object_or_404
@@ -352,3 +353,237 @@ class WorkSpaceMemberSerializer(serializers.ModelSerializer):
         except:
             pass
         return new_workspace_member
+
+
+class StudyCategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model =StudyCategory
+        fields = [
+            "id",
+            "title"
+        ]
+
+class WorkSpaceMemberFullDataSerializer(serializers.ModelSerializer):
+    user_account_data = serializers.JSONField(write_only=True, required=True)
+    user_account = UserSerializer(required=False, read_only=True)
+    workspace_id = serializers.IntegerField(required=True, write_only=True)
+    permissions = serializers.ListField(write_only=True, required=True)
+    state_id = serializers.IntegerField(write_only=True,required=False,allow_null=True)
+    city_id= serializers.IntegerField(write_only=True,required=False,allow_null=True)
+    state = StateSerializer(read_only=True)
+    city= CitySerializer(read_only=True)
+
+    date_of_birth_jalali = serializers.CharField(write_only=True,required=False)
+    date_of_birth_persian = serializers.SerializerMethodField(read_only=True)
+
+    date_of_start_to_work_jalali =serializers.CharField(write_only=True,required=False)
+    date_of_start_to_work_persian = serializers.SerializerMethodField(read_only=True)
+
+    contract_end_date_jalali = serializers.CharField(write_only=True,required=False)
+    contract_end_date_persian  = serializers.SerializerMethodField(read_only=True)
+
+    study_category= StudyCategorySerializer(read_only=True)
+    study_category_id = serializers.IntegerField(write_only=True)
+
+    class Meta:
+        model = WorkspaceMember
+        fields = [
+            "is_team_bonos_status", "id", "user_account_data", "user_account", "first_name",
+            "is_accepted", "permissions", "last_name", "workspace_id", "jtime", "permission_list",
+            #done
+            "state",
+            "city",
+            "state_id",
+            "city_id",
+            "more_information",
+            "employee_code",
+            "email",
+
+            "date_of_birth_jalali",
+            "date_of_birth_persian",
+            "national_code",
+            "certificate_number",
+            "gender",
+            "address",
+            "postal_code",
+            "marriage",
+            "number_of_children",
+            "shaba_number",
+
+            "date_of_start_to_work_jalali",
+            "date_of_start_to_work_persian",
+
+            "contract_end_date_jalali",
+            "contract_end_date_persian",
+            "bad_record_status",
+            "insurance_status",
+            "job_position",
+            "study_category",
+            #not done
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        ]
+    def get_date_of_birth_persian(self,obj):
+        try:
+            jalali_date = jdatetime.datetime.fromgregorian(datetime=obj.date_of_birth)
+            return jalali_date.strftime('%Y/%m/%d')
+        except:
+            return None
+    def get_date_of_start_to_work_persian(self,obj):
+        try:
+            jalali_date = jdatetime.datetime.fromgregorian(datetime=obj.date_of_start_to_work)
+            return jalali_date.strftime('%Y/%m/%d')
+        except:
+            return None
+
+    def get_contract_end_date_persian(self, obj):
+        try:
+            jalali_date = jdatetime.datetime.fromgregorian(datetime=obj.contract_end_date)
+            return jalali_date.strftime('%Y/%m/%d')
+        except:
+            return None
+
+    def create(self, validated_data):
+        from .views import create_permission_for_member
+
+        workspace_id = validated_data.pop("workspace_id")
+        workspace = get_object_or_404(WorkSpace, id=workspace_id)
+        user_data = validated_data.pop("user_account_data")
+        permissions = validated_data.pop("permissions")
+        phone = user_data.get("phone_number")
+        more_information= validated_data.pop("more_information",False)
+        state_id = validated_data.pop("state_id",None)
+        city_id = validated_data.pop("city_id",None)
+        date_of_birth_jalali = validated_data.pop("date_of_birth_jalali",None)
+        date_of_start_to_work_jalali = validated_data.pop("date_of_start_to_work_jalali",None)
+        contract_end_date_jalali = validated_data.pop("contract_end_date_jalali",None)
+        study_category_id = validated_data.pop("study_category_id",None)
+
+        user_acc, _ = UserAccount.objects.get_or_create(phone_number=phone, defaults={"is_register": False})
+        if not user_acc.is_register:
+            try:
+                url = f"{os.getenv('JADOO_BASE_URL')}/user/auth/createBusinessUser"
+                payload = {"mobile": phone, "password": "asdlaskjd"}
+                response = requests.post(url=url, data=payload).json()
+                user_acc.refrence_id = int(response['data']['id'])
+                user_acc.refrence_token = response['data']['token']
+                user_acc.save()
+            except:
+                pass
+
+        if WorkspaceMember.objects.filter(workspace=workspace, user_account=user_acc).exists() or workspace.owner == user_acc:
+            raise serializers.ValidationError({
+                "status": False,
+                "message": "کاربر مورد نظر در حال حاظر در تیم شما وجود دارد",
+                "data": {}
+            })
+
+        deleted_member = WorkspaceMember.all_objects.filter(
+            is_deleted=True, workspace=workspace, user_account=user_acc
+        ).first()
+
+        if deleted_member:
+            deleted_member.is_deleted = False
+            deleted_member.deleted_at = None
+            deleted_member.first_name = validated_data.get("first_name")
+            deleted_member.last_name = validated_data.get("last_name")
+            deleted_member.fullname = f"{deleted_member.first_name} {deleted_member.last_name}"
+            deleted_member.is_accepted = False
+            if user_acc.current_workspace_id == 0 or not WorkSpace.objects.filter(id=user_acc.current_workspace_id).exists():
+                user_acc.current_workspace_id = workspace.id
+                user_acc.save()
+
+            if more_information:
+                for attr, value in validated_data.items():
+                    setattr(deleted_member, attr, value)
+                if state_id:
+                    deleted_member.state_id = state_id
+                if city_id:
+                    deleted_member.city_id = city_id
+
+                if date_of_birth_jalali:
+                    deleted_member.date_of_birth_jalali =persian_to_gregorian( date_of_birth_jalali)
+                if date_of_start_to_work_jalali:
+                    deleted_member.date_of_start_to_work_jalali = persian_to_gregorian(date_of_start_to_work_jalali)
+                if contract_end_date_jalali:
+                    deleted_member.contract_end_date_jalali = persian_to_gregorian(contract_end_date_jalali)
+
+
+                if study_category_id:
+                    deleted_member.study_category_id = study_category_id
+            deleted_member.save()
+            return deleted_member
+
+        member = WorkspaceMember.objects.create(**validated_data, user_account=user_acc, is_accepted=False)
+        member.fullname = f"{member.first_name} {member.last_name}"
+
+        if more_information:
+            if state_id:
+                deleted_member.state_id = state_id
+            if city_id:
+                deleted_member.city_id = city_id
+
+            if date_of_birth_jalali:
+                deleted_member.date_of_birth_jalali = persian_to_gregorian(date_of_birth_jalali)
+            if date_of_start_to_work_jalali:
+                deleted_member.date_of_start_to_work_jalali = persian_to_gregorian(date_of_start_to_work_jalali)
+            if contract_end_date_jalali:
+                deleted_member.contract_end_date_jalali = persian_to_gregorian(contract_end_date_jalali)
+
+            if study_category_id:
+                deleted_member.study_category_id = study_category_id
+        member.save()
+
+        if not GroupMessage.objects.filter(workspace=workspace, members=workspace.owner).filter(members=user_acc).exists():
+            GroupMessage.objects.create(workspace=workspace, members=[workspace.owner, user_acc])
+
+        for other in WorkspaceMember.objects.filter(workspace=workspace).exclude(id=member.id):
+            if not GroupMessage.objects.filter(workspace=workspace, members=member.user_account).filter(members=other.user_account).exists():
+                GroupMessage.objects.create(workspace=workspace, members=[other.user_account, member.user_account])
+
+        send_invite_link(user_acc.phone_number, workspace.owner.fullname, workspace.title)
+        create_permission_for_member(member_id=member.id, permissions=permissions)
+
+        user_acc.current_workspace_id = workspace.id
+        user_acc.save()
+        change_current_workspace_jadoo(user_acc=user_acc, workspace_obj=workspace)
+
+        try:
+            url = f"{os.getenv('JADOO_BASE_URL')}/workspace/addWorkSpaceMember"
+            headers = {
+                "content-type": "application/json",
+                "Authorization": f"Bearer {workspace.owner.refrence_token}"
+            }
+            payload = {
+                "workSpaceId": workspace.jadoo_workspace_id,
+                "userId": user_acc.refrence_id,
+                "businessUserId": user_acc.id,
+                "businessMemberId": member.id,
+            }
+            requests.post(url=url, headers=headers, json=payload)
+        except:
+            pass
+
+        return member
+
+
+

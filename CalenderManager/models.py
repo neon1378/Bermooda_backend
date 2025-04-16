@@ -37,7 +37,7 @@ class Meeting(SoftDeleteModel):
 
     title = models.CharField(max_length=200, null=True)
     remember_type = models.CharField(max_length=80, choices=REMEMBER_TYPE, null=True, blank=True)
-    remember_number = models.IntegerField(default=0)
+    remember_number = models.IntegerField(default=0,null=True,blank=True)
 
     description = models.TextField(null=True, blank=True)
     more_information = models.BooleanField(default=False)

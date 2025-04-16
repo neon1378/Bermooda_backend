@@ -71,15 +71,15 @@ class MeetingLabelSerializer(serializers.ModelSerializer):
 
 class MeetingSerializer(serializers.ModelSerializer):
     label = MeetingLabelSerializer(read_only=True)
-    meeting_hashtags =  MeetingHashtagSerializer(many=True,read_only=True)
+
     meeting_phone_numbers = MeetingPhoneNumberSerializer(many=True,read_only=True)
     meeting_emails = MeetingEmailSerializer(many=True,read_only=True)
     members = MeetingMemberSerializer(many=True,read_only=True)
     files= MainFileSerializer(many=True,read_only=True)
     workspace_id= serializers.IntegerField(required=True)
-    hashtag_list = serializers.ListField(write_only=True,allow_null=True)
+
     file_id_list = serializers.ListField(write_only=True,required=False,allow_null=True)
-    member_id_list = serializers.ListField(write_only=True,required=True)
+    member_id_list = serializers.ListField(write_only=True,required=False,allow_null=True,allow_empty=True)
     phone_number_list = serializers.ListField(write_only=True,required=False,allow_null=True)
     email_list = serializers.ListField(write_only=True,required=False,allow_null=True)
     label_id = serializers.IntegerField(write_only=True,required=False,allow_null=True)
@@ -89,7 +89,7 @@ class MeetingSerializer(serializers.ModelSerializer):
         fields =[
             "id",
             "label",
-            "meeting_hashtags",
+
             "meeting_phone_numbers",
             "meeting_emails",
             "workspace_id",
@@ -105,7 +105,7 @@ class MeetingSerializer(serializers.ModelSerializer):
             "more_information",
             "link",
             # fields
-            "hashtag_list",
+
             "file_id_list",
             "member_id_list",
             "phone_number_list",
@@ -139,12 +139,6 @@ class MeetingSerializer(serializers.ModelSerializer):
             new_meeting.files.add(main_file)
 
 
-        if hashtag_list:
-            for hashtag in hashtag_list:
-                MeetingHashtag.objects.create(
-                    name = hashtag,
-                    meeting= new_meeting
-                )
         if phone_number_list:
             for phone in phone_number_list:
                 MeetingPhoneNumber.objects.create(
@@ -215,17 +209,6 @@ class MeetingSerializer(serializers.ModelSerializer):
                 main_file.save()
                 instance.files.add(main_file)
 
-        # === Update hashtags ===
-        if hashtag_list is not None:
-            current_hashtags = set(instance.meeting_hashtags.values_list("name", flat=True))
-            new_hashtags = set(hashtag_list)
-
-            # حذف هشتگ‌هایی که دیگه نیستن
-            instance.meeting_hashtags.filter(name__in=(current_hashtags - new_hashtags)).delete()
-
-            # اضافه کردن هشتگ‌های جدید
-            for tag in new_hashtags - current_hashtags:
-                MeetingHashtag.objects.create(name=tag, meeting=instance)
 
         # === Update phone numbers ===
         if phone_number_list is not None:

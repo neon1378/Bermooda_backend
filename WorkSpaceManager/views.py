@@ -16,8 +16,8 @@ from django.shortcuts import get_object_or_404
 import os 
 import json
 from Notification.models import Notification
-from .serializers import WorkSpaceSerializer, IndustrialActivitySerializer, WorkSpaceMemberSerializer, UserSerializer, \
-    UpdateWorkSpaceSerializer, WorkSpacePermissionSerializer
+from .serializers import *
+
 import requests
 from dotenv import load_dotenv
 from core.permission import IsAccess,IsWorkSpaceUser
@@ -693,7 +693,7 @@ class WorkSpaceMemberManger(APIView):
     def get(self,request,member_id=None):
         if member_id:
             member_workspace = get_object_or_404(WorkspaceMember,id=member_id)
-            serializer_data =WorkSpaceMemberSerializer(member_workspace)
+            serializer_data =WorkSpaceMemberFullDataSerializer(member_workspace)
             return Response(status=status.HTTP_200_OK,data={
                 "status":True,
                 "message":"موفق",
@@ -718,7 +718,7 @@ class WorkSpaceMemberManger(APIView):
 
         for member in workspace_member:
             is_register= member.is_accepted
-            main_data =WorkSpaceMemberSerializer(member).data
+            main_data =WorkSpaceMemberFullDataSerializer(member).data
             main_data['user_account']['is_register']  = member.is_accepted
             member_data.append(main_data)
 
@@ -733,10 +733,14 @@ class WorkSpaceMemberManger(APIView):
     def post(self,request):
 
         request.data['workspace_id'] = request.user.current_workspace_id
+        more_information = request.data.get("more_information",False)
         workspace_obj = WorkSpace.objects.get(id=request.user.current_workspace_id)
         if workspace_obj.owner == request.user:
             permissions = request.data.get("permissions")
-            serializer_data = WorkSpaceMemberSerializer(data= request.data)
+            if more_information:
+                serializer_data = WorkSpaceMemberFullDataSerializer(data=request.data)
+            else:
+                serializer_data = WorkSpaceMemberSerializer(data= request.data)
 
             if serializer_data.is_valid():
                 new_member = serializer_data.save()
@@ -746,7 +750,7 @@ class WorkSpaceMemberManger(APIView):
                 return Response(status=status.HTTP_201_CREATED,data={
                     "status":True,
                     "message":"کاربر با موفقیت اضافه شد",
-                    "data":serializer_data.data
+                    "data":WorkSpaceMemberFullDataSerializer(new_member).data
                 })
             return Response(status=status.HTTP_400_BAD_REQUEST,data={
                 "status":False,
