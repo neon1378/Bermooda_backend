@@ -276,8 +276,8 @@ class CalenderManger(APIView):
             data_list.append({
                 "date": jdate.strftime("%Y/%m/%d"),
                 "count": len(customer_list) + len(check_list_items),
-                "customer_list":CustomerSmallSerializer(customer_objs,many=True),
-                "task_list":CheckListSerializer(check_list_objs,many=True)
+                "customer_list":CustomerSmallSerializer(customer_objs,many=True).data,
+                "task_list":CheckListSerializer(check_list_objs,many=True).data
 
 
             })
