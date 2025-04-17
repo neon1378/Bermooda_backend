@@ -72,7 +72,7 @@ def upload_file (request):
             "message":"File Not Provided",
             "data":{}
         }, status=status.HTTP_400_BAD_REQUEST)
-    new_file = MainFile(file=file)
+    new_file = MainFile(file=file,original_name=file.name)
     try:
         new_file.workspace_id =request.GET.get("workspace_id")
     except:
@@ -86,6 +86,7 @@ def upload_file (request):
             "file_id":new_file.id,
             "url":f"{base_url}{new_file.file.url}",
             "file_name":new_file.file.name,
+            "original_name":new_file.original_name
         }
     })
 

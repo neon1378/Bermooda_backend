@@ -54,6 +54,7 @@ class MainFileSerializer(serializers.ModelSerializer):
             "file_id",
             "file_url",
             "file_name",
+            "original_name",
             "url",
         ]
     def get_file_name(self, obj):

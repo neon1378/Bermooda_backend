@@ -9,7 +9,7 @@ load_dotenv()
 class MainFile(models.Model):
     file = models.FileField(upload_to="Bermooda/Files",null=True)
     its_blong = models.BooleanField(default=False)
-    
+    original_name = models.CharField(max_length=500,null=True)
     created = models.DateTimeField(auto_now_add=True,null=True)
     workspace_id = models.CharField(max_length=200,null=True)
 
