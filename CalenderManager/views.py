@@ -338,6 +338,10 @@ class CalenderManger(APIView):
         })
 
 
+    def delete(self,request,meeting_id):
+        meeting_obj = get_object_or_404(Meeting,id=meeting_id)
+        meeting_obj.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_a_meeting(request,meeting_id):
