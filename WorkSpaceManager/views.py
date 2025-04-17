@@ -1117,3 +1117,14 @@ def get_message(request):
     # Return JSON response
     return Response(result, status=status.HTTP_200_OK)
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def study_category(request):
+    study_objs = StudyCategory.objects.all()
+
+    serializer_data= StudyCategorySerializer(study_objs,many=True)
+    return Response(status=status.HTTP_200_OK,data={
+        "status":True,
+        "message":"موفق",
+        "data":serializer_data.data
+    })

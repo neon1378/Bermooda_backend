@@ -32,6 +32,8 @@ urlpatterns = [
     path("create_workspace_to_jadoo",views.create_workspace_to_jadoo),
     path("create_users_to_jadoo",views.create_users_to_jadoo),
     path("get_message",views.get_message),
+    path("GetStudyCategory", views.study_category),
+
 
 
 
