@@ -396,7 +396,7 @@ class WorkSpaceMemberFullDataSerializer(serializers.ModelSerializer):
             "state_id",
             "city_id",
             "more_information",
-            "employee_code",
+
             "email",
 
             "date_of_birth_jalali",
