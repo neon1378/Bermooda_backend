@@ -191,7 +191,7 @@ class InvoiceSerializer(ModelSerializer):
         city_seller = seller_information.pop("city",None)
         payment_type = validated_data.get("payment_type",None)
 
-        date_to_pay_jalali = validity_date.pop("date_to_pay_persian",None)
+        date_to_pay_jalali = validated_data.pop("date_to_pay_persian",None)
         if products == [] or products == None:
             raise serializers.ValidationError(
                 {
