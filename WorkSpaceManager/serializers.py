@@ -397,6 +397,12 @@ class WorkSpaceMemberFullDataSerializer(serializers.ModelSerializer):
             "city_id",
             "more_information",
 
+            "is_emergency_information",
+            "emergency_first_name",
+            "emergency_last_name",
+            "emergency_phone_number",
+            "emergency_relationship",
+
             "email",
 
             "date_of_birth_jalali",
@@ -465,7 +471,7 @@ class WorkSpaceMemberFullDataSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         from .views import create_permission_for_member
-
+        is_emergency_information = validated_data.pop("is_emergency_information",False)
         workspace_id = validated_data.pop("workspace_id")
         workspace = get_object_or_404(WorkSpace, id=workspace_id)
         user_data = validated_data.pop("user_account_data")
@@ -478,7 +484,10 @@ class WorkSpaceMemberFullDataSerializer(serializers.ModelSerializer):
         date_of_start_to_work_jalali = validated_data.pop("date_of_start_to_work_jalali",None)
         contract_end_date_jalali = validated_data.pop("contract_end_date_jalali",None)
         study_category_id = validated_data.pop("study_category_id",None)
-
+        emergency_first_name = validated_data.pop("emergency_first_name",None)
+        emergency_last_name = validated_data.pop("emergency_last_name",None)
+        emergency_phone_number = validated_data.pop("emergency_phone_number",None)
+        emergency_relationship = validated_data.pop("emergency_relationship",None)
         user_acc, _ = UserAccount.objects.get_or_create(phone_number=phone, defaults={"is_register": False})
         if not user_acc.is_register:
             try:
@@ -531,6 +540,11 @@ class WorkSpaceMemberFullDataSerializer(serializers.ModelSerializer):
 
                 if study_category_id:
                     deleted_member.study_category_id = study_category_id
+            if is_emergency_information:
+                deleted_member.emergency_first_name= emergency_first_name
+                deleted_member.emergency_last_name= emergency_last_name
+                deleted_member.emergency_phone_number= emergency_phone_number
+                deleted_member.emergency_relationship= emergency_relationship
             deleted_member.save()
             return deleted_member
 
@@ -552,6 +566,11 @@ class WorkSpaceMemberFullDataSerializer(serializers.ModelSerializer):
 
             if study_category_id:
                 deleted_member.study_category_id = study_category_id
+        if is_emergency_information:
+            deleted_member.emergency_first_name = emergency_first_name
+            deleted_member.emergency_last_name = emergency_last_name
+            deleted_member.emergency_phone_number = emergency_phone_number
+            deleted_member.emergency_relationship = emergency_relationship
         member.save()
 
         if not GroupMessage.objects.filter(workspace=workspace, members=workspace.owner).filter(members=user_acc).exists():

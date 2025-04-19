@@ -188,6 +188,14 @@ class WorkspaceMember(SoftDeleteModel):
     insurance_status = models.BooleanField(default=False)
     study_category = models.ForeignKey(StudyCategory,on_delete=models.SET_NULL,null=True)
     job_position = models.CharField(max_length=40,null=True)
+    is_emergency_information  = models.BooleanField(default=False)
+    emergency_first_name =models.CharField(max_length=20,null=True ,blank=True)
+    emergency_last_name = models.CharField(max_length=20,null=True ,blank=True)
+    emergency_phone_number = models.CharField(max_length=12,null=True ,blank=True)
+    emergency_relationship = models.CharField(max_length=30,null=True ,blank=True)
+
+
+
     def is_team_bonos_status(self):
         return self.workspace.is_team_bonos
 
