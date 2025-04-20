@@ -175,22 +175,6 @@ class CalenderManger(APIView):
         all_day_in_month = self.get_all_dates_of_month(year=year, month=month)
         data = self.get_list_data(month_list=all_day_in_month,request=request)
 
-        # دریافت تمامی برنامه‌های موجود؛ در صورت نیاز می‌توانید بر اساس workspace یا کاربر فیلتر کنید
-        # schedules = Meeting.objects.filter(workspace=self.workspace_obj,members__user=request.user)  # یا .filter(workspace=self.workspace_obj) اگر ارتباطی وجود دارد
-        #
-        # # بررسی هر برنامه و اضافه کردن اطلاعات وقوع آن در هر روز
-        #
-        # for schedule in schedules:
-        #     occurrences = self.get_occurrences_in_month(schedule, year, month)
-        #     for occ in occurrences:
-        #         occ_str = occ.strftime("%Y/%m/%d")
-        #         # پیدا کردن روز مورد نظر در data (که شامل key "date" است)
-        #         for day in data:
-        #             if day["date"] == occ_str:
-        #                 # اگر کلید schedule_occurrences موجود نیست، آن را به صورت لیست ایجاد می‌کنیم
-        #                 day['count'] += 1
-        #
-        #                 day['schedule_occurrences'].append(MeetingSerializer(occ).data)
 
 
         return Response({"status": True, "message": "Success", "data": data},
@@ -266,7 +250,7 @@ class CalenderManger(APIView):
             g_date = jdate.togregorian()
             customer_list = [
                 customer for customer in customer_objs
-                if customer.main_date_time_to_remember and customer.main_date_time_to_remember.date() == g_date
+                if customer.main_date_time_to_remember and customer.main_date_time_to_remember.date() == g_date and not customer.group_crm.is_deleted
             ]
             check_list_items = [
                 item for item in check_list_objs
