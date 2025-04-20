@@ -225,7 +225,7 @@ class CalenderManger(APIView):
         ]
         customer_items = [
             customer for customer in customer_objs
-            if customer.main_date_time_to_remember and customer.main_date_time_to_remember.date() == date_object and not customer.is_deleted
+            if customer.main_date_time_to_remember and customer.main_date_time_to_remember.date() == date_object and not customer.group_crm.is_deleted
         ]
 
         check_list_serializer = CheckListSerializer(check_list_items, many=True)
