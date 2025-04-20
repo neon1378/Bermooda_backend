@@ -144,7 +144,7 @@ class CalenderManger(APIView):
 
             return occurrences
         except:
-            pass
+            return []
     def get(self, request):
         self.workspace_obj = get_object_or_404(WorkSpace, id=request.user.current_workspace_id)
         self.user = request.user
