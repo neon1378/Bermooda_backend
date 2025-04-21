@@ -646,6 +646,7 @@ class WorkSpaceMemberFullDataSerializer(serializers.ModelSerializer):
         return member
 
     def update(self, instance, validated_data):
+        permissions= validated_data.pop("permissions",None)
         bad_record_id_list = validated_data.pop("bad_record_id_list", None)
         military_status = validated_data.pop("military_status", None)
         exempt_type = validated_data.pop("exempt_type", None)
