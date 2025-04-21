@@ -384,6 +384,7 @@ class WorkSpaceMemberFullDataSerializer(serializers.ModelSerializer):
     contract_end_date_persian  = serializers.SerializerMethodField(read_only=True)
 
     study_category= StudyCategorySerializer(read_only=True)
+
     study_category_id = serializers.IntegerField(write_only=True)
 
     class Meta:
@@ -474,6 +475,8 @@ class WorkSpaceMemberFullDataSerializer(serializers.ModelSerializer):
             return None
 
     def create(self, validated_data):
+        print(validated_data)
+
         from .views import create_permission_for_member
         bad_record_id_list = validated_data.pop("bad_record_id_list",None)
         military_status = validated_data.pop("military_status",None)
