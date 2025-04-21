@@ -737,10 +737,9 @@ class WorkSpaceMemberManger(APIView):
         workspace_obj = WorkSpace.objects.get(id=request.user.current_workspace_id)
         if workspace_obj.owner == request.user:
             permissions = request.data.get("permissions")
-            if more_information:
-                serializer_data = WorkSpaceMemberFullDataSerializer(data=request.data)
-            else:
-                serializer_data = WorkSpaceMemberSerializer(data= request.data)
+
+            serializer_data = WorkSpaceMemberFullDataSerializer(data=request.data)
+
 
             if serializer_data.is_valid():
                 new_member = serializer_data.save()

@@ -211,7 +211,7 @@ class WorkspaceMember(SoftDeleteModel):
     more_information = models.BooleanField(default=False)
     employee_code = models.CharField(max_length=20,null=True,blank=True)
     phone_number= models.CharField(max_length=11,null=True)
-    email = models.EmailField(null=True)
+    email = models.EmailField(null=True,blank=True)
     date_of_birth = models.DateTimeField(null=True,blank=True)
     national_code = models.CharField(max_length=10,null=True,blank=True)
     certificate_number = models.CharField(max_length=10,null=True,blank=True)

@@ -374,18 +374,18 @@ class WorkSpaceMemberFullDataSerializer(serializers.ModelSerializer):
     city= CitySerializer(read_only=True)
     bad_records = MainFileSerializer(many=True,read_only=True)
     bad_record_id_list = serializers.ListField(write_only=True,required=False,allow_null=True)
-    date_of_birth_jalali = serializers.CharField(write_only=True,required=False)
+    date_of_birth_jalali = serializers.CharField(write_only=True,required=False,allow_null=True,allow_blank=True)
     date_of_birth_persian = serializers.SerializerMethodField(read_only=True)
 
-    date_of_start_to_work_jalali =serializers.CharField(write_only=True,required=False)
+    date_of_start_to_work_jalali =serializers.CharField(write_only=True,required=False,allow_null=True,allow_blank=True)
     date_of_start_to_work_persian = serializers.SerializerMethodField(read_only=True)
 
-    contract_end_date_jalali = serializers.CharField(write_only=True,required=False)
+    contract_end_date_jalali = serializers.CharField(write_only=True,required=False,allow_null=True,allow_blank=True)
     contract_end_date_persian  = serializers.SerializerMethodField(read_only=True)
 
     study_category= StudyCategorySerializer(read_only=True)
 
-    study_category_id = serializers.IntegerField(write_only=True)
+    study_category_id = serializers.IntegerField(write_only=True,required=False,allow_null=True)
 
     class Meta:
         model = WorkspaceMember
