@@ -479,6 +479,7 @@ class WorkSpaceMemberFullDataSerializer(serializers.ModelSerializer):
         print(validated_data)
 
         from .views import create_permission_for_member
+        workspace_id = validated_data.pop("workspace_id",None)
         bad_record_id_list = validated_data.pop("bad_record_id_list",None)
         military_status = validated_data.pop("military_status",None)
         exempt_type = validated_data.pop("exempt_type",None)

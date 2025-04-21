@@ -801,6 +801,7 @@ class WorkSpaceMemberManger(APIView):
 
                     permission_member_obj.permission_type = permission_type
                     permission_member_obj.save()
+            request.data['workspace_id'] = request.user.current_workspace_id
             serializer_data = WorkSpaceMemberFullDataSerializer(instance=member_obj,data=request.data)
             if serializer_data.is_valid():
                 serializer_data.save()
