@@ -194,6 +194,21 @@ class WorkspaceMember(SoftDeleteModel):
         ("other", "Other"),
 
     )
+
+
+    EDUCATION_TYPE= (
+        ("highschool","HIGHSCHOOL"),
+        ("associate", "ASSOCIATE"),
+
+        ("bachelor", "BACHELOR"),
+        ("master", "MASTER"),
+
+        ("phd", "PHD"),
+
+    )
+
+
+
     insurance_type = models.CharField(max_length=15,null=True,blank=True,choices=INSURANCE_TYPE)
     military_status = models.CharField(choices=MILITARY_STATUS,max_length=30,null=True,blank=True)
     exempt_type = models.CharField(choices=EXEMPT_TYPE,max_length=30,null=True,blank=True)
@@ -231,6 +246,7 @@ class WorkspaceMember(SoftDeleteModel):
 
 
     insurance_status = models.BooleanField(default=False)
+    education_type = models.CharField(max_length=55,null=True,blank=True,choices=EDUCATION_TYPE)
     study_category = models.ForeignKey(StudyCategory,on_delete=models.SET_NULL,null=True)
     job_position = models.CharField(max_length=40,null=True,blank=True)
     is_emergency_information  = models.BooleanField(default=False)
@@ -246,7 +262,7 @@ class WorkspaceMember(SoftDeleteModel):
 
     def jtime (self):
         return costum_date(self.created)
-    
+
     def avatar_url (self):
         try:
             base_url = os.getenv("BASE_URL")

@@ -419,7 +419,7 @@ class WorkSpaceMemberFullDataSerializer(serializers.ModelSerializer):
             "marriage",
             "number_of_children",
             "shaba_number",
-
+            "education_type",
             "date_of_start_to_work_jalali",
             "date_of_start_to_work_persian",
 

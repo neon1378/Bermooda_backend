@@ -809,7 +809,7 @@ class WorkSpaceMemberManger(APIView):
                     "message":"با موفقیت بروزرسانی شد",
                     "data":serializer_data.data
                 })
-            return Response(status=status.HTTP_202_ACCEPTED, data={
+            return Response(status=status.HTTP_400_BAD_REQUEST, data={
                 "status": True,
                 "message": "Validation Error ",
                 "data": serializer_data.errors
