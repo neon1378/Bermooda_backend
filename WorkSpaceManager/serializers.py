@@ -404,6 +404,7 @@ class WorkSpaceMemberFullDataSerializer(serializers.ModelSerializer):
             "emergency_first_name",
             "emergency_last_name",
             "emergency_phone_number",
+            "phone_number",
             "emergency_relationship",
 
             "email",
