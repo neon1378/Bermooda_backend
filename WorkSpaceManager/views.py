@@ -802,20 +802,18 @@ class WorkSpaceMemberManger(APIView):
 
                     permission_member_obj.permission_type = permission_type
                     permission_member_obj.save()
-            if avatar_id:
-                main_file = MainFile.objects.get(id=avatar_id)
-                main_file.its_blong=True
-                main_file.save()
-                member_obj.user_account.avatar=main_file
-                member_obj.user_account.save()
-            member_obj.first_name = first_name
-            member_obj.last_name = last_name
-            member_obj.fullname = f"{first_name} {last_name}"
-            member_obj.save()
-            return Response(status=status.HTTP_202_ACCEPTED,data={
-                "status":True,
-                "message":"با موفقیت بروزرسانی شد",
-                "data":WorkSpaceMemberSerializer(member_obj).data
+            serializer_data = WorkSpaceMemberFullDataSerializer(instance=member_obj,data=request.data)
+            if serializer_data.is_valid():
+                serializer_data.save()
+                return Response(status=status.HTTP_202_ACCEPTED,data={
+                    "status":True,
+                    "message":"با موفقیت بروزرسانی شد",
+                    "data":serializer_data.data
+                })
+            return Response(status=status.HTTP_202_ACCEPTED, data={
+                "status": True,
+                "message": "Validation Error ",
+                "data": serializer_data.errors
             })
         return Response(status=status.HTTP_403_FORBIDDEN,data={
             "status":False,

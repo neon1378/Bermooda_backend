@@ -478,6 +478,8 @@ class WorkSpaceMemberFullDataSerializer(serializers.ModelSerializer):
         bad_record_id_list = validated_data.pop("bad_record_id_list",None)
         military_status = validated_data.pop("military_status",None)
         exempt_type = validated_data.pop("exempt_type",None)
+        first_name = validated_data.get("first_name")
+        last_name = validated_data.get("last_name")
         gender = validated_data.get("gender",None)
         workspace_id = validated_data.pop("workspace_id")
         workspace = get_object_or_404(WorkSpace, id=workspace_id)
@@ -524,6 +526,7 @@ class WorkSpaceMemberFullDataSerializer(serializers.ModelSerializer):
             deleted_member.deleted_at = None
             deleted_member.first_name = validated_data.get("first_name")
             deleted_member.last_name = validated_data.get("last_name")
+            deleted_member.full_name= f"{first_name} {last_name}"
             deleted_member.fullname = f"{deleted_member.first_name} {deleted_member.last_name}"
             deleted_member.is_accepted = False
             if user_acc.current_workspace_id == 0 or not WorkSpace.objects.filter(id=user_acc.current_workspace_id).exists():
@@ -567,6 +570,7 @@ class WorkSpaceMemberFullDataSerializer(serializers.ModelSerializer):
 
         member = WorkspaceMember.objects.create(**validated_data, user_account=user_acc, is_accepted=False)
         member.fullname = f"{member.first_name} {member.last_name}"
+        member.user_account = user_acc
 
         if more_information:
             if state_id:
@@ -597,14 +601,17 @@ class WorkSpaceMemberFullDataSerializer(serializers.ModelSerializer):
                 main_file.its_blong = True
                 main_file.save()
                 member.bad_records.add(main_file)
+
         member.save()
 
         if not GroupMessage.objects.filter(workspace=workspace, members=workspace.owner).filter(members=user_acc).exists():
-            GroupMessage.objects.create(workspace=workspace, members=[workspace.owner, user_acc])
+            group_message= GroupMessage.objects.create(workspace=workspace)
+            group_message.members.set([workspace.owner, user_acc])
 
         for other in WorkspaceMember.objects.filter(workspace=workspace).exclude(id=member.id):
             if not GroupMessage.objects.filter(workspace=workspace, members=member.user_account).filter(members=other.user_account).exists():
-                GroupMessage.objects.create(workspace=workspace, members=[other.user_account, member.user_account])
+                group_message = GroupMessage.objects.create(workspace=workspace)
+                group_message.members.set([other.user_account, member.user_account])
 
         send_invite_link(user_acc.phone_number, workspace.owner.fullname, workspace.title)
         create_permission_for_member(member_id=member.id, permissions=permissions)
@@ -631,5 +638,94 @@ class WorkSpaceMemberFullDataSerializer(serializers.ModelSerializer):
 
         return member
 
+    def update(self, instance, validated_data):
+        bad_record_id_list = validated_data.pop("bad_record_id_list", None)
+        military_status = validated_data.pop("military_status", None)
+        exempt_type = validated_data.pop("exempt_type", None)
+        gender = validated_data.get("gender", None)
+        more_information = validated_data.pop("more_information", False)
+        state_id = validated_data.pop("state_id", None)
+        phone= validated_data.pop("phone_number")
+        city_id = validated_data.pop("city_id", None)
+        date_of_birth_jalali = validated_data.pop("date_of_birth_jalali", None)
+        date_of_start_to_work_jalali = validated_data.pop("date_of_start_to_work_jalali", None)
+        contract_end_date_jalali = validated_data.pop("contract_end_date_jalali", None)
+        study_category_id = validated_data.pop("study_category_id", None)
+        is_emergency_information = validated_data.pop("is_emergency_information", False)
+        emergency_first_name = validated_data.pop("emergency_first_name", None)
+        emergency_last_name = validated_data.pop("emergency_last_name", None)
+        emergency_phone_number = validated_data.pop("emergency_phone_number", None)
+        emergency_relationship = validated_data.pop("emergency_relationship", None)
+        # Update related user account data
+        if phone  != instance.user_account.phone_number :
+            user_acc, _ = UserAccount.objects.get_or_create(phone_number=phone, defaults={"is_register": False})
+            if not user_acc.is_register:
+                try:
+                    url = f"{os.getenv('JADOO_BASE_URL')}/user/auth/createBusinessUser"
+                    payload = {"mobile": phone, "password": "asdlaskjd"}
+                    response = requests.post(url=url, data=payload).json()
+                    user_acc.refrence_id = int(response['data']['id'])
+                    user_acc.refrence_token = response['data']['token']
+                    user_acc.save()
+                except:
+                    pass
 
+            if WorkspaceMember.objects.filter(workspace=instance.workspace,
+                                              user_account=user_acc).exclude(id=instance.id).exists() or instance.workspace.owner == user_acc:
+                raise serializers.ValidationError({
+                    "status": False,
+                    "message": "کاربر مورد نظر در حال حاظر در تیم شما وجود دارد",
+                    "data": {}
+                })
 
+            instance.user_account = user_acc
+            instance.save()
+        # به‌روزرسانی مقادیر پایه
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+
+        if more_information:
+            if state_id is not None:
+                instance.state_id = state_id
+            if city_id is not None:
+                instance.city_id = city_id
+            if date_of_birth_jalali:
+                instance.date_of_birth_jalali = persian_to_gregorian(date_of_birth_jalali)
+            if date_of_start_to_work_jalali:
+                instance.date_of_start_to_work_jalali = persian_to_gregorian(date_of_start_to_work_jalali)
+            if contract_end_date_jalali:
+                instance.contract_end_date_jalali = persian_to_gregorian(contract_end_date_jalali)
+            if study_category_id:
+                instance.study_category_id = study_category_id
+
+        if is_emergency_information:
+            instance.emergency_first_name = emergency_first_name
+            instance.emergency_last_name = emergency_last_name
+            instance.emergency_phone_number = emergency_phone_number
+            instance.emergency_relationship = emergency_relationship
+
+        if gender and gender == "male":
+            instance.military_status = military_status
+            instance.exempt_type = exempt_type
+
+        # مدیریت bad_record_id_list
+        if bad_record_id_list is not None:
+            current_ids = set(instance.bad_records.values_list('id', flat=True))
+            new_ids = set(bad_record_id_list)
+
+            # حذف فایل‌هایی که در لیست جدید نیستند
+            for file_id in current_ids - new_ids:
+                file_to_remove = MainFile.objects.get(id=file_id)
+                instance.bad_records.remove(file_to_remove)
+                # در صورت نیاز به: file_to_remove.its_blong = False; file_to_remove.save()
+
+            # اضافه کردن فایل‌های جدید
+            for file_id in new_ids - current_ids:
+                main_file = MainFile.objects.get(id=file_id)
+                main_file.its_blong = True
+                main_file.save()
+                instance.bad_records.add(main_file)
+
+        instance.fullname = f"{instance.first_name} {instance.last_name}"
+        instance.save()
+        return instance
