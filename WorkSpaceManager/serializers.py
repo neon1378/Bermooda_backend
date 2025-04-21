@@ -698,11 +698,11 @@ class WorkSpaceMemberFullDataSerializer(serializers.ModelSerializer):
             if city_id is not None:
                 instance.city_id = city_id
             if date_of_birth_jalali:
-                instance.date_of_birth_jalali = persian_to_gregorian(date_of_birth_jalali)
+                instance.date_of_birth = persian_to_gregorian(date_of_birth_jalali)
             if date_of_start_to_work_jalali:
-                instance.date_of_start_to_work_jalali = persian_to_gregorian(date_of_start_to_work_jalali)
+                instance.date_of_start_to_work = persian_to_gregorian(date_of_start_to_work_jalali)
             if contract_end_date_jalali:
-                instance.contract_end_date_jalali = persian_to_gregorian(contract_end_date_jalali)
+                instance.contract_end_date = persian_to_gregorian(contract_end_date_jalali)
             if study_category_id:
                 instance.study_category_id = study_category_id
 
