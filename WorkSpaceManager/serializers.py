@@ -546,11 +546,11 @@ class WorkSpaceMemberFullDataSerializer(serializers.ModelSerializer):
                     deleted_member.city_id = city_id
 
                 if date_of_birth_jalali:
-                    deleted_member.date_of_birth_jalali =persian_to_gregorian( date_of_birth_jalali)
+                    deleted_member.date_of_birth =persian_to_gregorian(date_of_birth_jalali)
                 if date_of_start_to_work_jalali:
-                    deleted_member.date_of_start_to_work_jalali = persian_to_gregorian(date_of_start_to_work_jalali)
+                    deleted_member.date_of_start_to_work = persian_to_gregorian(date_of_start_to_work_jalali)
                 if contract_end_date_jalali:
-                    deleted_member.contract_end_date_jalali = persian_to_gregorian(contract_end_date_jalali)
+                    deleted_member.contract_end_date = persian_to_gregorian(contract_end_date_jalali)
 
 
                 if study_category_id:
@@ -583,11 +583,11 @@ class WorkSpaceMemberFullDataSerializer(serializers.ModelSerializer):
                 member.city_id = city_id
 
             if date_of_birth_jalali:
-                member.date_of_birth_jalali = persian_to_gregorian(date_of_birth_jalali)
+                member.date_of_birth = persian_to_gregorian(date_of_birth_jalali)
             if date_of_start_to_work_jalali:
-                member.date_of_start_to_work_jalali = persian_to_gregorian(date_of_start_to_work_jalali)
+                member.date_of_start_to_work = persian_to_gregorian(date_of_start_to_work_jalali)
             if contract_end_date_jalali:
-                member.contract_end_date_jalali = persian_to_gregorian(contract_end_date_jalali)
+                member.contract_end_date = persian_to_gregorian(contract_end_date_jalali)
 
             if study_category_id:
                 member.study_category_id = study_category_id
