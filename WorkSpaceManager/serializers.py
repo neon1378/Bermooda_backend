@@ -364,7 +364,7 @@ class StudyCategorySerializer(serializers.ModelSerializer):
         ]
 
 class WorkSpaceMemberFullDataSerializer(serializers.ModelSerializer):
-    user_account_data = serializers.JSONField(write_only=True, required=True)
+
     user_account = UserSerializer(required=False, read_only=True)
     workspace_id = serializers.IntegerField(required=True, write_only=True)
     permissions = serializers.ListField(write_only=True, required=True)
@@ -390,7 +390,7 @@ class WorkSpaceMemberFullDataSerializer(serializers.ModelSerializer):
     class Meta:
         model = WorkspaceMember
         fields = [
-            "is_team_bonos_status", "id", "user_account_data", "user_account", "first_name",
+           "id",  "user_account", "first_name",
             "is_accepted", "permissions", "last_name", "workspace_id", "jtime", "permission_list",
             #done
             "state",
@@ -486,9 +486,9 @@ class WorkSpaceMemberFullDataSerializer(serializers.ModelSerializer):
         gender = validated_data.get("gender",None)
         workspace_id = validated_data.pop("workspace_id")
         workspace = get_object_or_404(WorkSpace, id=workspace_id)
-        user_data = validated_data.pop("user_account_data")
+
         permissions = validated_data.pop("permissions")
-        phone = user_data.get("phone_number")
+        phone = validated_data.get("phone_number")
         more_information= validated_data.pop("more_information",False)
         state_id = validated_data.pop("state_id",None)
         city_id = validated_data.pop("city_id",None)
@@ -532,7 +532,7 @@ class WorkSpaceMemberFullDataSerializer(serializers.ModelSerializer):
             deleted_member.full_name= f"{first_name} {last_name}"
             deleted_member.fullname = f"{deleted_member.first_name} {deleted_member.last_name}"
             deleted_member.is_accepted = False
-            if user_acc.current_workspace_id == 0 or not WorkSpace.objects.filter(id=user_acc.current_workspace_id).exists():
+            if user_acc.current_workspace_id == 0 or not WorkSpace.objects.filter(id=user_acc.current_workspace_id,workspace=workspace).exists():
                 user_acc.current_workspace_id = workspace.id
                 user_acc.save()
 
