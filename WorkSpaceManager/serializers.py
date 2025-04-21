@@ -367,7 +367,7 @@ class WorkSpaceMemberFullDataSerializer(serializers.ModelSerializer):
 
     user_account = UserSerializer(required=False, read_only=True)
     workspace_id = serializers.IntegerField(required=True, write_only=True)
-    permissions = serializers.ListField(write_only=True, required=True)
+    permissions = serializers.ListField(write_only=True, required=False)
     state_id = serializers.IntegerField(write_only=True,required=False,allow_null=True)
     city_id= serializers.IntegerField(write_only=True,required=False,allow_null=True)
     state = StateSerializer(read_only=True)

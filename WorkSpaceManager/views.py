@@ -765,7 +765,7 @@ class WorkSpaceMemberManger(APIView):
     def put(self,request,member_id):
         member_obj = get_object_or_404(WorkspaceMember,id=member_id)
         data = request.data
-        permission_list= data.get("permission_list")
+        permission_list= data.get("permissions")
         first_name = data.get("first_name")
         last_name = data.get("last_name")
         avatar_id =data.get("avatar_id",None)
