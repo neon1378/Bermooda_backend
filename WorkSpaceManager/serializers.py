@@ -557,11 +557,15 @@ class WorkSpaceMemberFullDataSerializer(serializers.ModelSerializer):
 
                 if study_category_id:
                     deleted_member.study_category_id = study_category_id
+            deleted_member.is_emergency_information = is_emergency_information
             if is_emergency_information:
                 deleted_member.emergency_first_name= emergency_first_name
                 deleted_member.emergency_last_name= emergency_last_name
                 deleted_member.emergency_phone_number= emergency_phone_number
                 deleted_member.emergency_relationship= emergency_relationship
+
+
+
             if gender and gender == "male":
                 deleted_member.military_status = military_status
                 deleted_member.exempt_type = exempt_type
@@ -594,11 +598,15 @@ class WorkSpaceMemberFullDataSerializer(serializers.ModelSerializer):
 
             if study_category_id:
                 member.study_category_id = study_category_id
+        member.is_emergency_information = is_emergency_information
         if is_emergency_information:
             member.emergency_first_name = emergency_first_name
             member.emergency_last_name = emergency_last_name
             member.emergency_phone_number = emergency_phone_number
             member.emergency_relationship = emergency_relationship
+
+
+
         if gender and gender == "male":
             member.military_status = military_status
             member.exempt_type = exempt_type
@@ -705,12 +713,13 @@ class WorkSpaceMemberFullDataSerializer(serializers.ModelSerializer):
                 instance.contract_end_date = persian_to_gregorian(contract_end_date_jalali)
             if study_category_id:
                 instance.study_category_id = study_category_id
-
+        instance.is_emergency_information = is_emergency_information
         if is_emergency_information:
             instance.emergency_first_name = emergency_first_name
             instance.emergency_last_name = emergency_last_name
             instance.emergency_phone_number = emergency_phone_number
             instance.emergency_relationship = emergency_relationship
+
 
         if gender and gender == "male":
             instance.military_status = military_status
