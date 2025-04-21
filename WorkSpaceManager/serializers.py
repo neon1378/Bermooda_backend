@@ -735,5 +735,6 @@ class WorkSpaceMemberFullDataSerializer(serializers.ModelSerializer):
                 instance.bad_records.add(main_file)
 
         instance.fullname = f"{instance.first_name} {instance.last_name}"
+        instance.more_information= more_information
         instance.save()
         return instance
