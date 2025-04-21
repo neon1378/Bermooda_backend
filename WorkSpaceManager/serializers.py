@@ -572,7 +572,7 @@ class WorkSpaceMemberFullDataSerializer(serializers.ModelSerializer):
             deleted_member.save()
             return deleted_member
 
-        member = WorkspaceMember.objects.create(**validated_data, user_account=user_acc, is_accepted=False)
+        member = WorkspaceMember.objects.create(**validated_data, user_account=user_acc, is_accepted=False,workspace=workspace)
         member.fullname = f"{member.first_name} {member.last_name}"
         member.user_account = user_acc
 
