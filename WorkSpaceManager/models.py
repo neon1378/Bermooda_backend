@@ -26,6 +26,8 @@ class WorkSpace (SoftDeleteModel):
     owner = models.ForeignKey(UserAccount,on_delete=models.CASCADE,null=True,related_name="workspace_owner",blank=True)
     is_authenticated = models.BooleanField(default=False)
     activated = models.BooleanField(default=True)
+
+
     BUSINESS_TYPE = (
         ("کسب کار آنلاین","کسب کار آنلاین "),
         ("کسب کار آفلاین","کسب کار آفلاین "),
@@ -47,6 +49,8 @@ class WorkSpace (SoftDeleteModel):
         ("growth","GROWTH"),
         ("professional","PROFESSIONAL"),
     )
+
+
     plan_started_date = models.DateTimeField(null=True)
     payment_method = models.CharField(max_length=30,choices=PAYMENT_METHOD,default="wallet")
     plan_method = models.CharField(null=True,max_length=30,choices=PLAN_METHOD)
@@ -156,6 +160,43 @@ class WorkspaceMember(SoftDeleteModel):
         ("female","FEMALE")
     )
 
+
+
+
+    MILITARY_STATUS = (
+        ("subject_to_service","Subject To Service"),
+        ("exempt_from_service", "Exempt From Service"),
+
+        ("end_of_service", "End Of Service"),
+        ("in_the_service", "In The Service"),
+
+    )
+    EXEMPT_TYPE = (
+        ("medicine","MEDICINE"),
+        ("sponsorship", "SPONSORSHIP"),
+        ("education", "EDUCATION"),
+        ("sacrifice", "SACRIFICE"),
+
+
+
+    )
+
+
+
+    INSURANCE_TYPE = (
+        ("tamin_ejtemaei","Tamin Ejtemaei"),
+        ("takmili","Takmili"),
+        ("bazneshastegi","Bazneshastegi"),
+
+        ("darmani", "Darmani"),
+        ("hekmat", "Hekmat"),
+        ("nobat", "Nobat"),
+        ("other", "Other"),
+
+    )
+    insurance_type = models.CharField(max_length=15,null=True,blank=True,choices=INSURANCE_TYPE)
+    military_status = models.CharField(choices=MILITARY_STATUS,max_length=30,null=True,blank=True)
+    exempt_type = models.CharField(choices=EXEMPT_TYPE,max_length=30,null=True,blank=True)
     workspace = models.ForeignKey(WorkSpace,on_delete=models.CASCADE,null=True,related_name="workspace_member")
     user_account = models.ForeignKey(UserAccount,on_delete=models.CASCADE,null=True,related_name="user_member")
     fullname=models.CharField(max_length=200,null=True)
@@ -165,7 +206,7 @@ class WorkspaceMember(SoftDeleteModel):
 
     created = models.DateField(auto_now_add=True,null=True)
     is_accepted = models.BooleanField(default=True)
-    avatar = models.ForeignKey(MainFile,on_delete=models.SET_NULL,null=True)
+    avatar = models.ForeignKey(MainFile,on_delete=models.SET_NULL,null=True,related_name="member_avatar")
 
     more_information = models.BooleanField(default=False)
     employee_code = models.CharField(max_length=20,null=True,blank=True)
@@ -184,7 +225,11 @@ class WorkspaceMember(SoftDeleteModel):
     shaba_number = models.CharField(max_length=40,null=True)
     date_of_start_to_work = models.DateTimeField(null=True)
     contract_end_date = models.DateTimeField(null=True)
-    bad_record_status = models.BooleanField(default=False)
+    phone_number_static = models.CharField(max_length=15,null=True,blank=True)
+
+    bad_records = models.ManyToManyField(MainFile,related_name="member_bad_records")
+
+
     insurance_status = models.BooleanField(default=False)
     study_category = models.ForeignKey(StudyCategory,on_delete=models.SET_NULL,null=True)
     job_position = models.CharField(max_length=40,null=True)

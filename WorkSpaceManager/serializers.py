@@ -372,7 +372,8 @@ class WorkSpaceMemberFullDataSerializer(serializers.ModelSerializer):
     city_id= serializers.IntegerField(write_only=True,required=False,allow_null=True)
     state = StateSerializer(read_only=True)
     city= CitySerializer(read_only=True)
-
+    bad_records = MainFileSerializer(many=True,read_only=True)
+    bad_record_id_list = serializers.ListField(write_only=True,required=False,allow_null=True)
     date_of_birth_jalali = serializers.CharField(write_only=True,required=False)
     date_of_birth_persian = serializers.SerializerMethodField(read_only=True)
 
@@ -395,6 +396,7 @@ class WorkSpaceMemberFullDataSerializer(serializers.ModelSerializer):
             "city",
             "state_id",
             "city_id",
+            "insurance_type",
             "more_information",
 
             "is_emergency_information",
@@ -421,14 +423,16 @@ class WorkSpaceMemberFullDataSerializer(serializers.ModelSerializer):
 
             "contract_end_date_jalali",
             "contract_end_date_persian",
-            "bad_record_status",
-            "insurance_status",
+            "bad_records",
+            "bad_record_id_list",
+
             "job_position",
             "study_category",
             "study_category_id",
-            #not done
 
-
+            "military_status",
+            "exempt_type",
+            # not done
 
 
 
@@ -471,7 +475,10 @@ class WorkSpaceMemberFullDataSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         from .views import create_permission_for_member
-        is_emergency_information = validated_data.pop("is_emergency_information",False)
+        bad_record_id_list = validated_data.pop("bad_record_id_list",None)
+        military_status = validated_data.pop("military_status",None)
+        exempt_type = validated_data.pop("exempt_type",None)
+        gender = validated_data.get("gender",None)
         workspace_id = validated_data.pop("workspace_id")
         workspace = get_object_or_404(WorkSpace, id=workspace_id)
         user_data = validated_data.pop("user_account_data")
@@ -484,6 +491,7 @@ class WorkSpaceMemberFullDataSerializer(serializers.ModelSerializer):
         date_of_start_to_work_jalali = validated_data.pop("date_of_start_to_work_jalali",None)
         contract_end_date_jalali = validated_data.pop("contract_end_date_jalali",None)
         study_category_id = validated_data.pop("study_category_id",None)
+        is_emergency_information = validated_data.pop("is_emergency_information", False)
         emergency_first_name = validated_data.pop("emergency_first_name",None)
         emergency_last_name = validated_data.pop("emergency_last_name",None)
         emergency_phone_number = validated_data.pop("emergency_phone_number",None)
@@ -545,6 +553,15 @@ class WorkSpaceMemberFullDataSerializer(serializers.ModelSerializer):
                 deleted_member.emergency_last_name= emergency_last_name
                 deleted_member.emergency_phone_number= emergency_phone_number
                 deleted_member.emergency_relationship= emergency_relationship
+            if gender and gender == "male":
+                deleted_member.military_status = military_status
+                deleted_member.exempt_type = exempt_type
+            if bad_record_id_list:
+                for file_id in bad_record_id_list:
+                    main_file = MainFile.objects.get(id=file_id)
+                    main_file.its_blong=True
+                    main_file.save()
+                    deleted_member.bad_records.add(main_file)
             deleted_member.save()
             return deleted_member
 
@@ -553,24 +570,33 @@ class WorkSpaceMemberFullDataSerializer(serializers.ModelSerializer):
 
         if more_information:
             if state_id:
-                deleted_member.state_id = state_id
+                member.state_id = state_id
             if city_id:
-                deleted_member.city_id = city_id
+                member.city_id = city_id
 
             if date_of_birth_jalali:
-                deleted_member.date_of_birth_jalali = persian_to_gregorian(date_of_birth_jalali)
+                member.date_of_birth_jalali = persian_to_gregorian(date_of_birth_jalali)
             if date_of_start_to_work_jalali:
-                deleted_member.date_of_start_to_work_jalali = persian_to_gregorian(date_of_start_to_work_jalali)
+                member.date_of_start_to_work_jalali = persian_to_gregorian(date_of_start_to_work_jalali)
             if contract_end_date_jalali:
-                deleted_member.contract_end_date_jalali = persian_to_gregorian(contract_end_date_jalali)
+                member.contract_end_date_jalali = persian_to_gregorian(contract_end_date_jalali)
 
             if study_category_id:
-                deleted_member.study_category_id = study_category_id
+                member.study_category_id = study_category_id
         if is_emergency_information:
-            deleted_member.emergency_first_name = emergency_first_name
-            deleted_member.emergency_last_name = emergency_last_name
-            deleted_member.emergency_phone_number = emergency_phone_number
-            deleted_member.emergency_relationship = emergency_relationship
+            member.emergency_first_name = emergency_first_name
+            member.emergency_last_name = emergency_last_name
+            member.emergency_phone_number = emergency_phone_number
+            member.emergency_relationship = emergency_relationship
+        if gender and gender == "male":
+            member.military_status = military_status
+            member.exempt_type = exempt_type
+        if bad_record_id_list:
+            for file_id in bad_record_id_list:
+                main_file = MainFile.objects.get(id=file_id)
+                main_file.its_blong = True
+                main_file.save()
+                member.bad_records.add(main_file)
         member.save()
 
         if not GroupMessage.objects.filter(workspace=workspace, members=workspace.owner).filter(members=user_acc).exists():
