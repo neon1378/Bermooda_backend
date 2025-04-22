@@ -1,7 +1,7 @@
 from calendar import calendar
 from datetime import date, timedelta,datetime
 
-from CalenderManager.models import Meeting
+from .models import Meeting
 from core.widgets import create_reminder
 
 

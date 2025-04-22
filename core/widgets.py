@@ -7,6 +7,7 @@ from django.utils.timezone import is_aware, make_naive
 from dotenv import load_dotenv
 load_dotenv()
 import os
+from django.contrib.contenttypes.models import ContentType
 import locale
 from django.core.files.uploadhandler import FileUploadHandler
 from django.core.cache import cache
@@ -16,6 +17,7 @@ import requests
 
 from datetime import datetime
 from rest_framework.response import Response
+from .models import Reminder
 class ReusablePaginationMixin:
     pagination_page_size = 20
     pagination_ordering = "-id"
@@ -261,3 +263,17 @@ class ProgressBarUploadHandler(FileUploadHandler):
 
     def file_complete(self, file_size):
         return None
+
+
+def create_reminder (related_instance,remind_at):
+    content_type = ContentType.objects.get_for_model(related_instance.__class__)
+    new_reminder = Reminder.objects.create(
+
+                content_type = content_type,
+                object_id= related_instance.id,
+                remind_at = remind_at
+
+    )
+
+
+

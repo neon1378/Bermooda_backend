@@ -2,6 +2,7 @@ from django.db import models
 from WorkSpaceManager.models import WorkSpace
 from UserManager.models import UserAccount
 from core.models import MainFile,SoftDeleteModel
+from core.widgets import create_reminder
 from WorkSpaceManager.models import WorkSpace
 
 class MeetingLabel(SoftDeleteModel):
@@ -47,6 +48,9 @@ class Meeting(SoftDeleteModel):
 
     start_meeting_time = models.TimeField(null=True,blank=True)
     end_meeting_time = models.TimeField(null=True,blank=True)
+
+
+
 
 
 

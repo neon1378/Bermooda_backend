@@ -5,6 +5,22 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from dotenv import load_dotenv
 load_dotenv()
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
+
+class Reminder(models.Model):
+
+
+    content_type = models.ForeignKey(ContentType, on_delete=models.SET_NULL,null=True)
+    object_id = models.PositiveBigIntegerField(default=0)
+    related_object = GenericForeignKey('content_type', 'object_id')
+
+
+
+
+
+
+
 
 class MainFile(models.Model):
     file = models.FileField(upload_to="Bermooda/Files",null=True)
