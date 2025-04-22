@@ -11,9 +11,12 @@ from django.contrib.contenttypes.models import ContentType
 class Reminder(models.Model):
 
 
+    title = models.TextField(null=True)
+    sub_title =models.TextField(null=True)
     content_type = models.ForeignKey(ContentType, on_delete=models.SET_NULL,null=True)
     object_id = models.PositiveBigIntegerField(default=0)
     related_object = GenericForeignKey('content_type', 'object_id')
+
 
 
 

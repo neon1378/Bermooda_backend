@@ -7,3 +7,5 @@ admin.site.register(Core)
 admin.site.register(City)
 admin.site.register(State)
 admin.site.register(MainFile)
+admin.site.register(Reminder)
+

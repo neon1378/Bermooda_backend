@@ -1,6 +1,6 @@
 import calendar
 from datetime import date, timedelta,datetime
-
+from ProjectManager.models import CheckList
 from CalenderManager.models import Meeting
 from core.widgets import create_reminder
 
@@ -48,13 +48,25 @@ def get_occurrences_in_month(schedule, year, month):
                 occurrences.append(occurrence)
     return occurrences
 def create_reminder_instance():
-     date_now = datetime.now().date()
-     for meeting_obj in Meeting.objects.all():
+    for item in CheckList.objects.all():
+        if item.date_time_to_start_main:
+            sub_title= "یاد آوری وظیفه",
+            short_text = ' '.join(item.title.split()[:15]) + ('...' if len(item.title.split()) > 15 else '')
+            title = f"هست{short_text}وقت شروع وظیقه  "
+            create_reminder(related_instance=item,remind_at=item.date_time_to_start_main,title=title,sub_title=sub_title)
+        elif item.date_time_to_end_main:
+            sub_title= "یاد آوری وظیفه",
+            short_text = ' '.join(item.title.split()[:15]) + ('...' if len(item.title.split()) > 15 else '')
+            title = f"تمام شده است{short_text} تایم انجام وظیه  "
+            create_reminder(related_instance=item, remind_at=item.date_time_to_start_main, title=title,
+                            sub_title=sub_title)
 
-         if meeting_obj.reaped_type:
-             print(date_now.year,date_now.month,"@@@")
-             occurrences = get_occurrences_in_month(schedule=meeting_obj,year=date_now.year,month=date_now.month)
-             print(occurrences)
+
+
+
+
+
+
 
 
 create_reminder_instance()
