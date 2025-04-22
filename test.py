@@ -50,20 +50,16 @@ def get_occurrences_in_month(schedule, year, month):
 def create_reminder_instance():
     for item in CheckList.objects.all():
         if item.date_time_to_start_main:
-            sub_title= "یاد آوری وظیفه",
+            sub_title= "یاد آوری وظیفه"
             short_text = ' '.join(item.title.split()[:15]) + ('...' if len(item.title.split()) > 15 else '')
-            title = f"هست{short_text}وقت شروع وظیقه  "
+            title = f"وقت شروع وظیفه  {short_text} هست "
             create_reminder(related_instance=item,remind_at=item.date_time_to_start_main,title=title,sub_title=sub_title)
         elif item.date_time_to_end_main:
             sub_title= "یاد آوری وظیفه",
             short_text = ' '.join(item.title.split()[:15]) + ('...' if len(item.title.split()) > 15 else '')
-            title = f"تمام شده است{short_text} تایم انجام وظیه  "
+            title = f"تایم انجام وظیفه {short_text} تمام شده است  "
             create_reminder(related_instance=item, remind_at=item.date_time_to_start_main, title=title,
                             sub_title=sub_title)
-
-
-
-
 
 
 
