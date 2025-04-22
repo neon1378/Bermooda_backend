@@ -50,7 +50,7 @@ def check_and_send_reminders():
         class_name = reminder_obj.related_object.__class__.__name__
 
         if class_name == "CheckList":
-            if not reminder_obj.related_object.status
+            if not reminder_obj.related_object.status:
                 workspace = reminder_obj.related_object.task.project.workspace
                 user = reminder_obj.related_object.responsible_for_doing
                 create_notification(related_instance=reminder_obj.related_object, workspace=workspace, user=user,
