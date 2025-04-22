@@ -40,9 +40,11 @@ def delete_fake_files():
 def check_and_send_reminders():
     """Task to check for pending reminders and send them"""
     now = timezone.now()
-    pending_reminders = Reminder.objects.filter(
-        remind_at__lte=now,
+    one_minute_ago = now - timedelta(minutes=1)
 
+    pending_reminders = Reminder.objects.filter(
+        remind_at__range=(one_minute_ago, now),
+        is_sent=False
     )
     for reminder_obj in pending_reminders:
         class_name = reminder_obj.related_object.__class__.__name__
