@@ -3,7 +3,7 @@ from UserManager.models import UserAccount
 user_objs = UserAccount.objects.all()
 import requests
 for user_acc in user_objs:
-    try:
+
         jadoo_base_url = os.getenv("JADOO_BASE_URL")
         # send user to jadoo
 
@@ -21,5 +21,3 @@ for user_acc in user_objs:
         user_acc.refrence_id = int(recive_data['data']['id'])
         user_acc.refrence_token = recive_data['data']['token']
         user_acc.save()
-    except:
-        pass
