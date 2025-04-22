@@ -4,7 +4,7 @@ from channels.layers import get_channel_layer
 from rest_framework import serializers
 from WorkSpaceManager.serializers import IndustrialActivitySerializer
 from sqlalchemy.util import ellipses_string
-
+from core.widgets import create_reminder
 from .models import *
 from core.serializers import CitySerializer,StateSerializer
 import magic
@@ -730,4 +730,10 @@ class CustomerStatusSerializer(serializers.Serializer):
                 customer_obj.user_account_id = validated_data.get("user_account_id")
 
         customer_obj.save()
+        if customer_obj.main_date_time_to_remember:
+            sub_title = "یاد آوری وظیفه"
+
+            title = f"وقت پیگیری  {customer_obj.fullname_or_company_name} هست "
+            create_reminder(related_instance=customer_obj, remind_at=customer_obj.main_date_time_to_remember, title=title,
+                            sub_title=sub_title)
         return customer_obj

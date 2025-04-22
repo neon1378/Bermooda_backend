@@ -111,6 +111,35 @@ def notif_data (notification_obj,workspace_obj=None,side_type=None,user=None):
                     dic['workspace_id'] = member_obj.user_account.current_workspace_id
                 # if workspace_obj:
                     #  dic['workspace_id']= workspace_obj.id
+            elif object_name == "CheckList":
+                check_list_obj = notification_obj.related_object
+                dic['data_type'] = "task_chek_list"
+                dic['side_type'] = notification_obj.side_type
+                try:
+                    dic['department_id'] = str(check_list_obj.task.project.department.id)
+                except:
+                    dic['department_id'] = None
+                dic['check_list_id'] = str(check_list_obj.id)
+                dic['task_id'] = str(check_list_obj.task.id)
+                dic['category_id'] = str(check_list_obj.task.category_task.id)
+                dic['project_id'] = str(check_list_obj.task.project.id)
+
+                dic['workspace_id'] = str(workspace_obj.id)
+            elif object_name == "CustomerUser" :
+                customer_obj = notification_obj.related_object
+                dic['data_type'] = "customer"
+                dic['side_type'] = notification_obj.side_type
+                try:
+                    dic['department_id'] = str(customer_obj.group_crm.department.id)
+                except:
+                    dic['department_id'] = None
+                dic['customer_id'] = str(customer_obj.id)
+                dic['group_crm_id'] = str(customer_obj.group_crm.id)
+                dic['label_id'] = str(customer_obj.label.id)
+
+
+                dic['workspace_id'] = str(workspace_obj.id)
+
         except:
             pass
         return dic

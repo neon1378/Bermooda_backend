@@ -23,9 +23,14 @@ import os
 from core.widgets import  persian_to_gregorian
 from channels.layers import get_channel_layer
 from django.db import transaction
-from core.widgets import  ReusablePaginationMixin
+from core.widgets import  ReusablePaginationMixin,create_reminder
 load_dotenv()
+def create_reminde_a_customer(customer):
+    if customer.main_date_time_to_remember:
+        sub_title = "یاد آوری وظیفه"
 
+        title = f"وقت پیگیری  {customer.fullname_or_company_name} هست "
+        create_reminder(related_instance=customer, remind_at=customer.main_date_time_to_remember, title=title, sub_title=sub_title)
 
 class CrmDepartmentManager(APIView):
     permission_classes=[IsAuthenticated]
@@ -335,6 +340,7 @@ class CustomerUserManager(APIView):
             new_customer_obj.workspace =workspace_obj
             new_customer_obj.group_crm =group_obj
             new_customer_obj.save()
+            create_reminde_a_customer(customer=new_customer_obj)
 
             channel_layer = get_channel_layer()
             event = {
@@ -368,7 +374,7 @@ class CustomerUserManager(APIView):
                 "type": "send_data"
             }
             async_to_sync(channel_layer.group_send)(f"{customer_obj.group_crm.id}_crm", event)
-          
+            create_reminde_a_customer(customer=customer_obj)
             return Response( status=status.HTTP_200_OK,data={
                 "status":True,
                 "message":"با موفقیت بروزرسانی شد",
