@@ -1,4 +1,4 @@
-from calendar import calendar
+import calendar
 from datetime import date, timedelta,datetime
 
 from CalenderManager.models import Meeting
