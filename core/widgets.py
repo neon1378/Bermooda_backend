@@ -272,10 +272,10 @@ def create_reminder (related_instance,remind_at,title,sub_title):
     not_exists= True
     for reminder in exists_reminders:
         if reminder.object_id == related_instance.id:
-            reminder.content_type = content_type,
-            reminder.object_id = related_instance.id,
-            reminder.remind_at = remind_at,
-            reminder.title = title,
+            reminder.content_type = content_type
+            reminder.object_id = related_instance.id
+            reminder.remind_at = remind_at
+            reminder.title = title
             reminder.sub_title = sub_title
             reminder.save()
             not_exists=False
