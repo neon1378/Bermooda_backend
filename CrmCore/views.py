@@ -1062,6 +1062,7 @@ class CustomerUserView(APIView):
             customer_obj = serializer_data.save()
             customer_obj.main_date_time_to_remember = persian_to_gregorian(customer_obj.date_time_to_remember)
             customer_obj.save()
+            create_reminde_a_customer(customer=customer_obj)
             channel_layer = get_channel_layer()
             event = {
                 "type": "send_data"
@@ -1094,6 +1095,7 @@ class CustomerUserView(APIView):
                 "type": "send_data"
             }
             async_to_sync(channel_layer.group_send)(f"{customer_obj.group_crm.id}_crm", event)
+            create_reminde_a_customer(customer=updated_customer)
             return Response(status=status.HTTP_201_CREATED, data={
                 "status": True,
                 "message": "مشتری با موفقیت بروزرسانی  شد",
