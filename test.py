@@ -46,6 +46,7 @@ def get_occurrences_in_month(schedule, year, month):
             occurrence = date(year, month, start_date.day)
             if occurrence >= start_date:
                 occurrences.append(occurrence)
+    return occurrences
 def create_reminder_instance():
      date_now = datetime.now().date()
      for meeting_obj in Meeting.objects.all():
