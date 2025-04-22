@@ -16,7 +16,7 @@ class Reminder(models.Model):
     content_type = models.ForeignKey(ContentType, on_delete=models.SET_NULL,null=True)
     object_id = models.PositiveBigIntegerField(default=0)
     related_object = GenericForeignKey('content_type', 'object_id')
-
+    remind_at = models.DateTimeField(null=True)
 
 
 
