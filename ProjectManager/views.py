@@ -23,8 +23,22 @@ from django.db import transaction
 load_dotenv()
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
+from core.widgets import create_reminder
 #Project Manager Begin Bord Project 
 
+
+def create_reminde_a_task(chek_list):
+    if chek_list.date_time_to_start_main:
+        sub_title = "یاد آوری وظیفه"
+        short_text = ' '.join(chek_list.title.split()[:15]) + ('...' if len(chek_list.title.split()) > 15 else '')
+        title = f"وقت شروع وظیفه  {short_text} هست "
+        create_reminder(related_instance=chek_list, remind_at=chek_list.date_time_to_start_main, title=title, sub_title=sub_title)
+    elif chek_list.date_time_to_end_main:
+        sub_title = "یاد آوری وظیفه",
+        short_text = ' '.join(chek_list.title.split()[:15]) + ('...' if len(chek_list.title.split()) > 15 else '')
+        title = f"تایم انجام وظیفه {short_text} تمام شده است  "
+        create_reminder(related_instance=chek_list, remind_at=chek_list.date_time_to_start_main, title=title,
+                        sub_title=sub_title)
 
 class CategoryProjectManager(APIView):
     permission_classes =[IsAuthenticated,IsWorkSpaceMemberAccess]
@@ -392,6 +406,7 @@ class TaskManager(APIView):
             if item['label_id']:
                 new_check_list.label_id=item['label_id']['id']
             new_check_list.save()
+            create_reminde_a_task(chek_list=new_check_list)
         response_data = TaskSerializer(task).data
         success_notif =[]
         for member in task.check_list.all():
@@ -523,6 +538,7 @@ class CheckListManager(APIView):
         file_id_list = data.get("file_id_list",[])
         date_to_end = data.get("date_to_end",None)
         time_to_end = data.get("time_to_end",None)
+
         check_list_obj = CheckList.objects.create(
             task=task_obj,
             title = title,
@@ -550,6 +566,7 @@ class CheckListManager(APIView):
             "task_id": task_obj.id
         }
         async_to_sync(channel_layer.group_send)(f"{task_obj.project.id}_admin",event)
+        create_reminde_a_task(chek_list=check_list_obj)
         if request.user != check_list_obj.responsible_for_doing:
             title = f"بروزرسانی وظیفه"
             sub_title = f"چک لیست {check_list_obj.title} در تسک {check_list_obj.task.title} توسط {request.user.fullname} برای شما اضافه شد "
@@ -643,6 +660,7 @@ class CheckListManager(APIView):
                 "task_id": checklist_obj.task.id
             }
             async_to_sync(channel_layer.group_send)(f"{checklist_obj.task.project.id}_admin", event)
+            create_reminde_a_task(chek_list=checklist_obj)
             if request.user != checklist_obj.responsible_for_doing:
                 title = f"بروزرسانی وظیفه"
                 sub_title = f"چک لیست {checklist_obj.title} در تسک {checklist_obj.task.title} توسط {request.user.fullname} بروزرسانی شد "

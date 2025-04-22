@@ -47,7 +47,8 @@ def get_occurrences_in_month(schedule, year, month):
             if occurrence >= start_date:
                 occurrences.append(occurrence)
     return occurrences
-def create_reminder_instance():
+def create_reminder_instance(object):
+
     for item in CheckList.objects.all():
         if item.date_time_to_start_main:
             sub_title= "یاد آوری وظیفه"

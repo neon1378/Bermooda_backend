@@ -267,15 +267,28 @@ class ProgressBarUploadHandler(FileUploadHandler):
 
 def create_reminder (related_instance,remind_at,title,sub_title):
     content_type = ContentType.objects.get_for_model(related_instance.__class__)
-    new_reminder = Reminder.objects.create(
 
-                content_type = content_type,
-                object_id= related_instance.id,
-                remind_at = remind_at,
-                title = title,
-                sub_title=sub_title
+    exists_reminders = Reminder.objects.filter(content_type=content_type)
+    not_exists= True
+    for reminder in exists_reminders:
+        if reminder.object_id == related_instance.id:
+            reminder.content_type = content_type,
+            reminder.object_id = related_instance.id,
+            reminder.remind_at = remind_at,
+            reminder.title = title,
+            reminder.sub_title = sub_title
+            reminder.save()
+            not_exists=False
+    if not_exists:
+        new_reminder = Reminder.objects.create(
 
-    )
+                    content_type = content_type,
+                    object_id= related_instance.id,
+                    remind_at = remind_at,
+                    title = title,
+                    sub_title=sub_title
+
+        )
 
 
 
