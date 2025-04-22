@@ -51,7 +51,7 @@ def create_reminder_instance():
      for meeting_obj in Meeting.objects.all():
 
          if meeting_obj.reaped_type:
-             occurrences = get_occurrences_in_month(meeting_obj)
+             occurrences = get_occurrences_in_month(meeting_obj,date_now.year(),date_now.month())
              print(occurrences)
 
 
