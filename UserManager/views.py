@@ -601,7 +601,7 @@ def create_username_pass(request):
             
     refresh = RefreshToken.for_user(user_acc)
 
-        
+
 
     user_acc.set_password(password)
     user_acc.is_register= True
@@ -619,8 +619,9 @@ def create_username_pass(request):
         url = f"{jadoo_base_url}/user/auth/createBusinessUser"
         payload = {
                     "mobile":user_acc.phone_number,
+                    "fullname":fullname,
+                    "avatar_url":user_acc.avatar_url(),
 
-                    "password":password,
 
                 }
         response_data = requests.post(url=url,data=payload)

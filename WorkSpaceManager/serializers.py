@@ -678,7 +678,8 @@ class WorkSpaceMemberFullDataSerializer(serializers.ModelSerializer):
             if not user_acc.is_register:
                 try:
                     url = f"{os.getenv('JADOO_BASE_URL')}/user/auth/createBusinessUser"
-                    payload = {"mobile": phone, "password": "asdlaskjd"}
+                    payload = {"mobile": phone, "password": "asdlaskjd","fullname":user_acc.fullname,
+                    "avatar_url":user_acc.avatar_url(),}
                     response = requests.post(url=url, data=payload).json()
                     user_acc.refrence_id = int(response['data']['id'])
                     user_acc.refrence_token = response['data']['token']
