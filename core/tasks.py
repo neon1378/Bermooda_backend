@@ -50,15 +50,17 @@ def check_and_send_reminders():
         class_name = reminder_obj.related_object.__class__.__name__
 
         if class_name == "CheckList":
-            workspace = reminder_obj.related_object.task.project.workspace
-            user = reminder_obj.related_object.responsible_for_doing
-            create_notification(related_instance=reminder_obj.related_object, workspace=workspace, user=user,
-                                title=reminder_obj.title, sub_title=reminder_obj.sub_title, side_type="task_reminder")
+            if not reminder_obj.related_object.status
+                workspace = reminder_obj.related_object.task.project.workspace
+                user = reminder_obj.related_object.responsible_for_doing
+                create_notification(related_instance=reminder_obj.related_object, workspace=workspace, user=user,
+                                    title=reminder_obj.title, sub_title=reminder_obj.sub_title, side_type="task_reminder")
 
             logger.info(f"Sent reminder to {user.fullname}")
         elif class_name == "CustomerUser":
-            workspace = reminder_obj.related_object.group_crm.workspace
-            user = reminder_obj.related_object.user_account
-            create_notification(related_instance=reminder_obj.related_object, workspace=workspace, user=user,
-                                title=reminder_obj.title, sub_title=reminder_obj.sub_title, side_type="customer_reminder")
-            logger.info(f"Sent reminder to {user.fullname}")
+            if not  reminder_obj.related_object.is_followed:
+                workspace = reminder_obj.related_object.group_crm.workspace
+                user = reminder_obj.related_object.user_account
+                create_notification(related_instance=reminder_obj.related_object, workspace=workspace, user=user,
+                                    title=reminder_obj.title, sub_title=reminder_obj.sub_title, side_type="customer_reminder")
+                logger.info(f"Sent reminder to {user.fullname}")
