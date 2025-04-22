@@ -54,6 +54,7 @@ class CheckListSerializer(ModelSerializer):
         fields = [
             "file",
             "label",
+            "is_delayed",
             "id",
             "task_data",
             "difficulty",

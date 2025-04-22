@@ -8,6 +8,7 @@ from extensions.utils import costum_date
 import jdatetime
 from datetime import datetime
 from dotenv import load_dotenv
+from django.utils import timezone
 import os
 from core.models import  SoftDeleteModel
 load_dotenv()
@@ -213,6 +214,12 @@ class CheckList(SoftDeleteModel):
     date_time_to_end_main = models.DateTimeField(null=True)
     file = models.ManyToManyField(MainFile, blank=True)
 
+
+    def is_delayed (self):
+        if self.date_time_to_end_main:
+            return self.date_time_to_end_main < timezone.now()
+        else:
+            return False
     def project_id_main(self):
         return self.task.project.id
     def task_data (self):
