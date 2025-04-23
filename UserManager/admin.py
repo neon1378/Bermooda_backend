@@ -3,7 +3,20 @@ from .models import *
 # Register your models here.
 
 
-admin.site.register(UserAccount)
+
+
+@admin.register(UserAccount)
+class LabelAdmin(admin.ModelAdmin):
+    list_display = ("id","fullname","phone_number")
+    list_filter = ('id',)
+
+
+    def get_queryset(self, request):
+        # Use the custom manager's queryset
+        return self.model.objects.get_queryset()
+
+
+
 admin.site.register(BonosPhone)
 
 
