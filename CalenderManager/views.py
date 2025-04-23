@@ -332,7 +332,7 @@ class CalenderManger(APIView):
 @permission_classes([IsAuthenticated])
 def get_a_meeting(request,meeting_id):
     meeting_obj = get_object_or_404(Meeting,id=meeting_id)
-    serializer_data = MeetingSerializer(meeting_obj)
+    serializer_data = MeetingSerializer(meeting_obj,context={'user': request.user})
     return Response(status=status.HTTP_200_OK,data={
         "status":True,
         "message":"موفق",
