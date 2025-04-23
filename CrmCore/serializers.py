@@ -14,6 +14,7 @@ from core.widgets import  persian_to_gregorian
 from UserManager.serializers import UserDetailSerializer
 from core.serializers import StateSerializer, CitySerializer, MainFileSerializer
 from MailManager.serializers import  MemberSerializer
+from Notification.views import create_notification
 class CrmDepartmentSerializer(serializers.ModelSerializer):
     workspace_id = serializers.IntegerField(write_only=True,required=True)
     manager_id = serializers.IntegerField(write_only=True,required=True)
@@ -695,6 +696,9 @@ class CustomerStatusSerializer(serializers.Serializer):
         file_id_list = validated_data.get("file_id_list",None)
         # Handle adding report if description exists
         description = validated_data.get("description")
+        user_account_id= validated_data.get("user_account_id",None)
+        channel_layer = get_channel_layer()
+
         if description:
             report = Report.objects.create(author=user, description=description)
         if file_id_list:
@@ -718,7 +722,14 @@ class CustomerStatusSerializer(serializers.Serializer):
             customer_obj.date_time_to_remember = validated_data.get("date_time_to_remember")
             customer_obj.main_date_time_to_remember = persian_to_gregorian(validated_data.get("date_time_to_remember"))
             customer_obj.connection_type = validated_data.get("connection_type")
-            customer_obj.user_account_id = validated_data.get("user_account_id")
+            if customer_obj.user_account_id != user_account_id:
+                title = "ارجاع مشتری "
+                sub_title = f"مشتری {customer_obj.fullname_or_company_name} به شما ارجاع داده شد"
+                create_notification(related_instance=customer_obj, workspace=customer_obj.group_crm.workspace,
+                                    user=UserAccount.objects.get(id=user_account_id), title=title, sub_title=sub_title,
+                                    side_type="new_task")
+            customer_obj.user_account_id =user_account_id
+
 
         elif customer_status == "successful_sell":
             customer_obj.customer_status = customer_status
@@ -736,4 +747,8 @@ class CustomerStatusSerializer(serializers.Serializer):
             title = f"وقت پیگیری  {customer_obj.fullname_or_company_name} هست "
             create_reminder(related_instance=customer_obj, remind_at=customer_obj.main_date_time_to_remember, title=title,
                             sub_title=sub_title)
+        event = {
+            "type": "send_data"
+        }
+        async_to_sync(channel_layer.group_send)(f"{customer_obj.group_crm.id}_crm", event)
         return customer_obj

@@ -27,9 +27,9 @@ from core.widgets import  ReusablePaginationMixin,create_reminder
 load_dotenv()
 def create_reminde_a_customer(customer):
     if customer.main_date_time_to_remember:
-        sub_title = "یاد آوری وظیفه"
+        title = "یاد آوری وظیفه"
 
-        title = f"وقت پیگیری  {customer.fullname_or_company_name} هست "
+        sub_title = f"وقت پیگیری  {customer.fullname_or_company_name} هست "
         create_reminder(related_instance=customer, remind_at=customer.main_date_time_to_remember, title=title, sub_title=sub_title)
 
 class CrmDepartmentManager(APIView):

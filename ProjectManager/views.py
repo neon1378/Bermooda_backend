@@ -29,14 +29,14 @@ from core.widgets import create_reminder
 
 def create_reminde_a_task(chek_list):
     if chek_list.date_time_to_start_main:
-        sub_title = "یاد آوری وظیفه"
+        title = "یاد آوری وظیفه"
         short_text = ' '.join(chek_list.title.split()[:15]) + ('...' if len(chek_list.title.split()) > 15 else '')
-        title = f"وقت شروع وظیفه  {short_text} هست "
+        sub_title = f"وقت شروع وظیفه  {short_text} هست "
         create_reminder(related_instance=chek_list, remind_at=chek_list.date_time_to_start_main, title=title, sub_title=sub_title)
     elif chek_list.date_time_to_end_main:
-        sub_title = "یاد آوری وظیفه",
+        title = "یاد آوری وظیفه",
         short_text = ' '.join(chek_list.title.split()[:15]) + ('...' if len(chek_list.title.split()) > 15 else '')
-        title = f"تایم انجام وظیفه {short_text} تمام شده است  "
+        sub_title = f"تایم انجام وظیفه {short_text} تمام شده است  "
         create_reminder(related_instance=chek_list, remind_at=chek_list.date_time_to_start_main, title=title,
                         sub_title=sub_title)
 
