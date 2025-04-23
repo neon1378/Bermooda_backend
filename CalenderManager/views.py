@@ -284,7 +284,7 @@ class CalenderManger(APIView):
                             # اگر کلید schedule_occurrences موجود نیست، آن را به صورت لیست ایجاد می‌کنیم
                         dic['count'] += 1
 
-                        dic['schedule_occurrences'].append(MeetingSerializer(schedule).data)
+                        dic['schedule_occurrences'].append(MeetingSerializer(schedule).data,context={'user': request.user})
             data_list.append(dic)
         return data_list
 
