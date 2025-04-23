@@ -224,7 +224,7 @@ class CalenderManger(APIView):
         for schedule in schedules:
             occurrences = self.get_occurrences_in_month(schedule, date_object.year, date_object.month)
             if any(occ == date_object for occ in occurrences):
-                schedule_occurrences.append(MeetingSerializer(schedule).data)
+                schedule_occurrences.append(MeetingSerializer(schedule,context={'user': request.user}).data)
 
         response_data = {
             "task_list": check_list_serializer.data,
