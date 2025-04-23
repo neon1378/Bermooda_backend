@@ -486,7 +486,7 @@ class WorkSpaceMemberFullDataSerializer(serializers.ModelSerializer):
         first_name = validated_data.get("first_name")
         last_name = validated_data.get("last_name")
         gender = validated_data.get("gender",None)
-        workspace_id = validated_data.pop("workspace_id")
+
         workspace = get_object_or_404(WorkSpace, id=workspace_id)
 
         permissions = validated_data.pop("permissions")
