@@ -269,14 +269,13 @@ class CalenderManger(APIView):
 
             }
             schedules = Meeting.objects.filter(workspace=self.workspace_obj, members__user=request.user)
-            print(schedules)
+
             for schedule in schedules:
-                print(schedule,"1@@@")
+
                 occurrences = self.get_occurrences_in_month(schedule, g_date.year, g_date.month)
-                print(occurrences,"2!!!!")
+
                 for occ in occurrences:
-                    print(occ,"3$$$$")
-                    print(g_date,"4&&")
+
                     occ_str = occ.strftime("%Y/%m/%d")
                     # پیدا کردن روز مورد نظر در data (که شامل key "date" است)
 
@@ -284,7 +283,7 @@ class CalenderManger(APIView):
                             # اگر کلید schedule_occurrences موجود نیست، آن را به صورت لیست ایجاد می‌کنیم
                         dic['count'] += 1
 
-                        dic['schedule_occurrences'].append(MeetingSerializer(schedule).data,context={'user': request.user})
+                        dic['schedule_occurrences'].append(MeetingSerializer(schedule,context={'user': request.user}).data)
             data_list.append(dic)
         return data_list
 
