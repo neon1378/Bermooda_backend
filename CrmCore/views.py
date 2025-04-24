@@ -932,7 +932,7 @@ def change_customer_status(request,customer_id):
 
 @permission_classes([IsAuthenticated])
 @api_view(['GET'])
-def cget_crm_group_members(request,group_id):
+def get_crm_group_members(request,group_id):
     workspace_obj= get_object_or_404(WorkSpace,id=request.GET.get("workspace_id",None))
     group_obj = get_object_or_404(GroupCrm,id=group_id)
     print(workspace_obj.id,"@@@@")
