@@ -1077,11 +1077,12 @@ def create_workspace(request):
     permission_list = [
         "project_board",
         "crm",
-        "marketing_status",
+
         "group_chat",
         "letters",
         "planing",
-        "marketing"
+        "marketing",
+        "human_resources"
     ]
     for permission in permission_list:
         WorkSpacePermission.objects.create(

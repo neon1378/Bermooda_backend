@@ -735,76 +735,70 @@ class WorkSpaceMemberManger(APIView):
         request.data['workspace_id'] = request.user.current_workspace_id
         more_information = request.data.get("more_information",False)
         workspace_obj = WorkSpace.objects.get(id=request.user.current_workspace_id)
-        if workspace_obj.owner == request.user:
-            permissions = request.data.get("permissions")
 
-            serializer_data = WorkSpaceMemberFullDataSerializer(data=request.data)
+        permissions = request.data.get("permissions")
 
-
-            if serializer_data.is_valid():
-                new_member = serializer_data.save()
+        serializer_data = WorkSpaceMemberFullDataSerializer(data=request.data)
 
 
+        if serializer_data.is_valid():
+            new_member = serializer_data.save()
 
-                return Response(status=status.HTTP_201_CREATED,data={
+
+
+            return Response(status=status.HTTP_201_CREATED,data={
                     "status":True,
                     "message":"کاربر با موفقیت اضافه شد",
                     "data":WorkSpaceMemberFullDataSerializer(new_member).data
-                })
-            return Response(status=status.HTTP_400_BAD_REQUEST,data={
+            })
+        return Response(status=status.HTTP_400_BAD_REQUEST,data={
                 "status":False,
                 "message":"validation error",
                 "data":serializer_data.errors
-            })
-        return Response(status=status.HTTP_403_FORBIDDEN,data={
-            "status":False,
-            "message":"you dont have permission dont try",
-            "data":{},
         })
 
     def put(self,request,member_id):
-        member_obj = get_object_or_404(WorkspaceMember,id=member_id)
-        data = request.data
-        permission_list= data.get("permissions")
-        first_name = data.get("first_name")
-        last_name = data.get("last_name")
-        avatar_id =data.get("avatar_id",None)
-        workspace_obj = WorkSpace.objects.get(id=request.user.current_workspace_id)
-        if workspace_obj.owner == request.user:
+            member_obj = get_object_or_404(WorkspaceMember,id=member_id)
+            data = request.data
+            permission_list= data.get("permissions")
 
-            for permission_item in permission_list:
-                permission_member_obj= MemberPermission.objects.get(id=permission_item['id'])
-                with open('main_perm.json', 'r', errors='ignore', encoding='UTF-8') as file:
-                    permission_type = permission_item["permission_type"]
+            workspace_obj = WorkSpace.objects.get(id=request.user.current_workspace_id)
 
-                    data = json.load(file)
-                    for permission in data:
-                        if permission['permission_name'] == permission_member_obj.permission_name:
-                            for item in permission['items']:
 
-                                # try:
-                                    view_permission_obj = permission_member_obj.view_names.get(view_name=item['view_name'])
+
+            request.data['workspace_id'] = request.user.current_workspace_id
+            serializer_data = WorkSpaceMemberFullDataSerializer(instance=member_obj,data=request.data)
+            if serializer_data.is_valid():
+                serializer_data.save()
+                for permission_item in permission_list:
+                    permission_member_obj = MemberPermission.objects.get(id=permission_item['id'])
+                    with open('main_perm.json', 'r', errors='ignore', encoding='UTF-8') as file:
+                        permission_type = permission_item["permission_type"]
+
+                        data = json.load(file)
+                        for permission in data:
+                            if permission['permission_name'] == permission_member_obj.permission_name:
+                                for item in permission['items']:
+
+                                    # try:
+                                    view_permission_obj = permission_member_obj.view_names.get(
+                                        view_name=item['view_name'])
 
                                     for perm in item['permissions']:
 
                                         if perm['type'] == permission_type:
                                             for method in perm['methods']:
-                                                method_obj = view_permission_obj.methods.get(method_name=method['method'])
+                                                method_obj = view_permission_obj.methods.get(
+                                                    method_name=method['method'])
 
                                                 method_obj.is_permission = method['status']
                                                 method_obj.save()
 
-
-
                                 # except:
                                 #     continue
 
-                    permission_member_obj.permission_type = permission_type
-                    permission_member_obj.save()
-            request.data['workspace_id'] = request.user.current_workspace_id
-            serializer_data = WorkSpaceMemberFullDataSerializer(instance=member_obj,data=request.data)
-            if serializer_data.is_valid():
-                serializer_data.save()
+                        permission_member_obj.permission_type = permission_type
+                        permission_member_obj.save()
                 return Response(status=status.HTTP_202_ACCEPTED,data={
                     "status":True,
                     "message":"با موفقیت بروزرسانی شد",
@@ -815,11 +809,7 @@ class WorkSpaceMemberManger(APIView):
                 "message": "Validation Error ",
                 "data": serializer_data.errors
             })
-        return Response(status=status.HTTP_403_FORBIDDEN,data={
-            "status":False,
-            "message":"you dont have permission dont try!!",
-            "data":{}
-        })
+
 
 
     def delete(self,request,member_id):
