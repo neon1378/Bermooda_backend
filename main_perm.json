@@ -674,6 +674,94 @@
         }
     ]
 
-}    
+},
+
+{  "permission_name":"human_resources",
+    "methods":[
+        "post",
+        "put",
+        "get",
+        "delete"
+
+    ],
+
+    "items":[
+        {
+            "view_name":"workspacemembermanger",
+
+            "permissions":[
+                {
+                    "type":"expert",
+                    "methods":[
+                        {
+                            "method":"get",
+                            "status":true
+                        },
+                        {
+                            "method":"post",
+                            "status":true
+                        },
+                        {
+                            "method":"put",
+                            "status":true
+                        },
+                        {
+                            "method":"delete",
+                            "status":true
+                        }
+                    ]
+
+                },
+                {
+                    "type":"no access",
+                    "methods":[
+                        {
+                            "method":"get",
+                            "status":false
+                        },
+                        {
+                            "method":"post",
+                            "status":false
+                        },
+                        {
+                            "method":"put",
+                            "status":false
+                        },
+                        {
+                            "method":"delete",
+                            "status":false
+                        }
+                    ]
+
+                },
+
+                {
+                    "type":"manager",
+                    "methods":[
+                        {
+                            "method":"get",
+                            "status":true
+                        },
+                        {
+                            "method":"post",
+                            "status":true
+                        },
+                        {
+                            "method":"put",
+                            "status":true
+                        },
+                        {
+                            "method":"delete",
+                            "status":true
+                        }
+                    ]
+
+                }
+            ]
+        }
+
+    ]
+
+}
 ]
 

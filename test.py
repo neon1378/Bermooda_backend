@@ -1,69 +1,49 @@
-import calendar
-from datetime import date, timedelta,datetime
-from ProjectManager.models import CheckList
-from CalenderManager.models import Meeting
-from core.widgets import create_reminder
+import json
+from WorkSpaceManager.models import *
 
+with open('main_perm.json', 'r', errors='ignore', encoding='UTF-8') as file:
+    data = json.load(file)
+    workspaces = WorkSpace.objects.all()
+    for workspace in workspaces:
+        members = WorkspaceMember.objects.filter(workspace=workspace)
 
-def get_occurrences_in_month(schedule, year, month):
-    """
-    محاسبه تاریخ‌های وقوع برنامه (Schedule) در یک ماه مشخص بر اساس start_date و repeat_type.
-    فرض می‌شود که start_date برنامه به میلادی ذخیره شده است.
-    """
-    try:
-        start_date = schedule.date_to_start.date()
-    except:
-        return []
-    month_start = date(year, month, 1)
-    _, last_day = calendar.monthrange(year, month)
-    month_end = date(year, month, last_day)
+        for member in members:
+            for side_permission in data:
+                try:
+                    member_permission = MemberPermission.objects.get(member=member,
+                                                                     permission_name=side_permission['permission_name'])
+                    for item in side_permission['items']:
+                        try:
+                            view_name = ViewName.objects.get(
+                                permission=member_permission,
+                                view_name=item['view_name']
 
-    occurrences = []
-    repeat_type = schedule.reaped_type
+                            )
+                            for method in side_permission['methods']:
+                                try:
+                                    method_permission = MethodPermission.objects.get(view=view_name, method_name=method)
+                                except:
+                                    method_permission = MethodPermission.objects.create(view=view_name,
+                                                                                        method_name=method)
+                        except:
 
-    if repeat_type == "no_repetition":
-        if month_start <= start_date <= month_end:
-            occurrences.append(start_date)
+                            view_name = ViewName.objects.create(
+                                permission=member_permission,
+                                view_name=item['view_name']
 
-    elif repeat_type == "daily":
-        current = max(start_date, month_start)
-        while current <= month_end:
-            occurrences.append(current)
-            current += timedelta(days=1)
+                            )
 
-    elif repeat_type == "weekly":
-        current = start_date
-        # اگر start_date قبل از ماه مورد نظر است، اولین وقوع در ماه را پیدا می‌کنیم.
-        while current < month_start:
-            current += timedelta(days=7)
-        while current <= month_end:
-            occurrences.append(current)
-            current += timedelta(days=7)
+                            for method in side_permission['methods']:
+                                method_permission = MethodPermission.objects.create(view=view_name, method_name=method)
+                except:
+                    member_permission = MemberPermission.objects.create(member=member, permission_name=side_permission[
+                        'permission_name'])
+                    for item in side_permission['items']:
 
-    elif repeat_type == "monthly":
-        # در هر ماه، اگر روز start_date معتبر باشد.
-        if start_date.day <= last_day:
-            occurrence = date(year, month, start_date.day)
-            if occurrence >= start_date:
-                occurrences.append(occurrence)
-    return occurrences
-def create_reminder_instance():
+                        view_name = ViewName.objects.create(
+                            permission=member_permission,
+                            view_name=item['view_name']
 
-    for item in CheckList.objects.all():
-        if item.date_time_to_start_main:
-            sub_title= "یاد آوری وظیفه"
-            short_text = ' '.join(item.title.split()[:15]) + ('...' if len(item.title.split()) > 15 else '')
-            title = f"وقت شروع وظیفه  {short_text} هست "
-            create_reminder(related_instance=item,remind_at=item.date_time_to_start_main,title=title,sub_title=sub_title)
-        elif item.date_time_to_end_main:
-            sub_title= "یاد آوری وظیفه",
-            short_text = ' '.join(item.title.split()[:15]) + ('...' if len(item.title.split()) > 15 else '')
-            title = f"تایم انجام وظیفه {short_text} تمام شده است  "
-            create_reminder(related_instance=item, remind_at=item.date_time_to_start_main, title=title,
-                            sub_title=sub_title)
-
-
-
-
-
-create_reminder_instance()
+                        )
+                        for method in side_permission['methods']:
+                            method_permission = MethodPermission.objects.create(view=view_name, method_name=method)
