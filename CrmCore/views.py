@@ -932,7 +932,7 @@ def change_customer_status(request,customer_id):
 
 @permission_classes([IsAuthenticated])
 @api_view(['GET'])
-def get_crm_group_members(request,group_id):
+def cget_crm_group_members(request,group_id):
     workspace_obj= get_object_or_404(WorkSpace,id=request.GET.get("workspace_id",None))
     group_obj = get_object_or_404(GroupCrm,id=group_id)
     print(workspace_obj.id,"@@@@")
@@ -951,15 +951,16 @@ def get_crm_group_members(request,group_id):
                     "avatar_url": member.avatar_url(),
                     "self":request.user == member
                 })
-            workspace_member = WorkspaceMember.objects.get(workspace=workspace_obj,user_account=member)
-         
-            if workspace_member.is_accepted:
-                member_list.append({
-                    "id": member.id,
-                    "fullname": member.username,
-                    "avatar_url": member.avatar_url(),
-                    "self":request.user == member
-                })
+            else:
+                workspace_member = WorkspaceMember.objects.get(workspace=workspace_obj,user_account=member)
+
+                if workspace_member.is_accepted:
+                    member_list.append({
+                        "id": member.id,
+                        "fullname": workspace_member.fullname,
+                        "avatar_url": member.avatar_url(),
+                        "self":request.user == member
+                    })
         except:
             pass
     

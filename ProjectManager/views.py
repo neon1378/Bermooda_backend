@@ -713,9 +713,10 @@ def get_project_users(request,project_id):
     ]
     for member in project_obj.members.all():
         if member != workspace_obj.owner :
+            workspace_member = WorkspaceMember.all_objects.get(user_account=member, workspace=workspace_obj)
             dic={
 
-                "fullname": member.fullname,
+                "fullname": workspace_member.fullname,
                 "id": member.id,
                 "avatar_url": member.avatar_url(),
                 "self": request.user == member,
@@ -725,8 +726,9 @@ def get_project_users(request,project_id):
             user_list.append(
                 dic
             )
+
+
             try:
-                workspace_member = WorkspaceMember.objects.get(user_account=member,workspace=workspace_obj)
                 for permission in workspace_member.permissions.all():
                     if permission.permission_name == "project board":
                         dic['permission'] =  {
