@@ -555,10 +555,10 @@ class GroupCrmManager(APIView):
                 if member["id"] == workspace_obj.owner.id:
                     member["type"] = "manager"
                 else:
-                    workspace_member = WorkspaceMember.objects.filter(
+                    workspace_member = WorkspaceMember.all_objects.filter(
                         user_account_id=member["id"], workspace=workspace_obj
                     ).first()  # Use `.first()` to avoid exceptions
-
+                    member['fullname'] = workspace_member.fullname
                     if workspace_member:
                         permission = next(
                             (perm.permission_type for perm in workspace_member.permissions.all() if
@@ -952,7 +952,7 @@ def get_crm_group_members(request,group_id):
                     "self":request.user == member
                 })
             else:
-                workspace_member = WorkspaceMember.objects.get(workspace=workspace_obj,user_account=member)
+                workspace_member = WorkspaceMember.all_objects.get(workspace=workspace_obj,user_account=member)
 
                 if workspace_member.is_accepted:
                     member_list.append({

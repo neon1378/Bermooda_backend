@@ -195,7 +195,8 @@ class ProjectManager(APIView):
                     user['permission_type'] = "manager"
                 else:
                     try:
-                        member_workspace = WorkspaceMember.objects.get(workspace=workspace_obj,user_account=user_account)
+                        member_workspace = WorkspaceMember.all_objects.get(workspace=workspace_obj,user_account=user_account)
+                        user['fullname']= member_workspace.fullname
                         for permission in member_workspace.permissions.all():
                             if permission.permission_name == "project board":
                                 user['permission_type'] = permission.permission_type
