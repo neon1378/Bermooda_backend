@@ -248,7 +248,7 @@ class CustomerUser(SoftDeleteModel):
     date_time_to_remember= models.CharField(max_length=100,null=True)
     main_date_time_to_remember =models.DateTimeField(null=True)
 
-    fax = models.BigIntegerField(null=True,blank=True)
+    fax = models.CharField(max_length=20,null=True,blank=True)
     manager_national_code = models.BigIntegerField(null=True,blank=True)
     economic_code = models.BigIntegerField(null=True,blank=True)
     manager_phone_number = models.BigIntegerField(null=True,blank=True)
