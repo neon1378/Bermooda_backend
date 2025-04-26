@@ -117,9 +117,11 @@ class CategoryManager(APIView):
                 "message":"موفق",
                 "data":serializer_data.data
             })
-        workspace_id = request.GET.get("workspace_id")
+        workspace_id = request.user.current_workspace_id
+        group_crm_id = request.GET.get("group_crm_id")
         workspace_obj = get_object_or_404(WorkSpace,id=workspace_id)
-        category_objs = Category.objects.filter(workspace=workspace_obj)
+
+        category_objs = Category.objects.filter(workspace=workspace_obj,group_crm_id=group_crm_id)
         serializer_data = CategorySerializer(category_objs,many=True)
 
         return Response(status=status.HTTP_200_OK,data={
@@ -128,14 +130,12 @@ class CategoryManager(APIView):
             "data":serializer_data.data
         })
     def post (self,request):
-        workspace_id = request.data.pop('workspace_id')
-        workspace_obj = get_object_or_404(WorkSpace,id=workspace_id)
 
+        request.date['workspace_id'] = request.user.current_workspace_id
         serializer_data =CategorySerializer(data=request.data)
         if serializer_data.is_valid():
-            category_obj = serializer_data.create(validated_data=request.data)
-            category_obj.workspace= workspace_obj
-            category_obj.save()
+            serializer_data.save()
+
             return Response(status=status.HTTP_201_CREATED,data={
                 "status":True,
                 "message":"با موفقیت ثبت شد",
@@ -143,20 +143,25 @@ class CategoryManager(APIView):
             })
         return Response(status=status.HTTP_400_BAD_REQUEST,data={
             "status":False,
-            "message":"ناموفق",
+            "message":"Validation Error",
             "data":serializer_data.errors
         })
     def put(self,request,category_id):
         data= request.data
         category_obj = get_object_or_404(Category,id=category_id)
-
-        category_obj.title = data['title']
-        category_obj.save()
-        serializer_data = CategorySerializer(category_obj)
-        return Response(status=status.HTTP_200_OK,data={
-            "status":True,
-            "message":"با موفقیت بروزرسانی شد",
-            "data":serializer_data.data
+        request.data['group_crm_id'] = category_obj.group_crm.id
+        request.data['workspace_id'] = category_obj.workspace.id
+        serializer_data = CategorySerializer(instance=category_obj,data=request.data)
+        if serializer_data.is_valid():
+            return Response(status=status.HTTP_200_OK,data={
+                "status":True,
+                "message":"با موفقیت بروزرسانی شد",
+                "data":serializer_data.data
+            })
+        return Response(status=status.HTTP_400_BAD_REQUEST,data={
+            "status":False,
+            "message":"Validation Error",
+            "data":serializer_data.errors
         })
     def delete(self,request,category_id):
         category_obj = get_object_or_404(Category,id=category_id)

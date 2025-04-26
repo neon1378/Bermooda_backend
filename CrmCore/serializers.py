@@ -29,9 +29,24 @@ class CrmDepartmentSerializer(serializers.ModelSerializer):
 
 
 class CategorySerializer(serializers.ModelSerializer):
+    group_crm_id = serializers.IntegerField(write_only=True,required=True)
+    workspace_id = serializers.IntegerField(write_only=True, required=True)
     class Meta:
         model = Category
-        fields = "__all__"
+        fields = [
+            "id",
+            "workspace_id",
+            "title",
+            "group_crm_id",
+        ]
+    def create(self, validated_data):
+        new_category = Category.objects.create(**validated_data)
+        return new_category
+
+    def update(self, instance, validated_data):
+        instance.title = validated_data.get("title")
+        instance.save()
+        return instance
 
 class LabelStepSerializer(serializers.ModelSerializer):
     label_id = serializers.IntegerField(write_only=True,required=False)
