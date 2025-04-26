@@ -124,7 +124,7 @@ class WorkSpaceSerializer(ModelSerializer):
     industrialactivity = IndustrialActivitySerializer(read_only=True)
     document_image = MainFileSerializer(read_only=True)
     national_card_image = MainFileSerializer(read_only=True)
-
+    avatar = MainFileSerializer(read_only=True)
     class Meta:
         model =WorkSpace
         fields =[
@@ -162,6 +162,7 @@ class WorkSpaceSerializer(ModelSerializer):
             "fax_number",
             "economic_number",
             "address",
+            "avatar",
 
 
         ]
