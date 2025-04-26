@@ -131,7 +131,7 @@ class CategoryManager(APIView):
         })
     def post (self,request):
 
-        request.date['workspace_id'] = request.user.current_workspace_id
+        request.data['workspace_id'] = request.user.current_workspace_id
         serializer_data =CategorySerializer(data=request.data)
         if serializer_data.is_valid():
             serializer_data.save()
