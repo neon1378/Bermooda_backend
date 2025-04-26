@@ -22,7 +22,7 @@ class IndustrialActivity(SoftDeleteModel):
 
 
 class WorkSpace (SoftDeleteModel):
-    title = models.CharField(max_length=30,null=True)
+    title = models.CharField(max_length=30,null=True,blank=True)
     owner = models.ForeignKey(UserAccount,on_delete=models.CASCADE,null=True,related_name="workspace_owner",blank=True)
     is_authenticated = models.BooleanField(default=False)
     activated = models.BooleanField(default=True)
@@ -92,7 +92,8 @@ class WorkSpace (SoftDeleteModel):
 
 
 
-
+    def wallet_balance(self):
+        return self.wallet.balance
 
 
 

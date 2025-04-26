@@ -128,11 +128,13 @@ class WorkSpaceSerializer(ModelSerializer):
     class Meta:
         model =WorkSpace
         fields =[
+            "title",
             "id",
             "industrialactivity_id",
             "industrialactivity",
             "personal_information_status",
             "business_type",
+            "wallet_balance",
             "document_image",
             "national_card_image",
             "permissions",
