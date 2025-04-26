@@ -208,12 +208,7 @@ def change_invoice_status(request,invoice_id):
 def invoice_preview(request,invoice_id):
     invoice_obj = get_object_or_404(Invoice,main_id=invoice_id)
     ip_address = get_client_ip(request)
-    if ip_address != invoice_obj.login_ip or not invoice_obj.is_expired():
-        return Response(status=status.HTTP_403_FORBIDDEN,data={
-            "status":False,
-            "message":"Access Denied",
-            "data":{}
-        })
+
 
     serializer_data =InvoiceSerializer(invoice_obj)
     return Response(
