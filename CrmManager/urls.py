@@ -38,6 +38,8 @@ urlpatterns = [
 
     path('v1/Planing/',include("PlaningManager.urls")),
     path('v1/CalenderManager/',include("CalenderManager.urls")),
+    path('v1/HumanResourcesManager/', include("HumanResourcesManager.urls")),
+
 
 
 ]

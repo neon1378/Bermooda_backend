@@ -2,7 +2,27 @@ from rest_framework import serializers
 from .models import *
 from CrmCore.models import *
 from core.models import City,State
+from WorkSpaceManager.models import WorkspaceMember
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+class MemberSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserAccount
+        fields = [
+            "id",
+            "fullname",
+            "avatar_url"
+        ]
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        try:
+
+            workspace_id = self.context['workspace_id']
+            workspace_member = WorkspaceMember.objects.get(workspace_id=workspace_id,user_account=instance)
+            data['fullname'] = workspace_member.fullname
+        except:
+            pass
+        return data
+
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):

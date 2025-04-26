@@ -172,7 +172,7 @@ class ProjectManager(APIView):
         department_obj = get_object_or_404(ProjectDepartment,id=department_id)
         workspace_id  = request.GET.get('workspace_id')
         workspace_obj = get_object_or_404(WorkSpace,id=workspace_id)
-        if request.user == workspace_obj.owner or department_obj.manager == request.user:
+        if request.user == workspace_obj.owner :
             projects = Project.objects.filter(workspace=workspace_obj,department_id=department_id)
         else:
 

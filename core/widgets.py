@@ -14,6 +14,9 @@ from django.core.cache import cache
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 import requests
+import random
+import string
+
 
 from datetime import datetime
 from rest_framework.response import Response
@@ -292,3 +295,6 @@ def create_reminder (related_instance,remind_at,title,sub_title):
 
 
 
+def generate_random_slug(length=8):
+    # This function generates a random string of letters and digits
+    return ''.join(random.choices(string.ascii_letters + string.digits, k=length))

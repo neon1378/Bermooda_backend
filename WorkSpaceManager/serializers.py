@@ -367,7 +367,7 @@ class StudyCategorySerializer(serializers.ModelSerializer):
         ]
 
 class WorkSpaceMemberFullDataSerializer(serializers.ModelSerializer):
-
+    folder_slug = serializers.IntegerField(required=False,allow_null=True)
     user_account = UserSerializer(required=False, read_only=True)
     workspace_id = serializers.IntegerField(required=True, write_only=True)
     permissions = serializers.ListField(write_only=True, required=False)
@@ -399,6 +399,7 @@ class WorkSpaceMemberFullDataSerializer(serializers.ModelSerializer):
             "state",
             "city",
             "state_id",
+            "folder_slug",
             "city_id",
             "insurance_type",
             "more_information",
@@ -482,6 +483,7 @@ class WorkSpaceMemberFullDataSerializer(serializers.ModelSerializer):
         print(validated_data)
 
         from .views import create_permission_for_member
+        folder_slug = validated_data.pop("folder_slug",None)
         workspace_id = validated_data.pop("workspace_id",None)
         bad_record_id_list = validated_data.pop("bad_record_id_list",None)
         military_status = validated_data.pop("military_status",None)
@@ -578,7 +580,13 @@ class WorkSpaceMemberFullDataSerializer(serializers.ModelSerializer):
                     main_file.its_blong=True
                     main_file.save()
                     deleted_member.bad_records.add(main_file)
+            if folder_slug:
+                from HumanResourcesManager.models import Folder
+                folder_obj = get_object_or_404(Folder,slug=folder_slug)
+                folder_obj.members.add(deleted_member)
+                folder_obj.save()
             deleted_member.save()
+
             return deleted_member
 
         member = WorkspaceMember.objects.create(**validated_data, user_account=user_acc, is_accepted=False,workspace=workspace)
@@ -653,10 +661,15 @@ class WorkSpaceMemberFullDataSerializer(serializers.ModelSerializer):
             requests.post(url=url, headers=headers, json=payload)
         except:
             pass
-
+            if folder_slug:
+                from HumanResourcesManager.models import Folder
+                folder_obj = get_object_or_404(Folder,slug=folder_slug)
+                folder_obj.members.add(member)
+                folder_obj.save()
         return member
 
     def update(self, instance, validated_data):
+        folder_slug = validated_data.pop("folder_slug",None)
         permissions= validated_data.pop("permissions",None)
         bad_record_id_list = validated_data.pop("bad_record_id_list", None)
         military_status = validated_data.pop("military_status", None)
@@ -750,4 +763,9 @@ class WorkSpaceMemberFullDataSerializer(serializers.ModelSerializer):
         instance.fullname = f"{instance.first_name} {instance.last_name}"
         instance.more_information= more_information
         instance.save()
+        if folder_slug:
+            from HumanResourcesManager.models import Folder
+            folder_obj = get_object_or_404(Folder, slug=folder_slug)
+            folder_obj.members.add(instance)
+            folder_obj.save()
         return instance
