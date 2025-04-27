@@ -272,16 +272,39 @@ class WorkspaceMember(SoftDeleteModel):
             return ""
 
     def permission_list(self):
-        data =[]
-        for permission in  self.permissions.all():
-            data.append(
+
+        if self.user_account != self.workspace.owner:
+            data = []
+            for permission in  self.permissions.all():
+                data.append(
+                    {
+                        "id":permission.id,
+                        "permission_name":permission.permission_name,
+                        "permission_type":permission.permission_type,
+                    }
+                )
+            return data
+        else:
+            data=[
                 {
-                    "id":permission.id,
-                    "permission_name":permission.permission_name,
-                    "permission_type":permission.permission_type,
+                    "id": 1,
+                    "permission_name": "project board",
+                    "permission_type": "manager",
+                },
+                {
+                    "id": 1,
+                    "permission_name": "crm",
+                    "permission_type": "manager",
+                },
+                {
+                    "id":1,
+                    "permission_name": "human_resources",
+                    "permission_type": "manager",
                 }
-            )
-        return data
+            ]
+            return data
+
+
 class MemberPermission (SoftDeleteModel):
     PERMISSION_TYPE =(
         ("manager","MANAGER"),

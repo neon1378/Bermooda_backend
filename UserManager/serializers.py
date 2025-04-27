@@ -17,8 +17,11 @@ class MemberSerializer(serializers.ModelSerializer):
         try:
 
             workspace_id = self.context['workspace_id']
+
             workspace_member = WorkspaceMember.objects.get(workspace_id=workspace_id,user_account=instance)
             data['fullname'] = workspace_member.fullname
+            data['permissions'] = workspace_member.permission_list()
+
         except:
             pass
         return data
