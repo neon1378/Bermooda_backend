@@ -7,6 +7,9 @@ from rest_framework.views import APIView
 from core.widgets import pagination
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
+from WorkSpaceManager.models import WorkspaceMember
+from WorkSpaceManager.serializers import WorkSpaceSerializer
+from rest_framework.decorators import api_view,permission_classes
 # Create your views here.
 
 
@@ -76,3 +79,20 @@ class FolderManager(APIView):
         folder_obj = get_object_or_404(Folder,slug=slug)
         folder_obj.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_folder_members(request,slug):
+    folder_obj = get_object_or_404(Folder,slug=slug)
+
+    serializer_data =[]
+    for member in folder_obj.members.all():
+        workspace_member_obj = WorkspaceMember.objects.get(user_account=member,workspace=folder_obj.workspace)
+        serializer_data.append(WorkSpaceSerializer(workspace_member_obj).data)
+    return Response(status=status.HTTP_200_OK,data={
+        "status":True,
+        "message":"موفق",
+        "data":serializer_data
+    })

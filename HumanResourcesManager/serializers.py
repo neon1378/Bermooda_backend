@@ -28,6 +28,8 @@ class FolderSerializer(serializers.ModelSerializer):
         ]
 
     def create(self, validated_data):
+        workspace_id = validated_data.get("workspace_id")
+        workspace_obj = WorkSpace.objects.get(id=workspace_id)
         avatar_id = validated_data.pop("avatar_id", None)
         member_id_list = validated_data.pop("member_id_list", [])
         new_folder = Folder.objects.create(**validated_data)
@@ -38,12 +40,15 @@ class FolderSerializer(serializers.ModelSerializer):
             main_file.save()
             new_folder.avatar = main_file
         for member_id in member_id_list:
-            user_acc = get_object_or_404(UserAccount, id=member_id)
-            new_folder.members.add(user_acc)
+            if workspace_obj.owner.id != member_id:
+                user_acc = get_object_or_404(UserAccount, id=member_id)
+                new_folder.members.add(user_acc)
         new_folder.save()
         return new_folder
 
     def update(self, instance, validated_data):
+        workspace_id = validated_data.get("workspace_id")
+        workspace_obj = WorkSpace.objects.get(id=workspace_id)
         avatar_id = validated_data.pop("avatar_id", None)
         member_id_list = validated_data.pop("member_id_list", None)
 
@@ -64,8 +69,10 @@ class FolderSerializer(serializers.ModelSerializer):
         if member_id_list is not None:
             instance.members.clear()
             for member_id in member_id_list:
-                user_acc = get_object_or_404(UserAccount, id=member_id)
-                instance.members.add(user_acc)
+                if workspace_obj.owner.id != member_id:
+
+                    user_acc = get_object_or_404(UserAccount, id=member_id)
+                    instance.members.add(user_acc)
 
         instance.save()
         return instance
