@@ -42,6 +42,7 @@ class FolderSerializer(serializers.ModelSerializer):
             main_file.workspace_id = new_folder.workspace.id
             main_file.save()
             new_folder.avatar = main_file
+
         for member_id in member_id_list:
             if workspace_obj.owner.id == member_id:
                 if not WorkspaceMember.objects.filter(user_account_id=member_id, workspace=workspace_obj).exists():
@@ -60,6 +61,10 @@ class FolderSerializer(serializers.ModelSerializer):
             else:
                 user_acc = get_object_or_404(UserAccount, id=member_id)
                 new_folder.members.add(user_acc)
+
+        new_folder.save()
+        if not member_id_list or member_id_list == []:
+            new_folder.members.add(new_folder.workspace.owner)
         new_folder.save()
         return new_folder
 
@@ -102,7 +107,8 @@ class FolderSerializer(serializers.ModelSerializer):
                 else:
                     user_acc = get_object_or_404(UserAccount, id=member_id)
                     instance.members.add(user_acc)
-
+        if not member_id_list or member_id_list == []:
+            instance.members.add(instance.workspace.owner)
         instance.save()
         return instance
 
