@@ -10,7 +10,7 @@ class FolderSerializer(serializers.ModelSerializer):
     workspace_id = serializers.IntegerField(required=True)
     avatar = MainFileSerializer(read_only=True)
     avatar_id = serializers.IntegerField(required=False, allow_null=True)
-    members = MemberSerializer(read_only=True, many=True)
+
     member_id_list = serializers.ListField(write_only=True, required=True)
 
     class Meta:
@@ -23,10 +23,12 @@ class FolderSerializer(serializers.ModelSerializer):
             "workspace_id",
             "created_at",
             "slug",
-            "members",
+
             "member_id_list",
         ]
-
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data['members']= MemberSerializer(instance.members.all(),context={"workspace_id":instance.workspace.id})
     def create(self, validated_data):
         workspace_id = validated_data.get("workspace_id")
         workspace_obj = WorkSpace.objects.get(id=workspace_id)
