@@ -91,6 +91,8 @@ def get_folder_members(request,slug):
     for member in folder_obj.members.all():
         workspace_member_obj = WorkspaceMember.objects.get(user_account=member,workspace=folder_obj.workspace)
         serializer_data.append(WorkSpaceMemberSerializer(workspace_member_obj).data)
+
+
     return Response(status=status.HTTP_200_OK,data={
         "status":True,
         "message":"موفق",
