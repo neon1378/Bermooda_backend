@@ -12,19 +12,7 @@ class MemberSerializer(serializers.ModelSerializer):
             "fullname",
             "avatar_url"
         ]
-    def to_representation(self, instance):
-        data = super().to_representation(instance)
-        try:
 
-            workspace_id = self.context['workspace_id']
-
-            workspace_member = WorkspaceMember.objects.get(workspace_id=workspace_id,user_account=instance)
-            data['fullname'] = workspace_member.fullname
-            data['permissions'] = workspace_member.permission_list()
-
-        except:
-            pass
-        return data
 
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
