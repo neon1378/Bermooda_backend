@@ -701,7 +701,7 @@ class WorkSpaceMemberManger(APIView):
             })
         workspace_obj = WorkSpace.objects.get(id=request.user.current_workspace_id)
 
-        workspace_member = WorkspaceMember.objects.filter(workspace= workspace_obj)
+        workspace_member = WorkspaceMember.objects.filter(workspace= workspace_obj).exclude(user_account=workspace_obj.owner)
         member_data =[]
         if workspace_obj.owner != request.user:
             data = UserSerializer(workspace_obj.owner).data

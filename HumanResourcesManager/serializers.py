@@ -4,7 +4,7 @@ from core.serializers import MainFileSerializer
 from UserManager.serializers import MemberSerializer
 from core.models import MainFile
 from django.shortcuts import get_object_or_404
-
+from WorkSpaceManager.models import WorkSpace,WorkspaceMember
 
 class FolderSerializer(serializers.ModelSerializer):
     workspace_id = serializers.IntegerField(required=True)
@@ -40,7 +40,21 @@ class FolderSerializer(serializers.ModelSerializer):
             main_file.save()
             new_folder.avatar = main_file
         for member_id in member_id_list:
-            if workspace_obj.owner.id != member_id:
+            if workspace_obj.owner.id == member_id:
+                if not WorkspaceMember.objects.filter(user_account_id=member_id, workspace=workspace_obj).exists():
+                    WorkspaceMember.objects.create(
+                        user_account_id=member_id,
+                        workspace=workspace_obj,
+                        fullname=workspace_obj.owner.fullname,
+                        is_accepted=True,
+
+                    )
+                    user_acc = get_object_or_404(UserAccount, id=member_id)
+                    new_folder.members.add(user_acc)
+                else:
+                    user_acc = get_object_or_404(UserAccount, id=member_id)
+                    new_folder.members.add(user_acc)
+            else:
                 user_acc = get_object_or_404(UserAccount, id=member_id)
                 new_folder.members.add(user_acc)
         new_folder.save()
@@ -69,8 +83,20 @@ class FolderSerializer(serializers.ModelSerializer):
         if member_id_list is not None:
             instance.members.clear()
             for member_id in member_id_list:
-                if workspace_obj.owner.id != member_id:
-
+                if workspace_obj.owner.id == member_id:
+                    if not WorkspaceMember.objects.filter(user_account_id=member_id,workspace=workspace_obj).exists():
+                        WorkspaceMember.objects.create(
+                            user_account_id=member_id,
+                            workspace=workspace_obj,
+                            fullname=workspace_obj.owner.fullname,
+                            is_accepted=True,
+                        )
+                        user_acc = get_object_or_404(UserAccount, id=member_id)
+                        instance.members.add(user_acc)
+                    else:
+                        user_acc = get_object_or_404(UserAccount, id=member_id)
+                        instance.members.add(user_acc)
+                else:
                     user_acc = get_object_or_404(UserAccount, id=member_id)
                     instance.members.add(user_acc)
 
