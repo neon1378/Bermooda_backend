@@ -38,7 +38,7 @@ class FolderManager(APIView):
 
         pagination_data = pagination(query_set=folder_objs,page_number=page_number)
         pagination_data['list'] = FolderSerializer(pagination_data['list'],many=True).data
-
+        print(pagination_data['list'])
         return Response(status=status.HTTP_200_OK,data={
             "status":True,
             "message":"موفق",
