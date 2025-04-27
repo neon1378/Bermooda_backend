@@ -17,8 +17,12 @@ class MemberSerializer(serializers.ModelSerializer):
         try:
 
             workspace_id = self.context['workspace_id']
-
+            workspace_obj = WorkSpace.objects.get(id=workspace_id)
             workspace_member = WorkspaceMember.objects.get(workspace_id=workspace_id,user_account=instance)
+            if workspace_obj.owner == instance:
+                data['type'] = "owner"
+            else:
+                data['type'] = "member"
             data['fullname'] = workspace_member.fullname
             data['permissions'] = workspace_member.permission_list()
 
