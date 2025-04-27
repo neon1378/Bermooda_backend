@@ -29,6 +29,7 @@ class FolderSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         data = super().to_representation(instance)
         data['members']= MemberSerializer(instance.members.all(),context={"workspace_id":instance.workspace.id})
+        return data
     def create(self, validated_data):
         workspace_id = validated_data.get("workspace_id")
         workspace_obj = WorkSpace.objects.get(id=workspace_id)
