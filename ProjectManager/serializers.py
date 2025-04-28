@@ -332,6 +332,7 @@ class ProjectMessageSerializer(ModelSerializer):
     class Meta:
         model = ProjectMessage
         fields = [
+            "id",
             "body",
             "project",
             "project_id",
