@@ -362,6 +362,8 @@ class ProjectTask(AsyncWebsocketConsumer):
     @sync_to_async
     def _create_a_message(self,data):
         main_data = data['data']
+        main_data['project_id'] = self.project_obj.id
+        main_data['creator_id'] = self.user.id
         serializer_data =ProjectMessageSerializer(data=main_data)
         if serializer_data.is_valid():
             message_obj = serializer_data.save()
