@@ -109,7 +109,7 @@ class WorkspaceManager(APIView):
         return Response(status=status.HTTP_200_OK,data=serializer_data)
     def put(self,request,workspace_id):
         print(workspace_id)
-        workspace_obj = WorkSpace.objects.get(id=workspace_id)
+        workspace_obj = WorkSpace.all_objects.get(id=workspace_id)
         if workspace_obj.owner == request.user:
             data=request.data
 
