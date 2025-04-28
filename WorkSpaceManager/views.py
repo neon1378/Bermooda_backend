@@ -68,14 +68,17 @@ class WorkspaceManager(APIView):
             if same_workspace_current:
                 workspace_member = WorkspaceMember.objects.filter(user_account=request.user).first()
                 workspace_owner = WorkSpace.objects.filter(owner=request.user).first()
-                print(workspace_member, "1")
-                print(workspace_owner, "2")
+
+
+
                 print(request.user.current_workspace_id,"3")
                 if workspace_owner:
+                    print(workspace_member, "1")
                     request.user.current_workspace_id = workspace_owner.id
                     request.user.current_workspace_id = workspace_member.workspace.id
                     request.user.save()
                 elif workspace_member:
+                    print(workspace_owner, "2")
 
                     request.user.current_workspace_id = workspace_member.workspace.id
                     request.user.save()
