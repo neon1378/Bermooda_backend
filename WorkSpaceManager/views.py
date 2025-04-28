@@ -50,11 +50,13 @@ class WorkspaceManager(APIView):
                 workspace_owner = WorkSpace.objects.filter(owner= request.user).first()
                 if workspace_owner:
                     request.user.current_workspace_id=workspace_owner.id
+                    request.user.current_workspace_id = workspace_owner.id
+                    request.user.save()
                 elif workspace_member:
                     change_current_workspace_jadoo(user_acc=request.user,workspace_obj=workspace_member.workspace)
 
-                request.user.current_workspace_id = workspace_member.workspace.id
-                request.user.save()
+                    request.user.current_workspace_id = workspace_member.workspace.id
+                    request.user.save()
             try:
                 url = f"{self.jadoo_base_url}/workspace/destroy/{workspace_obj.jadoo_workspace_id}"
                 headers = {
