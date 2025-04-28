@@ -348,13 +348,13 @@ class ProjectTask(AsyncWebsocketConsumer):
     @sync_to_async
     def _one_message_serializer(self,message_id):
         message_obj = get_object_or_404(ProjectMessage,id=message_id)
-        serializer_data = ProjectMessageSerializer(message_obj)
+        serializer_data = ProjectMessageSerializer(message_obj,context={"user":self.user})
         return serializer_data.data
 
     @sync_to_async
     def _all_message_serializer(self):
         message_objs = ProjectMessage.objects.filter(project=self.project_obj).order_by("-id")
-        serializer_data = ProjectMessageSerializer(message_objs,many=True)
+        serializer_data = ProjectMessageSerializer(message_objs,many=True,context={"user":self.user})
         return serializer_data.data
 
 
