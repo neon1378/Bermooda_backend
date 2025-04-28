@@ -75,7 +75,7 @@ class WorkspaceManager(APIView):
                 if workspace_owner:
                     print(workspace_member, "1")
                     request.user.current_workspace_id = workspace_owner.id
-                    request.user.current_workspace_id = workspace_member.workspace.id
+
                     request.user.save()
                 elif workspace_member:
                     print(workspace_owner, "2")
