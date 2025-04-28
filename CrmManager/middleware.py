@@ -60,7 +60,7 @@ class JWTAuthMiddleware:
                 user_detail = await  self.get_user(user_id)
                 # Fetch user object from the database
                 scope['user'] = user_detail.get('user')
-
+                print(scope['user'],"@@")
             except (InvalidTokenError, UserAccount.DoesNotExist):
                 # Invalid token or user not found, keep user as AnonymousUser
                 pass
