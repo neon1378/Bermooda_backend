@@ -321,7 +321,7 @@ class ProjectSerializer(serializers.ModelSerializer):
 
 
 class ProjectMessageSerializer(ModelSerializer):
-    file = MainFileSerializer(read_only=True)
+    file = MainFileSerializer(read_only=True,many=True)
     file_id_list = serializers.ListField(write_only=True,required=False,allow_null=True)
     replay = serializers.SerializerMethodField(read_only=True)
     replay_id = serializers.IntegerField(write_only=True,required=False,allow_null=True)
