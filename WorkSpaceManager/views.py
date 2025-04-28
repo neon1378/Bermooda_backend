@@ -75,15 +75,17 @@ class WorkspaceManager(APIView):
                 if workspace_owner:
                     print(workspace_member, "1")
                     request.user.current_workspace_id = workspace_owner.id
+                    change_current_workspace_jadoo(user_acc=request.user, workspace_obj=workspace_owner)
 
                     request.user.save()
                 elif workspace_member:
                     print(workspace_owner, "2")
 
                     request.user.current_workspace_id = workspace_member.workspace.id
+                    change_current_workspace_jadoo(user_acc=request.user, workspace_obj=workspace_member.workspace)
                     request.user.save()
                 print(request.user.current_workspace_id,"4")
-                change_current_workspace_jadoo(user_acc=request.user, workspace_obj=workspace_member.workspace)
+
             return Response(status=status.HTTP_204_NO_CONTENT)
         return  Response(status=status.HTTP_403_FORBIDDEN,data={
             "message":"you dont have permission dont try !!!!!!"
