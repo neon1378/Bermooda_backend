@@ -108,6 +108,7 @@ class WorkspaceManager(APIView):
 
         return Response(status=status.HTTP_200_OK,data=serializer_data)
     def put(self,request,workspace_id):
+        print(workspace_id)
         workspace_obj = get_object_or_404(WorkSpace,id=workspace_id)
         if workspace_obj.owner == request.user:
             data=request.data
@@ -234,6 +235,7 @@ def update_workspace_information(request,workspace_id):
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
 def update_workspace_personal_information(request,workspace_id):
+
     workspace_obj = get_object_or_404(WorkSpace,id=workspace_id)
     data= request.data
     personal_type = data.get("personal_type")
