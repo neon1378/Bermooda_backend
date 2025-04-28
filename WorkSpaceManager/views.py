@@ -43,20 +43,13 @@ class WorkspaceManager(APIView):
     jadoo_base_url = os.getenv("JADOO_BASE_URL")
 
     def delete(self,request,workspace_id):
+        same_workspace_current = False
         workspace_obj =get_object_or_404(WorkSpace,id=workspace_id)
         if workspace_obj.owner == request.user:
             if request.user.current_workspace_id == workspace_obj.id:
-                workspace_member= WorkspaceMember.objects.filter(user_account =request.user).first()
-                workspace_owner = WorkSpace.objects.filter(owner= request.user).first()
-                if workspace_owner:
-                    request.user.current_workspace_id=workspace_owner.id
-                    request.user.current_workspace_id = workspace_owner.id
-                    request.user.save()
-                elif workspace_member:
-                    change_current_workspace_jadoo(user_acc=request.user,workspace_obj=workspace_member.workspace)
+                same_workspace_current=True
 
-                    request.user.current_workspace_id = workspace_member.workspace.id
-                    request.user.save()
+
             try:
                 url = f"{self.jadoo_base_url}/workspace/destroy/{workspace_obj.jadoo_workspace_id}"
                 headers = {
@@ -72,6 +65,22 @@ class WorkspaceManager(APIView):
 
 
             workspace_obj.delete()
+            if same_workspace_current:
+                workspace_member = WorkspaceMember.objects.filter(user_account=request.user).first()
+                workspace_owner = WorkSpace.objects.filter(owner=request.user).first()
+                print(workspace_member, "1")
+                print(workspace_owner, "2")
+                print(request.user.current_workspace_id,"3")
+                if workspace_owner:
+                    request.user.current_workspace_id = workspace_owner.id
+                    request.user.current_workspace_id = workspace_member.workspace.id
+                    request.user.save()
+                elif workspace_member:
+
+                    request.user.current_workspace_id = workspace_member.workspace.id
+                    request.user.save()
+                print(request.user.current_workspace_id,"4")
+                change_current_workspace_jadoo(user_acc=request.user, workspace_obj=workspace_member.workspace)
             return Response(status=status.HTTP_204_NO_CONTENT)
         return  Response(status=status.HTTP_403_FORBIDDEN,data={
             "message":"you dont have permission dont try !!!!!!"
