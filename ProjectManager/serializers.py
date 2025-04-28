@@ -5,6 +5,12 @@ from django.shortcuts import get_object_or_404
 from core.models import MainFile
 from core.serializers import  MainFileSerializer
 from MailManager.serializers import MemberSerializer
+from UserManager.serializers import MemberSerializer as UserSerializer
+
+
+
+
+
 
 class ProjectDepartmentSerializer(ModelSerializer):
     workspace_id = serializers.IntegerField(write_only=True,required=True)
@@ -314,4 +320,86 @@ class ProjectSerializer(serializers.ModelSerializer):
 
 
 
+class ProjectMessageSerializer(ModelSerializer):
+    file = MainFileSerializer(read_only=True)
+    file_id_list = serializers.ListField(write_only=True,required=False,allow_null=True)
+    replay = serializers.SerializerMethodField(read_only=True)
+    replay_id = serializers.IntegerField(write_only=True,required=False,allow_null=True)
+    creator = UserSerializer(read_only=True)
+    creator_id = serializers.IntegerField(write_only=True,required=True)
+    project = ProjectSerializer(read_only=True)
+    project_id = serializers.IntegerField(write_only=True,required=True)
+    class Meta:
+        model = ProjectMessage
+        fields = [
+            "body",
+            "project",
+            "project_id",
+            "file",
+            "file_id_list",
+            "replay",
+            "replay_id",
+            "creator",
+            "creator_id",
+            "created_at_persian",
+        ]
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        user = self.context['user']
+        data['self'] = user == instance.creator
+        return data
+    def get_replay(self, obj):
+        if obj.replay:
+            return ProjectMessageSerializer(obj.replay).data
+        return None
+    def create(self, validated_data):
+        file_id_list = validated_data.pop("file_id_list",None)
+        replay_id = validated_data.pop("replay_id",None)
+        new_message = ProjectMessage.objects.create(**validated_data)
+        if replay_id:
+            new_message.replay_id = replay_id
+        if file_id_list:
+            main_files = MainFile.objects.filter(id__in=file_id_list)
+            for main_file in main_files:
+                main_file.its_belong = True
+                main_file.save()
+                new_message.file.add(main_file)
+
+        new_message.save()
+        return new_message
+
+    def update(self, instance, validated_data):
+        file_id_list = validated_data.pop("file_id_list", None)
+        replay_id = validated_data.pop("replay_id", None)
+        validated_data.pop("project_id")
+        # Update normal fields
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+
+
+
+        # Smart update for files
+        if file_id_list is not None:
+            # Current file IDs already attached to the message
+            current_file_ids = set(instance.file.values_list('id', flat=True))
+            # New file IDs from request
+            new_file_ids = set(file_id_list)
+
+            # Files to add
+            to_add_ids = new_file_ids - current_file_ids
+            # Files to remove
+            to_remove_ids = current_file_ids - new_file_ids
+
+            if to_remove_ids:
+                instance.file.remove(*to_remove_ids)
+
+            if to_add_ids:
+                main_files_to_add = MainFile.objects.filter(id__in=to_add_ids)
+                for main_file in main_files_to_add:
+                    main_file.its_belong = True
+                    main_file.save()
+                    instance.file.add(main_file)
+
+        instance.save()
+        return instance
 

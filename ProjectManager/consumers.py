@@ -14,7 +14,7 @@ from UserManager.models import UserAccount
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from dotenv import load_dotenv
 from WorkSpaceManager.models import  WorkspaceMember
-from .serializers import TaskSerializer,ProjectChatSerializer
+from .serializers import TaskSerializer,ProjectChatSerializer,ProjectMessageSerializer
 import os
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
@@ -22,7 +22,7 @@ from channels.db import database_sync_to_async
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import get_object_or_404
 
-from .serializers import TaskSerializer
+
 from core.models import MainFile
 load_dotenv()
 
@@ -301,7 +301,9 @@ class ProjectTask(AsyncWebsocketConsumer):
                 'task_list': self.handle_task_list,
                 'move_a_task': self.handle_move_task,
                 'change_sub_task_status': self.handle_subtask_status,
-                'change_task_status': self.handle_task_status
+                'change_task_status': self.handle_task_status,
+                "read_all_messages":self.read_all_messages,
+                "create_a_message":self.create_a_message,
             }
 
             handler = command_handlers.get(command)
@@ -342,6 +344,70 @@ class ProjectTask(AsyncWebsocketConsumer):
             "data_type": "get_a_task",
             "data": task_data
         })
+
+    @sync_to_async
+    def _one_message_serializer(self,message_id):
+        message_obj = get_object_or_404(ProjectMessage,id=message_id)
+        serializer_data = ProjectMessageSerializer(message_obj)
+        return serializer_data.data
+
+    @sync_to_async
+    def _all_message_serializer(self):
+        message_objs = ProjectMessage.objects.filter(project=self.project_obj).order_by("-id")
+        serializer_data = ProjectMessageSerializer(message_objs,many=True)
+        return serializer_data.data
+
+
+
+    @sync_to_async
+    def _create_a_message(self,data):
+        main_data = data['data']
+        serializer_data =ProjectMessageSerializer(data=main_data)
+        if serializer_data.is_valid():
+            message_obj = serializer_data.save()
+            return {
+                "status":True,
+                "data":{
+                    "message_id":message_obj.id
+                }
+            }
+
+        return {
+            "status":False,
+            "data":serializer_data.errors
+        }
+    async def read_all_messages(self,data):
+        message_data = await self._all_message_serializer()
+        await self.send(json.dumps({
+            "data_type":"all_messages",
+            "data":message_data
+        }))
+    async def create_a_message(self,data):
+        message_data = await self._create_a_message(data=data)
+        if message_data['status']:
+            await self.broadcast_event({
+                "type": "send_a_message",
+                "message_id": message_data['data']['message_id']
+
+            })
+        else:
+            await self.send(json.dumps({
+                "data_type":"Validation Error",
+                "data":message_data['data']
+            }))
+
+    async def send_a_message(self,event):
+
+        message_data = await self._one_message_serializer(message_id=event['message_id'])
+        await self.send(json.dumps({
+            "data_type":"send_a_message",
+            "data":message_data
+
+        }))
+
+
+
+
 
     @sync_to_async
     def _main_serializer_data(self):

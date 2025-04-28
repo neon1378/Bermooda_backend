@@ -10,6 +10,7 @@ from datetime import datetime
 from dotenv import load_dotenv
 from django.utils import timezone
 import os
+import locale
 from core.models import  SoftDeleteModel
 load_dotenv()
 
@@ -297,3 +298,19 @@ class TaskReport(SoftDeleteModel):
             }
         else:
             return {}
+
+
+class ProjectMessage(SoftDeleteModel):
+    body = models.TextField(null=True,blank=True)
+    project = models.ForeignKey(Project,on_delete=models.ForeignKey,null=True,related_name="messages")
+
+    file = models.ManyToManyField(MainFile,blank=True)
+    replay = models.ForeignKey("self",on_delete=models.CASCADE,null=True)
+    created_at = models.DateTimeField(auto_now_add=True,null=True)
+    creator = models.ForeignKey(UserAccount,on_delete=models.CASCADE,null=True)
+
+    def created_at_persian(self):
+        if self.created_at:
+            jalali_date = jdatetime.datetime.fromgregorian(datetime=self.created_at)
+            formatted_date_persian = jalali_date.strftime("%d %B %Y | %H:%M")
+            return formatted_date_persian
