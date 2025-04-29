@@ -314,3 +314,8 @@ class ProjectMessage(SoftDeleteModel):
             jalali_date = jdatetime.datetime.fromgregorian(datetime=self.created_at)
             formatted_date_persian = jalali_date.strftime("%d %B %Y | %H:%M")
             return formatted_date_persian
+
+    def created_at_date_persian(self):
+        jalali_datetime = jdatetime.datetime.fromgregorian(datetime=self.created_at)
+
+        return jalali_datetime.strftime("%Y/%m/%d")
