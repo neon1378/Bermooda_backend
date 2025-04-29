@@ -29,6 +29,7 @@ class CustomerTaskMain(AsyncWebsocketConsumer):
         if not self.user.is_authenticated:
             await self.close(code=4001)
             return
+        await self.accept()
         self.group_crm_id = self.scope['url_route']['kwargs']['group_crm_id']
         self.group_crm_obj = await self._get_group_crm_obj(group_crm_id=self.group_crm_id)
 
