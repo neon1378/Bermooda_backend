@@ -66,7 +66,7 @@ class CustomerTaskMain(AsyncWebsocketConsumer):
                 for data in data_list:
                     if data['label_id'] == customer_obj.label.id:
                         data['customer_list'].append(CustomerSmallSerializer(customer_obj).data)
-                        not_exsit = False
+                        not_exists = False
                         break
                 if not_exists:
                     data_list.append({
