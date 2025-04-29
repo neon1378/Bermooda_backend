@@ -336,6 +336,7 @@ class ProjectMessageSerializer(ModelSerializer):
             "body",
             "project",
             "project_id",
+            "created_at_date_persian",
             "file",
             "file_id_list",
             "replay",
