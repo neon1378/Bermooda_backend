@@ -375,8 +375,8 @@ class WorkSpaceMemberFullDataSerializer(serializers.ModelSerializer):
     city_id= serializers.IntegerField(write_only=True,required=False,allow_null=True)
     state = StateSerializer(read_only=True)
     city= CitySerializer(read_only=True)
-    bad_records = MainFileSerializer(many=True,read_only=True)
-    bad_record_id_list = serializers.ListField(write_only=True,required=False,allow_null=True)
+    bad_record = MainFileSerializer(many=True,read_only=True)
+    bad_record_id = serializers.IntegerField(write_only=True,required=False)
     date_of_birth_jalali = serializers.CharField(write_only=True,required=False,allow_null=True,allow_blank=True)
     date_of_birth_persian = serializers.SerializerMethodField(read_only=True)
 
@@ -429,8 +429,8 @@ class WorkSpaceMemberFullDataSerializer(serializers.ModelSerializer):
 
             "contract_end_date_jalali",
             "contract_end_date_persian",
-            "bad_records",
-            "bad_record_id_list",
+            "bad_record",
+            "bad_record_id",
 
             "job_position",
             "study_category",
@@ -485,7 +485,7 @@ class WorkSpaceMemberFullDataSerializer(serializers.ModelSerializer):
         from .views import create_permission_for_member
         folder_slug = validated_data.pop("folder_slug",None)
         workspace_id = validated_data.pop("workspace_id",None)
-        bad_record_id_list = validated_data.pop("bad_record_id_list",None)
+        bad_record_id = validated_data.pop("bad_record_id",None)
         military_status = validated_data.pop("military_status",None)
         exempt_type = validated_data.pop("exempt_type",None)
         first_name = validated_data.get("first_name")
@@ -574,12 +574,11 @@ class WorkSpaceMemberFullDataSerializer(serializers.ModelSerializer):
             if gender and gender == "male":
                 deleted_member.military_status = military_status
                 deleted_member.exempt_type = exempt_type
-            if bad_record_id_list:
-                for file_id in bad_record_id_list:
-                    main_file = MainFile.objects.get(id=file_id)
-                    main_file.its_blong=True
-                    main_file.save()
-                    deleted_member.bad_records.add(main_file)
+            if bad_record_id:
+                main_file =MainFile.objects.get(id=bad_record_id)
+                main_file.its_blong=True
+                main_file.save()
+                deleted_member.bad_record= main_file
             if folder_slug:
                 from HumanResourcesManager.models import Folder
                 folder_obj = get_object_or_404(Folder,slug=folder_slug)
@@ -621,13 +620,11 @@ class WorkSpaceMemberFullDataSerializer(serializers.ModelSerializer):
         if gender and gender == "male":
             member.military_status = military_status
             member.exempt_type = exempt_type
-        if bad_record_id_list:
-            for file_id in bad_record_id_list:
-                main_file = MainFile.objects.get(id=file_id)
-                main_file.its_blong = True
-                main_file.save()
-                member.bad_records.add(main_file)
-
+        if bad_record_id:
+            main_file = MainFile.objects.get(id=bad_record_id)
+            main_file.its_blong = True
+            main_file.save()
+            member.bad_record=main_file
         member.save()
 
         if not GroupMessage.objects.filter(workspace=workspace, members=workspace.owner).filter(members=user_acc).exists():
@@ -671,7 +668,7 @@ class WorkSpaceMemberFullDataSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         folder_slug = validated_data.pop("folder_slug",None)
         permissions= validated_data.pop("permissions",None)
-        bad_record_id_list = validated_data.pop("bad_record_id_list", None)
+        bad_record_id = validated_data.pop("bad_record_id", None)
         military_status = validated_data.pop("military_status", None)
         exempt_type = validated_data.pop("exempt_type", None)
         gender = validated_data.get("gender", None)
@@ -742,23 +739,17 @@ class WorkSpaceMemberFullDataSerializer(serializers.ModelSerializer):
             instance.military_status = military_status
             instance.exempt_type = exempt_type
 
-        # مدیریت bad_record_id_list
-        if bad_record_id_list is not None:
-            current_ids = set(instance.bad_records.values_list('id', flat=True))
-            new_ids = set(bad_record_id_list)
-
-            # حذف فایل‌هایی که در لیست جدید نیستند
-            for file_id in current_ids - new_ids:
-                file_to_remove = MainFile.objects.get(id=file_id)
-                instance.bad_records.remove(file_to_remove)
-                # در صورت نیاز به: file_to_remove.its_blong = False; file_to_remove.save()
-
-            # اضافه کردن فایل‌های جدید
-            for file_id in new_ids - current_ids:
-                main_file = MainFile.objects.get(id=file_id)
-                main_file.its_blong = True
-                main_file.save()
-                instance.bad_records.add(main_file)
+        # مدیریت bad_record_id
+        if bad_record_id is not None:
+            if instance.bad_record:
+                instance.bad_record.delete()
+            main_file = MainFile.objects.get(id=bad_record_id)
+            main_file.its_blong=True
+            main_file.save()
+            instance.bad_record=main_file
+        else:
+            if instance.bad_record:
+                instance.bad_record.delete()
 
         instance.fullname = f"{instance.first_name} {instance.last_name}"
         instance.more_information= more_information

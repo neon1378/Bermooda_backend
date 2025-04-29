@@ -243,7 +243,7 @@ class WorkspaceMember(SoftDeleteModel):
     contract_end_date = models.DateTimeField(null=True,blank=True)
     phone_number_static = models.CharField(max_length=15,null=True,blank=True)
 
-    bad_records = models.ManyToManyField(MainFile,related_name="member_bad_records")
+    bad_record = models.ForeignKey(MainFile,on_delete=models.SET_NULL,null=True,related_name="member_bad_record")
 
 
     insurance_status = models.BooleanField(default=False)
