@@ -375,7 +375,7 @@ class WorkSpaceMemberFullDataSerializer(serializers.ModelSerializer):
     city_id= serializers.IntegerField(write_only=True,required=False,allow_null=True)
     state = StateSerializer(read_only=True)
     city= CitySerializer(read_only=True)
-    bad_record = MainFileSerializer(many=True,read_only=True)
+    bad_record = MainFileSerializer(read_only=True)
     bad_record_id = serializers.IntegerField(write_only=True,required=False)
     date_of_birth_jalali = serializers.CharField(write_only=True,required=False,allow_null=True,allow_blank=True)
     date_of_birth_persian = serializers.SerializerMethodField(read_only=True)
