@@ -33,10 +33,9 @@ class CustomerTaskMain(AsyncWebsocketConsumer):
         self.group_crm_obj = await self._get_group_crm_obj(group_crm_id=self.group_crm_id)
 
 
-        async_to_sync(self.channel_layer.group_add)(
-            f"{self.group_crm_id}_crm",self.channel_name
+        await self.channel_layer.group_add(
+            f"{self.group_crm_id}_crm", self.channel_name
         )
-
     @sync_to_async
     def _a_customer_serializer(self,customer_id):
         customer_obj = CustomerUser.objects.get(id=customer_id)
