@@ -725,6 +725,7 @@ class WorkSpaceMemberManger(APIView):
             data = UserSerializer(workspace_obj.owner).data
             data['fullname'] = workspace_obj.owner.fullname
             data['jtime'] = workspace_obj.owner.jtime()
+
             member_data.append(
                 {
                     "user_account":data,
@@ -738,6 +739,7 @@ class WorkSpaceMemberManger(APIView):
             is_register= member.is_accepted
             main_data =WorkSpaceMemberFullDataSerializer(member).data
             main_data['user_account']['is_register']  = member.is_accepted
+            main_data['use_account']['type'] = "member"
             member_data.append(main_data)
 
 
