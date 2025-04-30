@@ -458,3 +458,24 @@ class CustomerBank(SoftDeleteModel):
 
     fullname_or_company_name = models.CharField(max_length=40,null=True)
 
+
+
+class GroupCrmMessage(SoftDeleteModel):
+    body = models.TextField(null=True,blank=True)
+    group_crm = models.ForeignKey(GroupCrm,on_delete=models.ForeignKey,null=True,related_name="messages")
+
+    file = models.ManyToManyField(MainFile,blank=True)
+    replay = models.ForeignKey("self",on_delete=models.CASCADE,null=True)
+    created_at = models.DateTimeField(auto_now_add=True,null=True)
+    creator = models.ForeignKey(UserAccount,on_delete=models.CASCADE,null=True)
+
+    def created_at_persian(self):
+        if self.created_at:
+            jalali_date = jdatetime.datetime.fromgregorian(datetime=self.created_at)
+            formatted_date_persian = jalali_date.strftime("%d %B %Y | %H:%M")
+            return formatted_date_persian
+
+    def created_at_date_persian(self):
+        jalali_datetime = jdatetime.datetime.fromgregorian(datetime=self.created_at)
+
+        return jalali_datetime.strftime("%Y/%m/%d")

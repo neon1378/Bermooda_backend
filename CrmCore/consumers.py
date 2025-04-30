@@ -1,10 +1,10 @@
 import json
 
-from .serializers import CustomerSmallSerializer,LabelStepSerializer
+from .serializers import CustomerSmallSerializer,LabelStepSerializer,GroupCrmMessageSerializer
 from channels.generic.websocket import WebsocketConsumer,AsyncWebsocketConsumer
 from asgiref.sync import async_to_sync
 from UserManager.models import UserAccount
-from .models import CustomerUser, GroupCrm, Label, CustomerStep
+from .models import CustomerUser, GroupCrm, Label, CustomerStep,GroupCrmMessage
 from dotenv import load_dotenv
 from django.shortcuts import get_object_or_404
 import  os
@@ -44,6 +44,19 @@ class CustomerTaskMain(AsyncWebsocketConsumer):
         #         "data": serializer_data
         #     }
         # ))
+    @sync_to_async
+    def _one_message_serializer(self,message_id):
+        message_obj = get_object_or_404(GroupCrmMessage,id=message_id)
+        serializer_data = GroupCrmMessageSerializer(message_obj,context={"user":self.user})
+        return serializer_data.data
+
+    @sync_to_async
+    def _all_message_serializer(self):
+        message_objs = GroupCrmMessage.objects.filter(group_crm=self.group_crm_obj).order_by("-id")
+        serializer_data = GroupCrmMessageSerializer(message_objs,many=True,context={"user":self.user})
+        return serializer_data.data
+
+
     @sync_to_async
     def _a_customer_serializer(self,customer_id):
         customer_obj = CustomerUser.objects.get(id=customer_id)
@@ -99,6 +112,53 @@ class CustomerTaskMain(AsyncWebsocketConsumer):
                 })
         data = sorted(data_list, key=lambda x: x["label_id"])
         return data
+    async def read_all_messages(self,data):
+        message_data = await self._all_message_serializer()
+        await self.send(json.dumps({
+            "data_type":"all_messages",
+            "data":message_data
+        }))
+    async def send_a_message(self,event):
+
+        message_data = await self._one_message_serializer(message_id=event['message_id'])
+        await self.send(json.dumps({
+            "data_type":"send_a_message",
+            "data":message_data
+
+        }))
+    @sync_to_async
+    def _create_a_message(self,data):
+        main_data = data['data']
+        main_data['group_crm_id'] = self.group_crm_obj.id
+        main_data['creator_id'] = self.user.id
+        serializer_data =GroupCrmMessageSerializer(data=main_data)
+        if serializer_data.is_valid():
+            message_obj = serializer_data.save()
+            return {
+                "status":True,
+                "data":{
+                    "message_id":message_obj.id
+                }
+            }
+
+        return {
+            "status":False,
+            "data":serializer_data.errors
+        }
+    async def create_a_message(self,data):
+        message_data = await self._create_a_message(data=data)
+        if message_data['status']:
+            await self.broadcast_event({
+                "type": "send_a_message",
+                "message_id": message_data['data']['message_id']
+
+            })
+        else:
+            await self.send(json.dumps({
+                "data_type":"Validation Error",
+                "data":message_data['data']
+            }))
+
     async def broadcast_event(self, event):
         """Helper method for broadcasting events to group"""
         await self.channel_layer.group_send(
@@ -211,6 +271,7 @@ class CustomerTaskMain(AsyncWebsocketConsumer):
             f"{self.group_crm_id}_crm",
             self.channel_name
         )
+
 class CustomerTask(WebsocketConsumer):
     def connect(self):
         self.user = self.scope['user']

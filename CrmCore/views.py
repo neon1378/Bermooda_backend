@@ -25,6 +25,10 @@ from channels.layers import get_channel_layer
 from django.db import transaction
 from core.widgets import  ReusablePaginationMixin,create_reminder
 load_dotenv()
+
+
+
+
 def create_reminde_a_customer(customer):
     if customer.main_date_time_to_remember:
         title = "یاد آوری وظیفه"
@@ -261,7 +265,7 @@ class CustomerUserManager(APIView):
     permission_classes=[IsAuthenticated]
     def get(self, request, customer_id=None):
         group_id = request.GET.get("group_id")
-        workspace_id = request.GET.get("workspace_id")
+        workspace_id = request.user.current_workspace_id
         label_id = request.GET.get("label_id", None)
 
         group_obj = get_object_or_404(GroupCrm, id=group_id)
@@ -331,7 +335,7 @@ class CustomerUserManager(APIView):
     def post (self,request):
         data= request.data
 
-        workspace_id = data.pop("workspace_id")
+        workspace_id = request.user.current_workspace_id
 
         group_obj =get_object_or_404(GroupCrm,id=data.pop("group_id",None))
 
