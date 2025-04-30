@@ -4,8 +4,10 @@ from channels.layers import get_channel_layer
 from rest_framework import serializers
 from WorkSpaceManager.serializers import IndustrialActivitySerializer
 from sqlalchemy.util import ellipses_string
+from UserManager.serializers import MemberSerializer
 from core.widgets import create_reminder
 from .models import *
+from CustomerFinance.models import Invoice, Installment
 from core.serializers import CitySerializer,StateSerializer
 import magic
 import pandas as pd
@@ -545,6 +547,62 @@ class GroupCrmSerializer(serializers.ModelSerializer):
 
         ]
 
+    def calculate_user_activity(self,number_of_sales: int, average_sale_value: float, number_of_followups: int) -> float:
+        if number_of_followups == 0:
+            return 0.0  # جلوگیری از تقسیم بر صفر
+
+        # محاسبه امتیاز خام
+        raw_score = (number_of_sales / number_of_followups) * average_sale_value
+
+        # نرمال‌سازی به درصد: فرض می‌کنیم ماکزیمم امتیاز قابل انتظار 100,000 هست (قابل تنظیم بر اساس داده‌های واقعی)
+        max_score = 100000
+        activity_percentage = min((raw_score / max_score) * 100, 100)
+
+        return round(activity_percentage, 2)
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        workspace_obj = instance.workspace
+        for member in data['members']:
+            user_account = UserAccount.objects.get(id=member['id'])
+
+            customer_users = CustomerUser.objects.filter(user_account=user_account,group_crm=instance)
+            is_followed_count = customer_users.filter(is_followed=True).count()
+            payed_invoices = 0
+            invoice_count = 0
+            for customer in customer_users:
+                invoice_objs = Invoice.objects.filter(customer=customer)
+
+                for invoice in invoice_objs:
+                    if invoice.payment_type:
+                        is_count = False
+                        if invoice.payment_type == "cash":
+                            if invoice.is_paid:
+                                final_price = invoice.factor_price()
+                                payed_invoices += final_price
+                                invoice_count += 1
+
+                        elif invoice.payment_type == "installment":
+                            installment_invoice = Installment.objects.filter(invoice=invoice)
+                            for item in installment_invoice:
+                                if item.is_paid:
+                                    payed_invoices += item.price
+
+                                    is_count = True
+                        if is_count:
+                            invoice_count += 1
+
+            average_member = self.calculate_user_activity(
+                number_of_sales= invoice_count,
+                average_sale_value = invoice_count,
+                number_of_followups = is_followed_count
+            )
+            member['progress_average'] = average_member
+        return data
+
+
+
+
+
 
 
     def update(self, instance, validated_data):
@@ -767,3 +825,92 @@ class CustomerStatusSerializer(serializers.Serializer):
         }
         async_to_sync(channel_layer.group_send)(f"{customer_obj.group_crm.id}_crm", event)
         return customer_obj
+
+
+
+
+
+class GroupCrmMessageSerializer(serializers.ModelSerializer):
+    file = MainFileSerializer(read_only=True,many=True)
+    file_id_list = serializers.ListField(write_only=True,required=False,allow_null=True)
+    replay = serializers.SerializerMethodField(read_only=True)
+    replay_id = serializers.IntegerField(write_only=True,required=False,allow_null=True)
+    creator = MemberSerializer(read_only=True)
+    creator_id = serializers.IntegerField(write_only=True,required=True)
+    group_crm = GroupCrmSerializer(read_only=True)
+    group_crm_id = serializers.IntegerField(write_only=True,required=True)
+    class Meta:
+        model = GroupCrmMessage
+        fields = [
+            "id",
+            "body",
+            "group_crm",
+            "group_crm_id",
+            "created_at_date_persian",
+            "file",
+            "file_id_list",
+            "replay",
+            "replay_id",
+            "creator",
+            "creator_id",
+            "created_at_persian",
+        ]
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        user = self.context['user']
+        data['self'] = user == instance.creator
+        return data
+    def get_replay(self, obj):
+        if obj.replay:
+            return ProjectMessageSerializer(obj.replay).data
+        return None
+    def create(self, validated_data):
+        file_id_list = validated_data.pop("file_id_list",None)
+        replay_id = validated_data.pop("replay_id",None)
+        new_message = ProjectMessage.objects.create(**validated_data)
+        if replay_id:
+            new_message.replay_id = replay_id
+        if file_id_list:
+            main_files = MainFile.objects.filter(id__in=file_id_list)
+            for main_file in main_files:
+                main_file.its_belong = True
+                main_file.save()
+                new_message.file.add(main_file)
+
+        new_message.save()
+        return new_message
+
+    def update(self, instance, validated_data):
+        file_id_list = validated_data.pop("file_id_list", None)
+        replay_id = validated_data.pop("replay_id", None)
+        validated_data.pop("project_id")
+        # Update normal fields
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+
+
+
+        # Smart update for files
+        if file_id_list is not None:
+            # Current file IDs already attached to the message
+            current_file_ids = set(instance.file.values_list('id', flat=True))
+            # New file IDs from request
+            new_file_ids = set(file_id_list)
+
+            # Files to add
+            to_add_ids = new_file_ids - current_file_ids
+            # Files to remove
+            to_remove_ids = current_file_ids - new_file_ids
+
+            if to_remove_ids:
+                instance.file.remove(*to_remove_ids)
+
+            if to_add_ids:
+                main_files_to_add = MainFile.objects.filter(id__in=to_add_ids)
+                for main_file in main_files_to_add:
+                    main_file.its_belong = True
+                    main_file.save()
+                    instance.file.add(main_file)
+
+        instance.save()
+        return instance
