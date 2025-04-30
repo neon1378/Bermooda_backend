@@ -382,7 +382,8 @@ class ProjectTask(AsyncWebsocketConsumer):
             "data":serializer_data.errors
         }
     async def read_all_messages(self,data):
-        page_number= data.get("page_number",1)
+        main_data = data.get("data",None)
+        page_number= main_data.get("page_number",1)
         print(page_number,"@@@")
         message_data = await self._all_message_serializer(page_number=page_number)
         await self.send(json.dumps({
