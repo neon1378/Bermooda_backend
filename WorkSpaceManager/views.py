@@ -739,7 +739,7 @@ class WorkSpaceMemberManger(APIView):
             is_register= member.is_accepted
             main_data =WorkSpaceMemberFullDataSerializer(member).data
             main_data['user_account']['is_register']  = member.is_accepted
-            main_data['user_account']['type'] = "member"
+            main_data['type'] = "member"
             member_data.append(main_data)
 
 
