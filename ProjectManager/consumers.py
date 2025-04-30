@@ -5,7 +5,7 @@ from django.db.models import Prefetch
 from channels.generic.websocket import WebsocketConsumer
 from .models import *
 from django.core.exceptions import PermissionDenied, ObjectDoesNotExist
-
+from core.widgets import pagination
 from asgiref.sync import sync_to_async
 from django.shortcuts import get_object_or_404
 from asgiref.sync import async_to_sync
@@ -352,10 +352,12 @@ class ProjectTask(AsyncWebsocketConsumer):
         return serializer_data.data
 
     @sync_to_async
-    def _all_message_serializer(self):
+    def _all_message_serializer(self,page_number):
         message_objs = ProjectMessage.objects.filter(project=self.project_obj).order_by("-id")
-        serializer_data = ProjectMessageSerializer(message_objs,many=True,context={"user":self.user})
-        return serializer_data.data
+        pagination_data = pagination(query_set=message_objs,page_number=page_number)
+        pagination_data['list'] = ProjectMessageSerializer(pagination_data['list'],many=True,context={"user":self.user}).data
+
+        return pagination_data
 
 
 
@@ -379,7 +381,8 @@ class ProjectTask(AsyncWebsocketConsumer):
             "data":serializer_data.errors
         }
     async def read_all_messages(self,data):
-        message_data = await self._all_message_serializer()
+        page_number= data.get("page_number",1)
+        message_data = await self._all_message_serializer(page_number=page_number)
         await self.send(json.dumps({
             "data_type":"all_messages",
             "data":message_data
