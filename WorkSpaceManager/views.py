@@ -742,6 +742,25 @@ class WorkSpaceMemberManger(APIView):
             main_data['type'] = "member"
             member_data.append(main_data)
 
+        else:
+            data = UserSerializer(workspace_obj.owner).data
+            data['fullname'] = workspace_obj.owner.fullname
+            data['jtime'] = workspace_obj.owner.jtime()
+
+            member_data.append(
+                {
+                    "user_account":data,
+                    "type":"owner"
+                }
+
+            )
+            for member in workspace_member:
+                if member.user_account != workspace_obj.owner:
+                    is_register = member.is_accepted
+                    main_data = WorkSpaceMemberFullDataSerializer(member).data
+                    main_data['user_account']['is_register'] = member.is_accepted
+                    main_data['type'] = "member"
+                    member_data.append(main_data)
 
         return Response(status=status.HTTP_200_OK,data={
             "status":True,
