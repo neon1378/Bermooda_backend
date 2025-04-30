@@ -295,6 +295,7 @@ class ProjectTask(AsyncWebsocketConsumer):
     async def receive(self, text_data=None, bytes_data=None):
         try:
             data = json.loads(text_data)
+            print(data,"!@#!@#")
             command = data.get('command')
 
             command_handlers = {
