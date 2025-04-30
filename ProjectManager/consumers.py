@@ -356,7 +356,7 @@ class ProjectTask(AsyncWebsocketConsumer):
         message_objs = ProjectMessage.objects.filter(project=self.project_obj).order_by("-id")
         pagination_data = pagination(query_set=message_objs,page_number=page_number)
         pagination_data['list'] = ProjectMessageSerializer(pagination_data['list'],many=True,context={"user":self.user}).data
-
+        print(pagination_data)
         return pagination_data
 
 
@@ -382,6 +382,7 @@ class ProjectTask(AsyncWebsocketConsumer):
         }
     async def read_all_messages(self,data):
         page_number= data.get("page_number",1)
+        print(page_number,"@@@")
         message_data = await self._all_message_serializer(page_number=page_number)
         await self.send(json.dumps({
             "data_type":"all_messages",
