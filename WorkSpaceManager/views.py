@@ -708,66 +708,44 @@ class WorkSpaceMemberManger(APIView):
     permission_classes= [IsAuthenticated]
 
 
-    def get(self,request,member_id=None):
+    def get(self, request, member_id=None):
         if member_id:
-            member_workspace = get_object_or_404(WorkspaceMember,id=member_id)
-            serializer_data =WorkSpaceMemberFullDataSerializer(member_workspace)
-            return Response(status=status.HTTP_200_OK,data={
-                "status":True,
-                "message":"موفق",
-                "data":serializer_data.data
+            member_workspace = get_object_or_404(WorkspaceMember, id=member_id)
+            serializer_data = WorkSpaceMemberFullDataSerializer(member_workspace)
+            return Response(status=status.HTTP_200_OK, data={
+                "status": True,
+                "message": "موفق",
+                "data": serializer_data.data
             })
+
         workspace_obj = WorkSpace.objects.get(id=request.user.current_workspace_id)
 
-        workspace_member = WorkspaceMember.objects.filter(workspace= workspace_obj).exclude(user_account=workspace_obj.owner)
-        member_data =[]
-        if workspace_obj.owner != request.user:
-            data = UserSerializer(workspace_obj.owner).data
-            data['fullname'] = workspace_obj.owner.fullname
-            data['jtime'] = workspace_obj.owner.jtime()
+        # Start with an empty member list
+        member_data = []
 
-            member_data.append(
-                {
-                    "user_account":data,
-                    "type":"owner"
-                }
-
-            )
-
-
-        for member in workspace_member:
-            is_register= member.is_accepted
-            main_data =WorkSpaceMemberFullDataSerializer(member).data
-            main_data['user_account']['is_register']  = member.is_accepted
-            main_data['type'] = "member"
-            member_data.append(main_data)
-
-        else:
-            data = UserSerializer(workspace_obj.owner).data
-            data['fullname'] = workspace_obj.owner.fullname
-            data['jtime'] = workspace_obj.owner.jtime()
-
-            member_data.append(
-                {
-                    "user_account":data,
-                    "type":"owner"
-                }
-
-            )
-            for member in workspace_member:
-                if member.user_account != workspace_obj.owner:
-                    is_register = member.is_accepted
-                    main_data = WorkSpaceMemberFullDataSerializer(member).data
-                    main_data['user_account']['is_register'] = member.is_accepted
-                    main_data['type'] = "member"
-                    member_data.append(main_data)
-
-        return Response(status=status.HTTP_200_OK,data={
-            "status":True,
-            "message":"موفق",
-            "data":member_data
+        # Always include the owner
+        owner_data = UserSerializer(workspace_obj.owner).data
+        owner_data['fullname'] = workspace_obj.owner.fullname
+        owner_data['jtime'] = workspace_obj.owner.jtime()
+        member_data.append({
+            "user_account": owner_data,
+            "type": "owner"
         })
 
+        # Get all members (excluding owner)
+        workspace_members = WorkspaceMember.objects.filter(workspace=workspace_obj).exclude(user_account=workspace_obj.owner)
+
+        for member in workspace_members:
+            serialized = WorkSpaceMemberFullDataSerializer(member).data
+            serialized['user_account']['is_register'] = member.is_accepted
+            serialized['type'] = "member"
+            member_data.append(serialized)
+
+        return Response(status=status.HTTP_200_OK, data={
+            "status": True,
+            "message": "موفق",
+            "data": member_data
+        })
 
     def post(self,request):
 
