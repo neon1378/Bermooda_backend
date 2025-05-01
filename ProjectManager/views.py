@@ -151,7 +151,7 @@ class ProjectManager(APIView):
 
 
         progress_percentage = project.calculate_user_performance(user_id=user.id)
-        return progress_percentage['performance_percentage']
+        return 5
     def get(self, request,project_id=None):
         
 
