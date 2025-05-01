@@ -892,8 +892,8 @@ def calculate_user_performance(project_id):
         performance_data.append({
             'user_id': user_id,
             'total_tasks': total_tasks,
-            'average_difficulty': round(average_difficulty, 2),
-            'performance_percentage': round(performance_percentage, 2)
+            'average_difficulty': round(average_difficulty),
+            'performance_percentage': round(performance_percentage)
         })
 
     return performance_data

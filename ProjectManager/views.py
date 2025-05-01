@@ -41,7 +41,7 @@ def create_reminde_a_task(chek_list):
                         sub_title=sub_title)
 
 class CategoryProjectManager(APIView):
-    permission_classes =[IsAuthenticated,IsWorkSpaceMemberAccess]
+    permission_classes =[IsAuthenticated]
     def get(self,request,category_id):
         category_obj = get_object_or_404(CategoryProject,id=category_id)
         return Response(status=status.HTTP_200_OK,data={
@@ -141,23 +141,17 @@ class CategoryProjectManager(APIView):
 
 
 class ProjectManager(APIView):
-    permission_classes = [IsAuthenticated,IsWorkSpaceMemberAccess]
+    permission_classes = [IsAuthenticated]
     
 
 
     def _get_member_progress(self,project,user):
 
-        all_sub_task_completed= 0
-        all_sub_tasks=0
-        for task in project.task.filter(done_status=False):
-            sub_task_completed = task.check_list.filter(status=True,responsible_for_doing=user).count()
-            sub_tasks = task.check_list.filter(responsible_for_doing=user).count()
-            all_sub_task_completed+=sub_task_completed
-            all_sub_tasks +=sub_tasks
-        
 
-        progress_percentage = (all_sub_task_completed / all_sub_tasks * 100) if all_sub_tasks > 0 else 0
-        return progress_percentage
+
+
+        progress_percentage = project.calculate_user_performance(user_id=user.id)
+        return progress_percentage['performance_percentage']
     def get(self, request,project_id=None):
         
 
@@ -271,7 +265,7 @@ class ProjectManager(APIView):
 
 
 class TaskManager(APIView):
-    permission_classes = [IsAuthenticated,IsWorkSpaceMemberAccess]
+    permission_classes = [IsAuthenticated]
     import jdatetime
 
 

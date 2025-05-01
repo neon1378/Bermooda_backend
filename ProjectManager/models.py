@@ -13,6 +13,7 @@ import os
 import locale
 from core.models import  SoftDeleteModel
 load_dotenv()
+from django.db.models import Avg, Count, Sum
 
 
         
@@ -75,6 +76,51 @@ class Project(SoftDeleteModel):
     department = models.ForeignKey(ProjectDepartment,on_delete=models.CASCADE,null=True,related_name="project_department")
     chat = models.ManyToManyField(ProjectChat,blank=True,related_name="projects_chats")
 
+    def calculate_user_performance(self, user_id=None):
+        """
+        Calculate the average performance percentage (1-100) for each user
+        based on their completed checklists. If user_id is given, return only that user's performance.
+        """
+        project_obj = Project.objects.get(id=self.id)
+
+        filters = {'task__project': project_obj}
+        if user_id:
+            filters['responsible_for_doing'] = user_id
+
+        users_with_performance = (
+            CheckList.objects
+                .filter(**filters)
+                .values('responsible_for_doing')
+                .annotate(
+                total_tasks=Count('id'),
+                average_difficulty=Avg('difficulty')
+            )
+        )
+
+        performance_data = []
+        for user_data in users_with_performance:
+            uid = user_data['responsible_for_doing']
+            total_tasks = user_data['total_tasks']
+            average_difficulty = user_data['average_difficulty'] or 0
+
+            performance_percentage = min(max((total_tasks * average_difficulty) / 5 * 20, 1), 100)
+
+            performance_data.append({
+                'user_id': uid,
+                'total_tasks': total_tasks,
+                'average_difficulty': round(average_difficulty),
+                'performance_percentage': round(performance_percentage)
+            })
+
+        if user_id:
+            return performance_data[0] if performance_data else {
+                'user_id': user_id,
+                'total_tasks': 0,
+                'average_difficulty': 0,
+                'performance_percentage': 0
+            }
+
+        return performance_data
     def avatar_url (self):
         base_url = os.getenv("BASE_URL")
         try:
