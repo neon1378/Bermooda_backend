@@ -18,7 +18,7 @@ class ExternalApi:
         }
     def get(self,params=None,end_point=None):
         try:
-            url = {self.base_url} + end_point
+            url = self.base_url + end_point
             if self.headers_required:
                 response = requests.get(url=url,params=params,headers=self.headers)
             else:
@@ -29,7 +29,7 @@ class ExternalApi:
             return False
     def post(self,data,end_point):
 
-        url = {self.base_url} + end_point
+        url = self.base_url + end_point
         if self.headers_required:
                 response = requests.post(url=url,data=data,json=data,headers=self.headers)
         else:
