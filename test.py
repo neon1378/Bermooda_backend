@@ -28,16 +28,16 @@ class ExternalApi:
         except:
             return False
     def post(self,data,end_point):
-        try:
-            url = {self.base_url} + end_point
-            if self.headers_required:
-                response = requests.post(url=url,data=data,json=data,headers=self.headers)
-            else:
-                response = requests.post(url=url,data=data,json=data)
 
-            return response.json()
-        except:
-            return None
+        url = {self.base_url} + end_point
+        if self.headers_required:
+                response = requests.post(url=url,data=data,json=data,headers=self.headers)
+        else:
+            response = requests.post(url=url,data=data,json=data)
+        print(response)
+        print(response.text)
+        return response.json()
+
 
 
 
