@@ -760,3 +760,148 @@ class WorkSpaceMemberFullDataSerializer(serializers.ModelSerializer):
             folder_obj.members.add(instance)
             folder_obj.save()
         return instance
+
+
+
+
+class WorkSpaceMemberMainSerializer (serializers.ModelSerializer):
+    user_account_data =serializers.JSONField(write_only=True,required=True)
+    user_account = UserSerializer(required=False,read_only=True)
+    workspace_id= serializers.IntegerField(required=True,write_only=True)
+    permissions = serializers.ListField(write_only=True,required=True)
+
+    class Meta:
+        model = WorkspaceMember
+        fields = [
+            "is_team_bonos_status",
+            "id",
+            "user_account_data",
+            "user_account",
+            "first_name",
+            "is_accepted",
+            "permissions",
+            "last_name",
+            "workspace_id",
+            "jtime",
+            "permission_list",
+        ]
+
+    def create(self, validated_data):
+        workspace_id = validated_data.get("workspace_id")
+        workspace_obj = get_object_or_404(WorkSpace,id=workspace_id)
+        user_account = validated_data.pop("user_account_data")
+
+        permissions= validated_data.pop("permissions")
+        try :
+
+            user_acc = UserAccount.objects.get(phone_number=user_account.get("phone_number"))
+
+
+        except:
+            user_acc = UserAccount(phone_number=user_account.get("phone_number"))
+            user_acc.is_register=False
+            user_acc.save()
+            try:
+                jadoo_base_url = os.getenv("JADOO_BASE_URL")
+                # send user to jadoo
+
+                url = f"{jadoo_base_url}/user/auth/createBusinessUser"
+                payload = {
+                    "mobile": user_acc.phone_number,
+
+                    "password": "asdlaskjd",
+
+                }
+                response_data = requests.post(url=url, data=payload)
+                print(response_data.json())
+                recive_data = response_data.json()
+
+                user_acc.refrence_id = int(recive_data['data']['id'])
+                user_acc.refrence_token = recive_data['data']['token']
+                user_acc.save()
+            except:
+                pass
+        if WorkspaceMember.all_objects.filter(workspace=workspace_obj,user_account=user_acc).exists() or workspace_obj.owner == user_acc:
+
+            raise serializers.ValidationError({
+                "status": False,
+                "message": "کاربر مورد نظر در حال حاظر در تیم شما وجود دارد",
+                "data": {}
+            })
+        # try:
+        member_obj_deleted = WorkspaceMember.all_objects.filter(is_deleted=True)
+
+        for item in member_obj_deleted:
+            if item.workspace == workspace_obj and item.user_account == user_acc:
+
+                item.is_deleted = False
+                item.deleted_at =None
+                first_name = validated_data.get("first_name")
+                last_name =validated_data.get("last_name")
+                item.first_name = first_name
+                item.last_name = last_name
+                item.fullname = f"{first_name} {last_name}"
+                if item.user_account.current_workspace_id == 0 or not WorkSpace.objects.filter(id=item.user_account.current_workspace_id).exists():
+                    item.user_account.current_workspace_id=workspace_obj.id
+                    item.user_account.save()
+
+                item.is_accepted =False
+                item.save()
+                return item
+
+
+
+
+        new_workspace_member = WorkspaceMember.objects.create(**validated_data)
+        new_workspace_member.fullname = f"{new_workspace_member.first_name} {new_workspace_member.last_name}"
+        new_workspace_member.user_account = user_acc
+        new_workspace_member.is_accepted= False
+        new_workspace_member.save()
+        if not GroupMessage.objects.filter(
+            workspace = workspace_obj,
+            members=workspace_obj.owner
+        ).filter(members=new_workspace_member.user_account).exists():
+            group_message = GroupMessage.objects.create(workspace=workspace_obj)
+            group_message.members.set([workspace_obj.owner, new_workspace_member.user_account])
+
+
+        workspace_members = WorkspaceMember.objects.filter(workspace=workspace_obj)
+        for member in workspace_members:
+            if member != new_workspace_member:
+                if not GroupMessage.objects.filter(
+                    workspace = workspace_obj,
+                    members = new_workspace_member.user_account
+                ).filter(members=member.user_account).exists():
+                    group_message = GroupMessage.objects.create(workspace=workspace_obj)
+                    group_message.members.set([member.user_account, new_workspace_member.user_account])
+
+        send_invite_link(user_acc.phone_number, new_workspace_member.workspace.owner.fullname,
+                            new_workspace_member.workspace.title)
+        from .views import  create_permission_for_member
+        create_permission_for_member(member_id=new_workspace_member.id, permissions=permissions)
+
+        new_workspace_member.user_account.current_workspace_id=workspace_obj.id
+        change_current_workspace_jadoo(user_acc=new_workspace_member.user_account,workspace_obj=workspace_obj)
+        new_workspace_member.user_account.save()
+        # create group messages
+
+        try:
+            base_url = os.getenv("JADOO_BASE_URL")
+            url = f"{base_url}/workspace/addWorkSpaceMember"
+
+            headers = {
+                "content-type": "application/json",
+                "Authorization": f"Bearer {new_workspace_member.workspace.owner.refrence_token}"
+            }
+            payload = {
+                "workSpaceId": new_workspace_member.workspace.jadoo_workspace_id,
+                "userId": new_workspace_member.user_account.refrence_id,
+                "businessUserId": new_workspace_member.user_account.id,
+                "businessMemberId": new_workspace_member.id,
+            }
+            response = requests.post(url=url, headers=headers, json=payload)
+            print(response.json())
+        except:
+            pass
+        return new_workspace_member
+

@@ -549,7 +549,7 @@ class GroupCrmSerializer(serializers.ModelSerializer):
 
     def calculate_user_activity(self,number_of_sales: int, average_sale_value: float, number_of_followups: int) -> float:
         if number_of_followups == 0:
-            return 0.0  # جلوگیری از تقسیم بر صفر
+            return 0  # جلوگیری از تقسیم بر صفر
 
         # محاسبه امتیاز خام
         raw_score = (number_of_sales / number_of_followups) * average_sale_value
@@ -558,7 +558,7 @@ class GroupCrmSerializer(serializers.ModelSerializer):
         max_score = 100000
         activity_percentage = min((raw_score / max_score) * 100, 100)
 
-        return round(activity_percentage, 2)
+        return round(activity_percentage)
     def to_representation(self, instance):
         data = super().to_representation(instance)
         workspace_obj = instance.workspace
