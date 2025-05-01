@@ -217,7 +217,7 @@ class UserSerializer(serializers.ModelSerializer):
 
         ]
 
-class WorkSpaceMemberSerializer(serializers.ModelSerializer):
+class WorkSpaceMemberSerializer (serializers.ModelSerializer):
     user_account_data =serializers.JSONField(write_only=True,required=True)
     user_account = UserSerializer(required=False,read_only=True)
     workspace_id= serializers.IntegerField(required=True,write_only=True)
@@ -226,17 +226,17 @@ class WorkSpaceMemberSerializer(serializers.ModelSerializer):
     class Meta:
         model = WorkspaceMember
         fields = [
-        "is_team_bonos_status",
-        "id",
-        "user_account_data",
-        "user_account",
-        "first_name",
-        "is_accepted",
-        "permissions",
-        "last_name",
-        "workspace_id",
-        "jtime",
-        "permission_list",
+            "is_team_bonos_status",
+            "id",
+            "user_account_data",
+            "user_account",
+            "first_name",
+            "is_accepted",
+            "permissions",
+            "last_name",
+            "workspace_id",
+            "jtime",
+            "permission_list",
         ]
 
     def create(self, validated_data):
