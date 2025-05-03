@@ -349,7 +349,6 @@ class ProjectMessageSerializer(ModelSerializer):
         data = super().to_representation(instance)
         user = self.context.get('user')
 
-        print(user)
         data['self'] = user == instance.creator
         return data
     def get_replay(self, obj):
