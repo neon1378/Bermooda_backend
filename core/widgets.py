@@ -331,9 +331,9 @@ class ExternalApi:
 
         url = self.base_url + end_point
         if self.headers_required:
-            response = requests.post(url=url,data=data,json=data,headers=self.headers)
+            response = requests.post(url=url,json=data,headers=self.headers)
         else:
-            response = requests.post(url=url,data=data,json=data)
+            response = requests.post(url=url,json=data)
         print(response)
         print(response.text)
         return response.json()
@@ -344,4 +344,3 @@ class ExternalApi:
         else:
             response = requests.delete(url=url,params=data)
         return response.json()
-
