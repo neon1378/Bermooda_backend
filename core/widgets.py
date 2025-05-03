@@ -335,6 +335,8 @@ class ExternalApi:
         else:
             response = requests.post(url=url,json=data)
         print(response)
+        print(response.json())
+
         print(response.text)
         return response.json()
     def delete (self,data,end_point):
@@ -343,4 +345,4 @@ class ExternalApi:
             response = requests.delete(url=url,params=data,headers=self.headers)
         else:
             response = requests.delete(url=url,params=data)
-        return response.json()
+        return response.json()['data']
