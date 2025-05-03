@@ -114,6 +114,11 @@ class MailRecipientSerializer(ModelSerializer):
             "creator_id",
 
         ]
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        if instance.recipient_type != "sign":
+            data['signature_status'] = True
+        return data
 
     def create(self, validated_data):
         user_id = validated_data.get("user_id")
