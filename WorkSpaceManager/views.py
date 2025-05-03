@@ -51,14 +51,13 @@ class WorkspaceManager(APIView):
 
 
             try:
-                url = f"{self.jadoo_base_url}/workspace/destroy/{workspace_obj.jadoo_workspace_id}"
-                headers = {
-                        "content-type": "application/json",
-                        "Authorization": f"Bearer {request.user.refrence_token}"
-                }
+                api_connection = ExternalApi(token=request.user.refrence_token)
+                api_connection.delete(
+                data = {},
+                end_point=f"/workspace/destroy/{workspace_obj.jadoo_workspace_id}"
+                )
 
-                response= requests.delete(url=url, headers=headers)
-                print(response,"!!!!!!!!!!@@@@@")
+
             except:
                 pass
 
@@ -152,48 +151,39 @@ class WorkspaceManager(APIView):
 
                 if workspace_obj.is_authenticated == False:
                     try:
-                        url = f"{self.jadoo_base_url}/workspace/store"
-                        headers = {
-                                    "content-type":"application/json",
-                                    "Authorization":f"Bearer {request.user.refrence_token}"
-                        }
-                        base_url = os.getenv("BASE_URL")
-
-
+                        api_connection = ExternalApi(token=workspace_obj.owner.refrence_token)
 
                         payload = {
 
-                                    "cityId":None,
-                                    "stateId":None,
-                                    "name":workspace_obj.title,
-                                    "username":workspace_obj.jadoo_brand_name,
-                                    "workspaceId":workspace_obj.id,
-                                    "bio":workspace_obj.business_detail,
-                                    "avatar":"",
-                                    "industrialActivityId":None
+                            "cityId": None,
+                            "stateId": None,
+                            "name": workspace_obj.title,
+                            "username": workspace_obj.jadoo_brand_name,
+                            "workspaceId": workspace_obj.id,
+                            "bio": workspace_obj.business_detail,
+                            "avatar": "",
+                            "industrialActivityId": None
 
                         }
-
-
                         if workspace_obj.city:
-                            payload['cityId']=workspace_obj.city.refrence_id
+                            payload['cityId'] = workspace_obj.city.refrence_id
 
                         if workspace_obj.industrialactivity:
-                            payload['industrialActivityId']= workspace_obj.industrialactivity.refrence_id
-
+                            payload['industrialActivityId'] = workspace_obj.industrialactivity.refrence_id
 
                         if workspace_obj.state:
-                            payload['stateId']= workspace_obj.state.refrence_id
-
-
+                            payload['stateId'] = workspace_obj.state.refrence_id
 
                         if workspace_obj.avatar:
+                            base_url = os.getenv("BASE_URL")
                             payload['avatar'] = f"{base_url}{workspace_obj.avatar.file.url}"
+                        response_data = api_connection.post(
+                            data=payload,
+                            end_point="/workspace/store"
+                        )
 
-                        response = requests.post(url=url,json=payload,headers=headers)
-
-                        response_data_main = response.json()['data']
-                        workspace_obj.jadoo_workspace_id= response_data_main['id']
+                        workspace_obj.jadoo_workspace_id = response_data['id']
+                        workspace_obj.save()
                     except:
                         pass
 

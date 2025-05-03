@@ -342,7 +342,7 @@ class ExternalApi:
     def delete (self,data,end_point):
         url = self.base_url + end_point
         if self.headers_required:
-            response = requests.delete(url=url,params=data,headers=self.headers)
+            response = requests.delete(url=url,headers=self.headers)
         else:
-            response = requests.delete(url=url,params=data)
+            response = requests.delete(url=url)
         return response.json()['data']

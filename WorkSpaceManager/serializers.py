@@ -5,7 +5,7 @@ from rest_framework.serializers import ModelSerializer
 from rest_framework import serializers
 import jdatetime
 
-from core.widgets import change_current_workspace_jadoo,persian_to_gregorian
+from core.widgets import change_current_workspace_jadoo,persian_to_gregorian,ExternalApi
 from .models import *
 import requests
 from django.shortcuts import get_object_or_404
@@ -338,23 +338,26 @@ class WorkSpaceMemberSerializer (serializers.ModelSerializer):
         # create group messages
 
         try:
-            base_url = os.getenv("JADOO_BASE_URL")
-            url = f"{base_url}/workspace/addWorkSpaceMember"
+            api_connection = ExternalApi(token=new_workspace_member.workspace.owner.refrence_token)
 
-            headers = {
-                "content-type": "application/json",
-                "Authorization": f"Bearer {new_workspace_member.workspace.owner.refrence_token}"
-            }
-            payload = {
+            response_data = api_connection.post(
+                data={
                 "workSpaceId": new_workspace_member.workspace.jadoo_workspace_id,
                 "userId": new_workspace_member.user_account.refrence_id,
                 "businessUserId": new_workspace_member.user_account.id,
                 "businessMemberId": new_workspace_member.id,
-            }
-            response = requests.post(url=url, headers=headers, json=payload)
-            print(response.json())
+                    },
+                end_point="/workspace/addWorkSpaceMember"
+            )
         except:
             pass
+
+
+
+
+
+
+
         return new_workspace_member
 
 
@@ -511,12 +514,20 @@ class WorkSpaceMemberFullDataSerializer(serializers.ModelSerializer):
         user_acc, _ = UserAccount.objects.get_or_create(phone_number=phone, defaults={"is_register": False})
         if not user_acc.is_register:
             try:
-                url = f"{os.getenv('JADOO_BASE_URL')}/user/auth/createBusinessUser"
-                payload = {"mobile": phone, "password": "asdlaskjd"}
-                response = requests.post(url=url, data=payload).json()
-                user_acc.refrence_id = int(response['data']['id'])
-                user_acc.refrence_token = response['data']['token']
-                user_acc.save()
+                api_connection = ExternalApi(token="asdasd", headers_required=False)
+
+                response_data = api_connection.post(
+                    data={
+                        "mobile": user_acc.phone_number,
+                        "fullname": user_acc.fullname,
+                        "avatar_url": user_acc.avatar_url(),
+
+                    },
+                    end_point="/user/auth/createBusinessUser"
+                )
+
+                user_acc.refrence_id = int(response_data['id'])
+                user_acc.refrence_token = response_data['token']
             except:
                 pass
 
@@ -643,26 +654,27 @@ class WorkSpaceMemberFullDataSerializer(serializers.ModelSerializer):
         user_acc.save()
         change_current_workspace_jadoo(user_acc=user_acc, workspace_obj=workspace)
 
+
         try:
-            url = f"{os.getenv('JADOO_BASE_URL')}/workspace/addWorkSpaceMember"
-            headers = {
-                "content-type": "application/json",
-                "Authorization": f"Bearer {workspace.owner.refrence_token}"
-            }
-            payload = {
-                "workSpaceId": workspace.jadoo_workspace_id,
-                "userId": user_acc.refrence_id,
-                "businessUserId": user_acc.id,
-                "businessMemberId": member.id,
-            }
-            requests.post(url=url, headers=headers, json=payload)
+            api_connection = ExternalApi(token=member.workspace.owner.refrence_token)
+
+            response_data = api_connection.post(
+                    data={
+                        "workSpaceId": member.workspace.jadoo_workspace_id,
+                        "userId": member.user_account.refrence_id,
+                        "businessUserId": member.user_account.id,
+                        "businessMemberId": member.id,
+                    },
+                    end_point="/workspace/addWorkSpaceMember"
+            )
         except:
             pass
-            if folder_slug:
-                from HumanResourcesManager.models import Folder
-                folder_obj = get_object_or_404(Folder,slug=folder_slug)
-                folder_obj.members.add(member)
-                folder_obj.save()
+
+        if folder_slug:
+            from HumanResourcesManager.models import Folder
+            folder_obj = get_object_or_404(Folder,slug=folder_slug)
+            folder_obj.members.add(member)
+            folder_obj.save()
         return member
 
     def update(self, instance, validated_data):

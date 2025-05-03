@@ -4,7 +4,7 @@ from rest_framework import mixins
 from rest_framework import generics
 import re
 
-from core.widgets import change_current_workspace_jadoo
+from core.widgets import change_current_workspace_jadoo,ExternalApi
 
 from ProjectManager.models import Project, CategoryProject
 from CrmCore.models import GroupCrm
@@ -613,23 +613,21 @@ def create_username_pass(request):
 
     user_acc.save()
     try:
-        jadoo_base_url = os.getenv("JADOO_BASE_URL")
-            #send user to jadoo
+        api_connection = ExternalApi(token="asdasd", headers_required=False)
 
-        url = f"{jadoo_base_url}/user/auth/createBusinessUser"
-        payload = {
-                    "mobile":user_acc.phone_number,
-                    "fullname":fullname,
-                    "avatar_url":user_acc.avatar_url(),
+        response_data = api_connection.post(
+            data={
+                "mobile": user_acc.phone_number,
+                "fullname": user_acc.fullname,
+                "avatar_url": user_acc.avatar_url(),
 
+            },
+            end_point="/user/auth/createBusinessUser"
+        )
 
-                }
-        response_data = requests.post(url=url,data=payload)
-        print(response_data.json())
-        recive_data =response_data.json()
-
-        user_acc.refrence_id= int(recive_data['data']['id'])
-        user_acc.refrence_token= recive_data['data']['token']
+        user_acc.refrence_id = int(response_data['id'])
+        user_acc.refrence_token = response_data['token']
+        user_acc.save()
     except:
         pass
 
