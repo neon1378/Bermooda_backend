@@ -322,7 +322,7 @@ class ProjectTask(AsyncWebsocketConsumer):
     async def send_initial_data(self):
         """Send initial task list data on connection"""
         task_data = await self._main_serializer_data()
-        message_data = await self._all_message_serializer()
+        message_data = await self._all_message_serializer(page_number=1)
         await self.send_json({
             "data_type": "task_list",
             "data": task_data
