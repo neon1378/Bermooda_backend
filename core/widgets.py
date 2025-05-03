@@ -21,6 +21,15 @@ import string
 from datetime import datetime
 from rest_framework.response import Response
 from .models import Reminder
+
+
+class ExternalApi:
+    def __init__(self,end_point,token):
+        self.end
+
+
+
+
 class ReusablePaginationMixin:
     pagination_page_size = 20
     pagination_ordering = "-id"
