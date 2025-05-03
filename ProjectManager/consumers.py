@@ -305,6 +305,7 @@ class ProjectTask(AsyncWebsocketConsumer):
                 'change_task_status': self.handle_task_status,
                 "read_all_messages":self.read_all_messages,
                 "create_a_message":self.create_a_message,
+                "edit_message":self.edit_message,
             }
 
             handler = command_handlers.get(command)
@@ -357,11 +358,38 @@ class ProjectTask(AsyncWebsocketConsumer):
         message_objs = ProjectMessage.objects.filter(project=self.project_obj).order_by("-id")
         pagination_data = pagination(query_set=message_objs,page_number=page_number)
         pagination_data['list'] = ProjectMessageSerializer(pagination_data['list'],many=True,context={"user":self.user}).data
-        print(pagination_data)
+
         return pagination_data
 
+    @sync_to_async
+    def _edit_a_message(self,data):
+        main_data= data['data']
+        message_obj = get_object_or_404(ProjectMessage,id=main_data['message_id'])
+        message_obj.body = main_data['body']
+        message_obj.save()
+        return {
+            "status":True,
+            "data":{
+                "message_id":message_obj.id
+            }
+        }
+    async def edit_message(self,data):
+        message_data = await self._edit_a_message(data=data)
 
+        await self.broadcast_event({
+            "type": "send_a_message",
+            "message_id": message_data['data']['message_id']
 
+        })
+
+    # @sync_to_async
+    # def destroy_a_message(self,data):
+    #     main_data= data['data']
+    #     message_obj = get_object_or_404(ProjectMessage,id=main_data['message_id'])
+    #     message_obj.delete()
+    #
+    #
+    #
     @sync_to_async
     def _create_a_message(self,data):
         main_data = data['data']
