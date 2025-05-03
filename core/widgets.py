@@ -23,10 +23,6 @@ from rest_framework.response import Response
 from .models import Reminder
 
 
-class ExternalApi:
-    def __init__(self,end_point,token):
-        self.end
-
 
 
 
@@ -307,3 +303,45 @@ def create_reminder (related_instance,remind_at,title,sub_title):
 def generate_random_slug(length=8):
     # This function generates a random string of letters and digits
     return ''.join(random.choices(string.ascii_letters + string.digits, k=length))
+
+
+
+class ExternalApi:
+    def __init__(self,token,headers_required=True):
+        self.base_url = os.getenv("JADOO_BASE_URL")
+        self.headers_required = headers_required
+
+        self.token = token
+        self.headers = {
+            'Authorization': f"Bearer {self.token}",
+            'Content-Type': 'application/json',
+        }
+    def get(self,params=None,end_point=None):
+        try:
+            url = self.base_url + end_point
+            if self.headers_required:
+                response = requests.get(url=url,params=params,headers=self.headers)
+            else:
+                response = requests.get(url=url,params=params)
+
+            return response.json()
+        except:
+            return False
+    def post(self,data,end_point):
+
+        url = self.base_url + end_point
+        if self.headers_required:
+            response = requests.post(url=url,data=data,json=data,headers=self.headers)
+        else:
+            response = requests.post(url=url,data=data,json=data)
+        print(response)
+        print(response.text)
+        return response.json()
+    def delete (self,data,end_point):
+        url = self.base_url + end_point
+        if self.headers_required:
+            response = requests.delete(url=url,params=data,headers=self.headers)
+        else:
+            response = requests.delete(url=url,params=data)
+        return response.json()
+
