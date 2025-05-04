@@ -368,11 +368,20 @@ class ProjectMessage(SoftDeleteModel):
     creator = models.ForeignKey(UserAccount,on_delete=models.CASCADE,null=True)
 
     def created_at_persian(self):
+        PERSIAN_MONTHS = [
+            "",  # month numbers start at 1
+            "فروردین", "اردیبهشت", "خرداد",
+            "تیر", "مرداد", "شهریور",
+            "مهر", "آبان", "آذر",
+            "دی", "بهمن", "اسفند"
+        ]
         if self.created_at:
             jalali_date = jdatetime.datetime.fromgregorian(datetime=self.created_at)
-            formatted_date_persian = jalali_date.strftime("%d %B %Y | %H:%M")
-            return formatted_date_persian
-
+            day = jalali_date.day
+            month = PERSIAN_MONTHS[jalali_date.month]
+            year = jalali_date.year
+            time = jalali_date.strftime("%H:%M")
+            return f"{day} {month} {year} | {time}"
     def created_at_date_persian(self):
         jalali_datetime = jdatetime.datetime.fromgregorian(datetime=self.created_at)
 
