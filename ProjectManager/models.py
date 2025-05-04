@@ -15,7 +15,8 @@ from core.models import  SoftDeleteModel
 load_dotenv()
 from django.db.models import Avg, Count, Sum
 
-
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
         
 
 
@@ -347,7 +348,18 @@ class TaskReport(SoftDeleteModel):
 
 
 class ProjectMessage(SoftDeleteModel):
-    body = models.TextField(null=True,blank=True)
+    MESSAGE_TYPE= (
+        ("text","TEXT"),
+        ("notification","NOTIFICATION")
+
+    )
+    #new fields begin
+    message_type = models.CharField(max_length=15,choices=MESSAGE_TYPE,null=True,default="text")
+    content_type = models.ForeignKey(ContentType, on_delete=models.SET_NULL,null=True)
+    object_id = models.PositiveIntegerField(null=True)
+    related_object = GenericForeignKey('content_type', 'object_id')
+    #new fields end
+    body = models.TextField(null=True, blank=True)
     project = models.ForeignKey(Project,on_delete=models.ForeignKey,null=True,related_name="messages")
 
     file = models.ManyToManyField(MainFile,blank=True)

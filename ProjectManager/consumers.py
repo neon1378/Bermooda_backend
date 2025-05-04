@@ -359,10 +359,16 @@ class ProjectTask(AsyncWebsocketConsumer):
         return serializer_data.data
 
     @sync_to_async
-    def _all_message_serializer(self,page_number):
+    def _all_message_serializer(self,page_number,per_page_count=None):
+
         message_objs = ProjectMessage.objects.filter(project=self.project_obj).order_by("-id")
-        pagination_data = pagination(query_set=message_objs,page_number=page_number)
-        pagination_data['current_page']=page_number
+        if per_page_count:
+            pagination_data = pagination(query_set=message_objs,page_number=page_number,per_page_count=per_page_count)
+        else:
+            pagination_data = pagination(query_set=message_objs,page_number=page_number)
+
+
+        pagination_data['current_page'] = page_number
         pagination_data['list'] = ProjectMessageSerializer(pagination_data['list'],many=True,context={"user":self.user}).data
 
         return pagination_data
@@ -419,10 +425,12 @@ class ProjectTask(AsyncWebsocketConsumer):
         try:
             main_data = data.get("data",None)
             page_number= main_data.get("page_number",1)
+            per_page_count = main_data.get("per_page_count",None)
         except:
-            page_number=1
+            per_page_count = None
+            page_number = 1
 
-        message_data = await self._all_message_serializer(page_number=page_number)
+        message_data = await self._all_message_serializer(page_number=page_number,per_page_count=per_page_count)
         await self.send(json.dumps({
             "data_type":"all_messages",
             "data":message_data
@@ -515,7 +523,7 @@ class ProjectTask(AsyncWebsocketConsumer):
                        for check in task.check_list.all())]
     @sync_to_async
     def _has_admin_access(self):
-        print(self._get_permission_type()  == "manager","!@#!@#!@#")
+
         """Check if user has admin-level permissions"""
         return (
                 self.workspace_obj.owner == self.user or

@@ -328,6 +328,7 @@ class ProjectMessageSerializer(ModelSerializer):
     creator = UserSerializer(read_only=True)
     creator_id = serializers.IntegerField(write_only=True,required=True)
     project = ProjectSerializer(read_only=True)
+    related_object = serializers.SerializerMethodField(read_only=True)
     project_id = serializers.IntegerField(write_only=True,required=True)
     class Meta:
         model = ProjectMessage
@@ -351,6 +352,22 @@ class ProjectMessageSerializer(ModelSerializer):
 
         data['self'] = user == instance.creator
         return data
+    def get_related_object(self,obj):
+        if obj.related_object:
+            object_name = obj.related_object.__class__.__name__
+            if object_name == "Task":
+                data = {
+                    "data_type":"task_data",
+                    "data":TaskSerializer(obj.related_object).data,
+
+                }
+                return data
+            elif object_name == "CheckList":
+                data ={
+                    "data_type":"check_list_data",
+                    "data":CheckListSerializer(CheckList).data
+                }
+                return data
     def get_replay(self, obj):
         if obj.replay:
             return ProjectMessageSerializer(obj.replay).data

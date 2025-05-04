@@ -188,12 +188,14 @@ def gregorian_to_persian(date_time,type=None):
 
 
 
-def pagination (query_set,page_number):
+def pagination (query_set,page_number,per_page_count=None):
+
+        if not per_page_count:
+            per_page_count = 20
 
 
 
-
-        paginator = Paginator(query_set, 20)  # Set items per page
+        paginator = Paginator(query_set, per_page_count)  # Set items per page
 
         # Check if the requested page exists
         if int(page_number) > paginator.num_pages:

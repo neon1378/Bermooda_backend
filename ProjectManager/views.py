@@ -27,6 +27,19 @@ from core.widgets import create_reminder
 #Project Manager Begin Bord Project 
 
 
+def create_notify_message(message,related_instance,project_id,creator_id):
+    content_type = ContentType.objects.get_for_model(related_instance.__class__)
+    ProjectMessage.objects.create(
+        message_type="notification",
+        content_type=content_type,
+        object_id=related_instance.id,
+        body=message,
+        project_id=project_id,
+        creator_id=creator_id
+    )
+    return True
+
+
 def create_reminde_a_task(chek_list):
     if chek_list.date_time_to_start_main:
         title = "یاد آوری وظیفه"
@@ -123,6 +136,8 @@ class CategoryProjectManager(APIView):
             event = {
                 "type": "send_data"
             }
+
+
             async_to_sync(channel_layer.group_send)(f"{project_id}_admin", event)
             return Response(status=status.HTTP_204_NO_CONTENT)
         else:
@@ -419,6 +434,14 @@ class TaskManager(APIView):
             report_obj = get_object_or_404(TaskReport,id=report_id)
             report_obj.task=task
             report_obj.save()
+        short_text = task.title[:7] + "..."
+        message = f"تسک {short_text} به بورد اضافه شد"
+        create_notify_message(
+            message=message,
+            related_instance=task,
+            project_id=task.project.id,
+            creator_id=request.user.id
+        )
         channel_layer = get_channel_layer()
         event ={
             "type":"send_one_task",
@@ -469,6 +492,14 @@ class TaskManager(APIView):
                     create_notification(related_instance=task,workspace=workspace_obj,user=member.responsible_for_doing,title=title,sub_title=sub_title,side_type="update_task")
                     success_notif.append(member.responsible_for_doing.id)
         task.save()
+        short_text = task.title[:7] + "..."
+        message = f"تسک {short_text} بروزرسانی  شد"
+        create_notify_message(
+            message=message,
+            related_instance=task,
+            project_id=task.project.id,
+            creator_id=request.user.id
+        )
         channel_layer = get_channel_layer()
         event = {
             "type": "send_one_task",
@@ -481,13 +512,21 @@ class TaskManager(APIView):
         """Delete a task."""
         workspace_obj = get_object_or_404(WorkSpace,id=request.data.get("workspace_id",None))
         task = get_object_or_404(Task, id=request.data["task_id"])
-
+        short_text = task.title[:7] + "..."
+        message = f"تسک {short_text}حذف شد "
+        create_notify_message(
+            message=message,
+            related_instance=task,
+            project_id=task.project.id,
+            creator_id=request.user.id
+        )
         task.delete()
         channel_layer = get_channel_layer()
         event ={
             "type":"send_data"
         }
         async_to_sync(channel_layer.group_send)(f"{task.project.id}_admin",event)
+
         return Response(status=status.HTTP_204_NO_CONTENT, data={"status": True, "message": "Task deleted"})
 
 
@@ -554,7 +593,15 @@ class CheckListManager(APIView):
             main_file.save()
             check_list_obj.file.add(main_file)
         check_list_obj.save()
-
+        short_text = check_list_obj.title[:7] + "..."
+        task_short_text = check_list_obj.task.title[:7] + "..."
+        message = f"چک لیست  {short_text}به تسک  {task_short_text} اضافه شد  "
+        create_notify_message(
+            message=message,
+            related_instance=check_list_obj,
+            project_id=check_list_obj.project.id,
+            creator_id=request.user.id
+        )
         channel_layer = get_channel_layer()
         event = {
             "type": "send_one_task",
@@ -663,6 +710,16 @@ class CheckListManager(APIView):
                                     workspace=checklist_obj.task.project.workspace,
                                     user=checklist_obj.responsible_for_doing, title=title, sub_title=sub_title,
                                     side_type="update_task")
+            short_text = checklist_obj.title[:7] + "..."
+            task_short_text = checklist_obj.task.title[:7] + "..."
+            message = f"چک لیست  {short_text}در تسک  {task_short_text} بروزرسانی شد  "
+
+            create_notify_message(
+                message=message,
+                related_instance=checklist_obj,
+                project_id=checklist_obj.project.id,
+                creator_id=request.user.id
+            )
             return Response(status=status.HTTP_200_OK,data={
                 "status":True,
                 "message":"success",
@@ -674,8 +731,19 @@ class CheckListManager(APIView):
 
         checklist_obj = get_object_or_404(CheckList,id=checklist_id_or_task_id)
         task_id = checklist_obj.task.id
+        short_text = checklist_obj.title[:7] + "..."
+        task_short_text = checklist_obj.task.title[:7] + "..."
+        message = f"چک لیست  {short_text}در تسک  {task_short_text} حذف شد  "
+
+        create_notify_message(
+            message=message,
+            related_instance=checklist_obj,
+            project_id=checklist_obj.project.id,
+            creator_id=request.user.id
+        )
         checklist_obj.delete()
         channel_layer = get_channel_layer()
+
         event = {
             "type": "send_one_task",
             "task_id":task_id,
