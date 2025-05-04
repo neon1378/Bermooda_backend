@@ -354,7 +354,7 @@ class ProjectMessage(SoftDeleteModel):
 
     )
     #new fields begin
-    message_type = models.CharField(max_length=15,choices=MESSAGE_TYPE,null=True,default="text")
+    message_type = models.CharField(max_length=15,choices=MESSAGE_TYPE,null=True,default="text",blank=True)
     content_type = models.ForeignKey(ContentType, on_delete=models.SET_NULL,null=True)
     object_id = models.PositiveIntegerField(null=True)
     related_object = GenericForeignKey('content_type', 'object_id')

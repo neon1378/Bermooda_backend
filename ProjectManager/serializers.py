@@ -337,6 +337,8 @@ class ProjectMessageSerializer(ModelSerializer):
             "body",
             "project",
             "project_id",
+            "related_object",
+            "message_type",
             "created_at_date_persian",
             "file",
             "file_id_list",
@@ -384,7 +386,7 @@ class ProjectMessageSerializer(ModelSerializer):
                 main_file.its_belong = True
                 main_file.save()
                 new_message.file.add(main_file)
-
+        new_message.message_type="text"
         new_message.save()
         return new_message
 
