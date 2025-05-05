@@ -195,7 +195,10 @@ class Task(SoftDeleteModel):
                                       related_name="task_category")
     project = models.ForeignKey(Project, on_delete=models.SET_NULL, null=True, related_name="task")
     def project_id_main(self):
-        return self.project.id
+        try:
+            return self.project.id
+        except:
+            return None
 
     def category_task_id(self):
         return self.category_task.id if self.category_task else 0
@@ -269,7 +272,7 @@ class CheckList(SoftDeleteModel):
         else:
             return False
     def project_id_main(self):
-        return self.task.project.id
+        return self.task.project_id_main()
     def task_data (self):
         try:
             return {
