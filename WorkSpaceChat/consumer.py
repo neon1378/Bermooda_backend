@@ -132,10 +132,7 @@ class GroupMessageWs(AsyncWebsocketConsumer):
             return dic
 
     async def change_current_workspace(self, event):
-        # Leave the previous workspace group
-        await self.channel_layer.group_discard(f"group_ws_{self.workspace_id}", self.channel_name)
 
-        # Update workspace ID and fetch the workspace object
         self.workspace_id = event['workspace_id']
         self.workspace_obj = await self.get_workspace_obj()
         self.workspace_group_name = f"group_ws_{self.workspace_obj.id}"
@@ -152,6 +149,7 @@ class GroupMessageWs(AsyncWebsocketConsumer):
                 "current_workspace": current_workspace
             }
         }))
+
 
     async def disconnect(self, code=None):
         #

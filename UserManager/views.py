@@ -1,3 +1,5 @@
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
 from django.shortcuts import render
 from django.middleware.csrf import get_token
 from rest_framework import mixins
@@ -1414,12 +1416,18 @@ def change_current_worksapce (request):
     workspace_obj = get_object_or_404(WorkSpace,id=data.get("workspace_id"))
     change_current_workspace_jadoo(user_acc=request.user,workspace_obj=workspace_obj)
 
-    request.user.current_workspace_id= workspace_obj.id
+    request.user.current_workspace_id = workspace_obj.id
 
     request.user.save()
-    request.user.save()
-    request.user.save()
-    print(request.user.current_workspace_id,"@$@$")
+    channel_layer = get_channel_layer()
+
+
+    event = {
+        "type": "change_current_workspace",
+        "workspace_id": request.user.current_workspace_id
+    }
+    async_to_sync(channel_layer.group_send)(f"user_group_{request.user.id}", event)
+
 
     return Response(status=status.HTTP_202_ACCEPTED)
 
