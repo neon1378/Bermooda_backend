@@ -20,7 +20,7 @@ class CustomerTaskMain(AsyncWebsocketConsumer):
 
     @sync_to_async
     def _get_group_crm_obj(self,group_crm_id):
-        group_crm_obj = get_object_or_404(GroupCrm,id=group_crm_id)
+        group_crm_obj = GroupCrm.objects.get(id=group_crm_id)
         return group_crm_obj
 
 
@@ -74,7 +74,7 @@ class CustomerTaskMain(AsyncWebsocketConsumer):
                 page_number=page_number,
 
             )
-        pagination_data["list"] = GroupCrmMessageSerializer(pagination_data["list"],many=True,context={"user":self.user})
+        pagination_data["list"] = GroupCrmMessageSerializer(pagination_data["list"],many=True,context={"user":self.user}).data
 
         return pagination_data
 
