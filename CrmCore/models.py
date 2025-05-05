@@ -10,6 +10,8 @@ import uuid
 from django.db.models import Max
 import os 
 from dotenv import load_dotenv
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
 load_dotenv()
 from core.models import SoftDeleteModel,City,State
 from django.utils.formats import number_format
@@ -461,6 +463,17 @@ class CustomerBank(SoftDeleteModel):
 
 
 class GroupCrmMessage(SoftDeleteModel):
+
+    MESSAGE_TYPE= (
+        ("text","TEXT"),
+        ("notification","NOTIFICATION")
+
+    )
+    #new fields begin
+    message_type = models.CharField(max_length=15,choices=MESSAGE_TYPE,null=True,default="text",blank=True)
+    content_type = models.ForeignKey(ContentType, on_delete=models.SET_NULL,null=True)
+    object_id = models.PositiveIntegerField(null=True)
+    related_object = GenericForeignKey('content_type','object_id')
     body = models.TextField(null=True,blank=True)
     group_crm = models.ForeignKey(GroupCrm,on_delete=models.ForeignKey,null=True,related_name="messages")
 
@@ -470,10 +483,20 @@ class GroupCrmMessage(SoftDeleteModel):
     creator = models.ForeignKey(UserAccount,on_delete=models.CASCADE,null=True)
 
     def created_at_persian(self):
+        PERSIAN_MONTHS = [
+            "",  # month numbers start at 1
+            "فروردین", "اردیبهشت", "خرداد",
+            "تیر", "مرداد", "شهریور",
+            "مهر", "آبان", "آذر",
+            "دی", "بهمن", "اسفند"
+        ]
         if self.created_at:
             jalali_date = jdatetime.datetime.fromgregorian(datetime=self.created_at)
-            formatted_date_persian = jalali_date.strftime("%d %B %Y | %H:%M")
-            return formatted_date_persian
+            day = jalali_date.day
+            month = PERSIAN_MONTHS[jalali_date.month]
+            year = jalali_date.year
+            time = jalali_date.strftime("%H:%M")
+            return f"{day} {month} {year} | {time}"
 
     def created_at_date_persian(self):
         jalali_datetime = jdatetime.datetime.fromgregorian(datetime=self.created_at)

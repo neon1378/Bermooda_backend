@@ -266,6 +266,7 @@ class CustomerSmallSerializer(serializers.ModelSerializer):
             "id",
             "step_status",
             "order",
+            "is_deleted",
             "label",
             "label_id",
             "personal_type",
@@ -838,6 +839,7 @@ class GroupCrmMessageSerializer(serializers.ModelSerializer):
     creator = MemberSerializer(read_only=True)
     creator_id = serializers.IntegerField(write_only=True,required=True)
     group_crm = GroupCrmSerializer(read_only=True)
+    related_object = serializers.SerializerMethodField(read_only=True)
     group_crm_id = serializers.IntegerField(write_only=True,required=True)
     class Meta:
         model = GroupCrmMessage
@@ -846,6 +848,7 @@ class GroupCrmMessageSerializer(serializers.ModelSerializer):
             "body",
             "group_crm",
             "group_crm_id",
+            "related_object",
             "created_at_date_persian",
             "file",
             "file_id_list",
@@ -857,17 +860,23 @@ class GroupCrmMessageSerializer(serializers.ModelSerializer):
         ]
     def to_representation(self, instance):
         data = super().to_representation(instance)
-        user = self.context['user']
+        user = self.context.get("user")
         data['self'] = user == instance.creator
         return data
     def get_replay(self, obj):
         if obj.replay:
-            return ProjectMessageSerializer(obj.replay).data
+            return GroupCrmMessageSerializer(obj.replay).data
         return None
+    def get_related_object(self,obj):
+        if obj.related_object:
+            return {
+                "data_type":"customer_data",
+                "data":CustomerSmallSerializer(obj.related_object).data
+            }
     def create(self, validated_data):
         file_id_list = validated_data.pop("file_id_list",None)
         replay_id = validated_data.pop("replay_id",None)
-        new_message = ProjectMessage.objects.create(**validated_data)
+        new_message = GroupCrmMessage.objects.create(**validated_data)
         if replay_id:
             new_message.replay_id = replay_id
         if file_id_list:
