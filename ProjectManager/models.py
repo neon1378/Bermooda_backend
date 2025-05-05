@@ -279,7 +279,7 @@ class CheckList(SoftDeleteModel):
                 "done_status":self.task.done_status
             }
         except:
-            return {}
+            return None
 
     def end_date_time_sort(self):
         try:
