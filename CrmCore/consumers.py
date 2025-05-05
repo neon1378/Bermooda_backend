@@ -38,13 +38,21 @@ class CustomerTaskMain(AsyncWebsocketConsumer):
         await self.channel_layer.group_add(
             f"{self.group_crm_id}_crm", self.channel_name
         )
-        # serializer_data = await self._customer_list_serializer()
-        # await self.send(json.dumps(
-        #     {
-        #         "data_type": "customer_list",
-        #         "data": serializer_data
-        #     }
-        # ))
+        await self.send_initial_data()
+
+    async def send_initial_data(self):
+        group_message_data = await self._all_message_serializer(page_number=1)
+        await self.send(json.dumps({
+            "data_type":"all_messages",
+            "data":group_message_data
+        }))
+        customer_user_data = await self._customer_list_serializer()
+        await self.send(json.dumps(
+            {
+                "data_type": "customer_list",
+                "data": customer_user_data
+            }
+        ))
     @sync_to_async
     def _one_message_serializer(self,message_id):
         message_obj = get_object_or_404(GroupCrmMessage,id=message_id)
@@ -270,45 +278,52 @@ class CustomerTaskMain(AsyncWebsocketConsumer):
         ))
 
     async def receive(self, text_data=None, bytes_data=None):
-        if text_data:
-            data = json.loads(text_data)
-            command = data['command']
-            if command == "customer_list":
-                serializer_data = await self._customer_list_serializer()
-                await self.send(json.dumps(
-                    {
-                        "data_type": "customer_list",
-                        "data": serializer_data
-                    }
-                ))
-            elif command == "change_step_status":
-                step_obj = await  self._change_step_status(main_data =data['data'])
-                event = {
-                    "type": "send_customer_list"
-                }
+        if not text_data:
+            return
 
-                await self.channel_layer.group_send(
-                    f"{self.group_crm_id}_crm", event
-                )
-            elif command ==  "move_a_customer":
+        data = json.loads(text_data)
+        command = data.get('command')
 
-                customer_obj = await self._move_a_customer(main_data=data['data'])
-                event = {
-                    "type": "send_customer_list"
-                }
-                await self.channel_layer.group_send(
-                    f"{self.group_crm_id}_crm", event
-                )
-            elif command == "change_is_followed":
-                customer_obj = await self._change_customer_is_followed(main_data=data['data'])
-                event = {
-                    "type": "send_data"
-                }
-                await self.channel_layer.group_send(
-                    f"{self.group_crm_id}_crm", event
-                )
-            elif command == "read_all_messages":
-                await self.read_all_messages(data=data)
+        if command == 'customer_list':
+            serializer_data = await self._customer_list_serializer()
+            payload = {
+                'data_type': 'customer_list',
+                'data': serializer_data,
+            }
+            await self.send(json.dumps(payload))
+
+        elif command == 'change_step_status':
+            step_obj = await self._change_step_status(main_data=data['data'])
+            event = {'type': 'send_customer_list'}
+            await self.channel_layer.group_send(
+                f"{self.group_crm_id}_crm",
+                event
+            )
+
+        elif command == 'move_a_customer':
+            customer_obj = await self._move_a_customer(main_data=data['data'])
+            event = {'type': 'send_customer_list'}
+            await self.channel_layer.group_send(
+                f"{self.group_crm_id}_crm",
+                event
+            )
+
+        elif command == 'change_is_followed':
+            customer_obj = await self._change_customer_is_followed(main_data=data['data'])
+            event = {'type': 'send_data'}
+            await self.channel_layer.group_send(
+                f"{self.group_crm_id}_crm",
+                event
+            )
+
+        elif command == 'read_all_messages':
+            await self.read_all_messages(data=data)
+
+        elif command == 'create_a_message':
+            await self.create_a_message(data=data)
+
+        elif command == 'edit_message':
+            await self.edit_message(data=data)
 
     async def disconnect(self, close_code):
         await self.channel_layer.group_discard(
