@@ -256,6 +256,7 @@ class ProjectTask(AsyncWebsocketConsumer):
             if category_id not in categories:
                 categories[category_id] = {
                     "category_id": category_id,
+                    "project_id":self.project_obj.id,
                     "color": category_data['color_code'],
                     "title": category_data['title'],
                     "task_list": []
@@ -268,6 +269,7 @@ class ProjectTask(AsyncWebsocketConsumer):
                 categories[category.id] = {
                     "category_id": category.id,
                     "color": category.color_code,
+                    "project_id":self.project_obj,
                     "title": category.title,
                     "task_list": []
                 }
