@@ -146,7 +146,7 @@ class ProjectTask(AsyncWebsocketConsumer):
 
         pagination_data['current_page'] = page_number
         pagination_data['list'] = ProjectMessageSerializer(pagination_data['list'],many=True,context={"user":self.user}).data
-
+        pagination_data['project_id'] = self.project_obj.id
         return pagination_data
 
     @sync_to_async
