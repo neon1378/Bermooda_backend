@@ -274,7 +274,9 @@ class CheckList(SoftDeleteModel):
         try:
             return {
                 "id":self.task.id,
-                "title":self.task.title
+                "title":self.task.title,
+                "is_deleted":self.task.is_deleted,
+                "done_status":self.task.done_status
             }
         except:
             return {}
