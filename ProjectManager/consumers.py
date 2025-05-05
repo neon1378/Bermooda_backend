@@ -269,7 +269,7 @@ class ProjectTask(AsyncWebsocketConsumer):
                 categories[category.id] = {
                     "category_id": category.id,
                     "color": category.color_code,
-                    "project_id":self.project_obj,
+                    "project_id":self.project_obj.id,
                     "title": category.title,
                     "task_list": []
                 }
