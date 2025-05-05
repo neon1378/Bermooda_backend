@@ -361,6 +361,7 @@ class ProjectMessageSerializer(ModelSerializer):
             if object_name == "Task":
                 data = {
                     "data_type":"task_data",
+                    "project_id":obj.related_object.project.id,
                     "data":TaskSerializer(obj.related_object).data,
 
                 }
@@ -368,6 +369,7 @@ class ProjectMessageSerializer(ModelSerializer):
             elif object_name == "CheckList":
                 data ={
                     "data_type":"check_list_data",
+                    "project_id":obj.related_object.task.project.id,
                     "data":CheckListSerializer(obj.related_object).data
                 }
                 return data
