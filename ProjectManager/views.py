@@ -29,7 +29,7 @@ from core.widgets import create_reminder
 
 def create_notify_message(message,related_instance,project_id,creator_id):
     content_type = ContentType.objects.get_for_model(related_instance.__class__)
-    ProjectMessage.objects.create(
+    message_obj = ProjectMessage.objects.create(
         message_type="notification",
         content_type=content_type,
         object_id=related_instance.id,
@@ -37,6 +37,14 @@ def create_notify_message(message,related_instance,project_id,creator_id):
         project_id=project_id,
         creator_id=creator_id
     )
+    channel_layer = get_channel_layer()
+    event = {
+                "type": "send_a_message",
+                "message_id": message_obj.id
+
+            }
+
+    async_to_sync(channel_layer.group_send)(f"{project_id}_admin", event)
     return True
 
 
