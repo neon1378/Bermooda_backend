@@ -329,7 +329,7 @@ class ProjectMessageSerializer(ModelSerializer):
     creator = UserSerializer(read_only=True)
     creator_id = serializers.IntegerField(write_only=True,required=True)
     project = ProjectSerializer(read_only=True)
-    related_instance = serializers.SerializerMethodField(read_only=True)
+    related_instance = serializers.SerializerMethodField(read_only=True,many=True)
     project_id = serializers.IntegerField(write_only=True,required=True)
     class Meta:
         model = ProjectMessage
