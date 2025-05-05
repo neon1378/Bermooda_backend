@@ -9,7 +9,9 @@ from django.utils.timezone import is_naive, make_aware, get_current_timezone
 from datetime import datetime
 import pytz
 from pkg_resources import working_set
+from WorkSpaceManager.models import WorkSpace,WorkspaceMember,WorkSpacePermission
 
+from Notification.models import Notification
 from WorkSpaceManager.models import WorkSpace
 from .models import GroupMessage,TextMessage
 from .serializers import GroupSerializer,TextMessageSerializer
@@ -46,9 +48,11 @@ class GroupMessageWs(AsyncWebsocketConsumer):
         await self.change_user_online(status=True)
         self.workspace_id = self.user.current_workspace_id
         self.workspace_obj = await self.get_workspace_obj()
-        self.workspace_group_name = f"group_ws_{self.workspace_obj.id}"
 
-        await self.channel_layer.group_add(self.workspace_group_name, self.channel_name)
+        self.user_group_name = f"user_group_{self.user.id}"
+
+        await self.channel_layer.group_add(self.user_group_name, self.channel_name)
+
         await self.accept()
         message_count = await self._get_all_group_unread_messages()
         await self.send(json.dumps(
@@ -62,7 +66,7 @@ class GroupMessageWs(AsyncWebsocketConsumer):
 
     @sync_to_async
     def get_workspace_obj(self):
-        workspace_id = self.user.current_workspace_id
+
         workspace_obj = WorkSpace.objects.get(id=self.workspace_id)
         return workspace_obj
     @sync_to_async
@@ -80,14 +84,81 @@ class GroupMessageWs(AsyncWebsocketConsumer):
         })
         )
 
+    @sync_to_async
+    def _get_workspace_data(self,workspace_id):
 
+            current_workspace_obj = WorkSpace.objects.get(id=workspace_id)
+            dic = {
+                "wallet": {
+                    "id": current_workspace_obj.wallet.id,
+                    "balance": current_workspace_obj.wallet.balance
+                },
+                "id": current_workspace_obj.id,
+                "title": current_workspace_obj.title,
+                "is_authenticated": current_workspace_obj.is_authenticated,
+                "jadoo_workspace_id": current_workspace_obj.jadoo_workspace_id,
+                "is_active": current_workspace_obj.is_active,
+                "workspace_permissions": [
+                    {
+                        "id": permission.id,
+                        "permission_type": permission.permission_type,
+                        "is_active": permission.is_active
+                    } for permission in WorkSpacePermission.objects.filter(workspace=current_workspace_obj)
+                ],
+                "unread_notifications": Notification.objects.filter(workspace=current_workspace_obj,
+                                                                    user_account=self.user,
+                                                                    is_read=False).count() + Notification.objects.filter(
+                    user_account=self.user, is_read=False).count()
+
+            }
+            if self.user == current_workspace_obj.owner:
+                dic['type'] = "owner"
+            else:
+                try:
+                    workspac_member = WorkspaceMember.objects.get(workspace=current_workspace_obj,
+                                                                  user_account=request.user)
+                    permissions = [
+                        {
+                            "id": permission.id,
+                            "permission_name": permission.permission_name,
+                            "permission_type": permission.permission_type
+                        } for permission in workspac_member.permissions.all()
+                    ]
+                    dic['permissions'] = permissions
+                    dic['is_accepted'] = workspac_member.is_accepted
+                except:
+                    pass
+                dic['type'] = "member"
+            return dic
+
+    async def change_current_workspace(self, event):
+        # Leave the previous workspace group
+        await self.channel_layer.group_discard(f"group_ws_{self.workspace_id}", self.channel_name)
+
+        # Update workspace ID and fetch the workspace object
+        self.workspace_id = event['workspace_id']
+        self.workspace_obj = await self.get_workspace_obj()
+        self.workspace_group_name = f"group_ws_{self.workspace_obj.id}"
+
+        # Notify the user group to update groups and unread messages
+        await self.channel_layer.group_send(self.user_group_name, {"type": "send_groups"})
+        await self.channel_layer.group_send(self.user_group_name, {"type": "send_all_unread_messages"})
+
+        # Send updated workspace data to the client
+        current_workspace = await self._get_workspace_data(self.workspace_id)
+        await self.send(json.dumps({
+            "data_type": "change_current_workspace",
+            "data": {
+                "current_workspace": current_workspace
+            }
+        }))
 
     async def disconnect(self, code=None):
         #
         # self.user.is_online = False
         # await sync_to_async(self.user.save)()
         await self.change_user_online(status=False)
-        await self.channel_layer.group_discard(f"group_ws_{self.workspace_id}", self.channel_name)
+        await self.channel_layer.group_discard(f"user_group_{self.user.id}", self.channel_name)
 
     async def receive(self, text_data=None, bytes_data=None):
         if not text_data:
@@ -165,7 +236,7 @@ class GroupMessageWs(AsyncWebsocketConsumer):
         event = {
             "type": "send_groups"
         }
-        await self.channel_layer.group_send(self.workspace_group_name, event)
+        await self.channel_layer.group_send(self.user_group_name, event)
         await self.send(json.dumps(
             {
                 "data_type":"message_list",
@@ -267,12 +338,12 @@ class GroupMessageWs(AsyncWebsocketConsumer):
                 "type":"send_groups"
             }
 
-            await self.channel_layer.group_send(f"group_ws_{self.workspace_obj.id}", event)
+            await self.channel_layer.group_send(self.user_group_name, event)
 
             event = {
                 "type":"send_all_unread_messages"
             }
-            await self.channel_layer.group_send(self.workspace_group_name, event)
+            await self.channel_layer.group_send(self.user_group_name, event)
 
         else:
             await self.send(json.dumps({"data_type": "error", "data": serializer.errors}))
