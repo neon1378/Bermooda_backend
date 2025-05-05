@@ -329,7 +329,7 @@ class ProjectMessageSerializer(ModelSerializer):
     creator = UserSerializer(read_only=True)
     creator_id = serializers.IntegerField(write_only=True,required=True)
     project = ProjectSerializer(read_only=True)
-    related_instance = serializers.SerializerMethodField(read_only=True,many=True)
+    related_object = serializers.SerializerMethodField(read_only=True)
     project_id = serializers.IntegerField(write_only=True,required=True)
     class Meta:
         model = ProjectMessage
@@ -338,7 +338,7 @@ class ProjectMessageSerializer(ModelSerializer):
             "body",
             "project",
             "project_id",
-            "related_instance",
+            "related_object",
             "message_type",
             "created_at_date_persian",
             "file",
@@ -355,7 +355,7 @@ class ProjectMessageSerializer(ModelSerializer):
 
         data['self'] = user == instance.creator
         return data
-    def get_related_instance(self,obj):
+    def get_related_object(self,obj):
         if obj.related_object:
             object_name = obj.related_object.__class__.__name__
             if object_name == "Task":
@@ -368,7 +368,7 @@ class ProjectMessageSerializer(ModelSerializer):
             elif object_name == "CheckList":
                 data ={
                     "data_type":"check_list_data",
-                    "data":CheckListSerializer(CheckList).data
+                    "data":CheckListSerializer(obj.related_object).data
                 }
                 return data
     def get_replay(self, obj):
