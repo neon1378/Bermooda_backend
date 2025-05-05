@@ -599,7 +599,7 @@ class CheckListManager(APIView):
         create_notify_message(
             message=message,
             related_instance=check_list_obj,
-            project_id=check_list_obj.project.id,
+            project_id=check_list_obj.task.project.id,
             creator_id=request.user.id
         )
         channel_layer = get_channel_layer()
@@ -717,7 +717,7 @@ class CheckListManager(APIView):
             create_notify_message(
                 message=message,
                 related_instance=checklist_obj,
-                project_id=checklist_obj.project.id,
+                project_id=checklist_obj.task.project.id,
                 creator_id=request.user.id
             )
             return Response(status=status.HTTP_200_OK,data={
@@ -733,14 +733,14 @@ class CheckListManager(APIView):
         task_id = checklist_obj.task.id
         short_text = checklist_obj.title[:7] + "..."
         task_short_text = checklist_obj.task.title[:7] + "..."
-        message = f"چک لیست  {short_text}در تسک  {task_short_text} حذف شد  "
-
-        create_notify_message(
-            message=message,
-            related_instance=checklist_obj,
-            project_id=checklist_obj.project.id,
-            creator_id=request.user.id
-        )
+        # message = f"چک لیست  {short_text}در تسک  {task_short_text} حذف شد  "
+        #
+        # create_notify_message(
+        #     message=message,
+        #     related_instance=checklist_obj,
+        #     project_id=checklist_obj.project.id,
+        #     creator_id=request.user.id
+        # )
         checklist_obj.delete()
         channel_layer = get_channel_layer()
 
