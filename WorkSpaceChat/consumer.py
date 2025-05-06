@@ -85,51 +85,53 @@ class GroupMessageWs(AsyncWebsocketConsumer):
         )
 
     @sync_to_async
-    def _get_workspace_data(self,workspace_id):
+    def _get_workspace_data(self, workspace_id):
+        current_workspace_obj = WorkSpace.objects.get(id=workspace_id)
+        data = {
+            "wallet": {
+                "id": current_workspace_obj.wallet.id if current_workspace_obj.wallet else None,
+                "balance": current_workspace_obj.wallet.balance if current_workspace_obj.wallet else 0
+            },
+            "id": current_workspace_obj.id,
+            "title": current_workspace_obj.title,
+            "is_authenticated": current_workspace_obj.is_authenticated,
+            "jadoo_workspace_id": current_workspace_obj.jadoo_workspace_id,
+            "is_active": current_workspace_obj.is_active,
+            "workspace_permissions": [
+                {
+                    "id": permission.id,
+                    "permission_type": permission.permission_type,
+                    "is_active": permission.is_active
+                } for permission in WorkSpacePermission.objects.filter(workspace=current_workspace_obj)
+            ],
+            "unread_notifications": Notification.objects.filter(
+                workspace=current_workspace_obj,
+                user_account=self.user,
+                is_read=False
+            ).count() + Notification.objects.filter(user_account=self.user, is_read=False).count()
+        }
 
-            current_workspace_obj = WorkSpace.objects.get(id=workspace_id)
-            dic = {
-                "wallet": {
-                    "id": current_workspace_obj.wallet.id,
-                    "balance": current_workspace_obj.wallet.balance
-                },
-                "id": current_workspace_obj.id,
-                "title": current_workspace_obj.title,
-                "is_authenticated": current_workspace_obj.is_authenticated,
-                "jadoo_workspace_id": current_workspace_obj.jadoo_workspace_id,
-                "is_active": current_workspace_obj.is_active,
-                "workspace_permissions": [
+        if self.user == current_workspace_obj.owner:
+            data["type"] = "owner"
+        else:
+            try:
+                workspac_member = WorkspaceMember.objects.get(
+                    workspace=current_workspace_obj,
+                    user_account=self.user  # Use self.user consistently
+                )
+                data["permissions"] = [
                     {
                         "id": permission.id,
-                        "permission_type": permission.permission_type,
-                        "is_active": permission.is_active
-                    } for permission in WorkSpacePermission.objects.filter(workspace=current_workspace_obj)
-                ],
-                "unread_notifications": Notification.objects.filter(workspace=current_workspace_obj,
-                                                                    user_account=self.user,
-                                                                    is_read=False).count() + Notification.objects.filter(
-                    user_account=self.user, is_read=False).count()
+                        "permission_name": permission.permission_name,
+                        "permission_type": permission.permission_type
+                    } for permission in workspac_member.permissions.all()
+                ]
+                data["is_accepted"] = workspac_member.is_accepted
+            except WorkspaceMember.DoesNotExist:
+                pass
+            data["type"] = "member"
 
-            }
-            if self.user == current_workspace_obj.owner:
-                dic['type'] = "owner"
-            else:
-                try:
-                    workspac_member = WorkspaceMember.objects.get(workspace=current_workspace_obj,
-                                                                  user_account=request.user)
-                    permissions = [
-                        {
-                            "id": permission.id,
-                            "permission_name": permission.permission_name,
-                            "permission_type": permission.permission_type
-                        } for permission in workspac_member.permissions.all()
-                    ]
-                    dic['permissions'] = permissions
-                    dic['is_accepted'] = workspac_member.is_accepted
-                except:
-                    pass
-                dic['type'] = "member"
-            return dic
+        return data
 
     async def change_current_workspace(self, event):
 
@@ -174,6 +176,8 @@ class GroupMessageWs(AsyncWebsocketConsumer):
             await self.close_group_message()
         elif command == "new_message":
             await self.new_message(data["data"].get("text"))
+        elif command == "get_unread_messages" :
+            await self.channel_layer.group_send(self.user_group_name, {"type": "send_all_unread_messages"})
         elif command == "read_message_list":
 
             page_number = data["data"].get("page_number",1)
