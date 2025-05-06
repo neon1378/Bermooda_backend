@@ -369,6 +369,22 @@ class StudyCategorySerializer(serializers.ModelSerializer):
             "title"
         ]
 
+class FavoriteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Favorite
+        fields =[
+            "id",
+            "title"
+        ]
+class SkillSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Skill
+        fields = [
+            "id",
+            "title"
+        ]
+
+
 class WorkSpaceMemberFullDataSerializer(serializers.ModelSerializer):
     folder_slug = serializers.IntegerField(required=False,allow_null=True)
     user_account = UserSerializer(required=False, read_only=True)
@@ -393,6 +409,12 @@ class WorkSpaceMemberFullDataSerializer(serializers.ModelSerializer):
 
     study_category_id = serializers.IntegerField(write_only=True,required=False,allow_null=True)
 
+    favorites = FavoriteSerializer(many=True,read_only=True)
+    skills = SkillSerializer(many=True,read_only=True)
+    favorite_name_list =serializers.ListField(write_only=True,required=False,allow_null=True)
+    skill_name_list = serializers.ListField(write_only=True,required=False,allow_null=True)
+
+
     class Meta:
         model = WorkspaceMember
         fields = [
@@ -400,6 +422,16 @@ class WorkSpaceMemberFullDataSerializer(serializers.ModelSerializer):
             "is_accepted", "permissions", "last_name", "workspace_id", "jtime", "permission_list",
             #done
             "state",
+            #new begin
+            "favorite_name_list",
+            "skill_name_list",
+            "employment_type",
+            "salary_type",
+            "favorites",
+            "skills",
+            "personal_code",
+            #new end
+
             "city",
             "state_id",
             "folder_slug",
@@ -486,6 +518,11 @@ class WorkSpaceMemberFullDataSerializer(serializers.ModelSerializer):
         print(validated_data)
 
         from .views import create_permission_for_member
+        favorite_name_list = validated_data.pop("favorite_name_list",None)
+        skill_name_list = validated_data.pop("skill_name_list",None)
+        employment_type = validated_data.pop("employment_type",None)
+        salary_type = validated_data.pop("salary_type",None)
+
         folder_slug = validated_data.pop("folder_slug",None)
         workspace_id = validated_data.pop("workspace_id",None)
         bad_record_id = validated_data.pop("bad_record_id",None)
@@ -595,6 +632,28 @@ class WorkSpaceMemberFullDataSerializer(serializers.ModelSerializer):
                 folder_obj = get_object_or_404(Folder,slug=folder_slug)
                 folder_obj.members.add(deleted_member)
                 folder_obj.save()
+            for favorite in deleted_member.favorites.all():
+                favorite.hard_delete()
+            for favorite in  favorite_name_list:
+                Favorite.objects.create(
+                    title=favorite,
+                    member=deleted_member
+
+                )
+            for skill in  deleted_member.skills.all():
+                skill.hard_delete()
+
+
+            for skill in skill_name_list:
+                Skill.objects.create(
+                    title=skill,
+                    member=deleted_member
+                )
+
+            if employment_type:
+                deleted_member.employment_type = employment_type
+            if salary_type:
+                deleted_member.salary_type = salary_type
             deleted_member.save()
 
             return deleted_member
@@ -636,6 +695,23 @@ class WorkSpaceMemberFullDataSerializer(serializers.ModelSerializer):
             main_file.its_blong = True
             main_file.save()
             member.bad_record=main_file
+
+        for favorite in favorite_name_list:
+            Favorite.objects.create(
+                title=favorite,
+                member=member
+
+            )
+        for skill in skill_name_list:
+            Skill.objects.create(
+                title=skill,
+                member=member
+            )
+
+        if employment_type:
+            member.employment_type = employment_type
+        if salary_type:
+            member.salary_type = salary_type
         member.save()
 
         if not GroupMessage.objects.filter(workspace=workspace, members=workspace.owner).filter(members=user_acc).exists():
@@ -678,6 +754,11 @@ class WorkSpaceMemberFullDataSerializer(serializers.ModelSerializer):
         return member
 
     def update(self, instance, validated_data):
+        favorite_name_list = validated_data.pop("favorite_name_list", None)
+        skill_name_list = validated_data.pop("skill_name_list", None)
+        employment_type = validated_data.pop("employment_type", None)
+        salary_type = validated_data.pop("salary_type", None)
+
         folder_slug = validated_data.pop("folder_slug",None)
         permissions= validated_data.pop("permissions",None)
         bad_record_id = validated_data.pop("bad_record_id", None)
@@ -765,6 +846,29 @@ class WorkSpaceMemberFullDataSerializer(serializers.ModelSerializer):
 
         instance.fullname = f"{instance.first_name} {instance.last_name}"
         instance.more_information= more_information
+
+        for favorite in instance.favorites.all():
+            favorite.hard_delete()
+
+        for favorite in favorite_name_list:
+            Favorite.objects.create(
+                title=favorite,
+                member=instance
+
+            )
+        for skill in instance.skills.all():
+            skill.hard_delete()
+
+        for skill in skill_name_list:
+            Skill.objects.create(
+                title=skill,
+                member=instance
+            )
+
+        if employment_type:
+            instance.employment_type = employment_type
+        if salary_type:
+            instance.salary_type = salary_type
         instance.save()
         if folder_slug:
             from HumanResourcesManager.models import Folder

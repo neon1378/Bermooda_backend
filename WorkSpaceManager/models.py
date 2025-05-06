@@ -9,6 +9,7 @@ from django.contrib.contenttypes.models import ContentType
 # Create your models here.
 import os
 from dotenv import load_dotenv
+from core.widgets import generate_random_slug
 load_dotenv()
 from core.models import City,State,MainFile
 from extensions.utils import costum_date
@@ -208,8 +209,24 @@ class WorkspaceMember(SoftDeleteModel):
 
     )
 
+    EMPLOYMENT_TYPE = (
+        ("fulltime","FullTime"),
+        ("parttime","PartTime"),
+        ("remote","Remote"),
+        ("contract","Contract"),
+        ("internship","InternShip"),
+        ("hourly", "Hourly"),
+    )
+    SALARY_TYPE = (
+        ("monthly","Monthly"),
+        ("hourly", "Hourly"),
+        ("per_project", "PerProject"),
 
+        ("commission_based", "CommissionBased"),
+        ("negotiable", "Nagotiable"),
+        ("base_commission", "BaseCommission"),
 
+    )
     insurance_type = models.CharField(max_length=15,null=True,blank=True,choices=INSURANCE_TYPE)
     military_status = models.CharField(choices=MILITARY_STATUS,max_length=30,null=True,blank=True)
     exempt_type = models.CharField(choices=EXEMPT_TYPE,max_length=30,null=True,blank=True)
@@ -255,7 +272,22 @@ class WorkspaceMember(SoftDeleteModel):
     emergency_last_name = models.CharField(max_length=20,null=True ,blank=True)
     emergency_phone_number = models.CharField(max_length=12,null=True ,blank=True)
     emergency_relationship = models.CharField(max_length=30,null=True ,blank=True)
+    #new fields begin
+    employment_type = models.CharField(max_length=30,choices=EMPLOYMENT_TYPE,null=True,blank=True)
+    personal_code = models.CharField(max_length=10,null=True,unique=True,blank=True)
 
+    salary_type = models.CharField(max_length=30,choices=SALARY_TYPE,null=True,blank=True)
+
+
+
+
+    def save(self, *args, **kwargs):
+        if not self.personal_code:
+            personal_code = f"Ws_{generate_random_slug()}"
+            while WorkspaceMember.objects.filter(personal_code=personal_code).exists():
+                personal_code = f"Ws_{generate_random_slug()}"
+            self.personal_code = personal_code
+        super().save(*args, **kwargs)
 
 
     def is_team_bonos_status(self):
@@ -303,6 +335,15 @@ class WorkspaceMember(SoftDeleteModel):
                 }
             ]
             return data
+
+class Favorite(SoftDeleteModel):
+    title = models.CharField(max_length=15,null=True)
+    member = models.ForeignKey(WorkspaceMember,on_delete=models.CASCADE,related_name="favorites")
+
+class Skill (SoftDeleteModel):
+    title = models.CharField(max_length=15,null=True)
+    member = models.ForeignKey(WorkspaceMember, on_delete=models.CASCADE, related_name="skills")
+
 
 
 class MemberPermission (SoftDeleteModel):
