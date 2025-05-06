@@ -75,7 +75,7 @@ class CustomerTaskMain(AsyncWebsocketConsumer):
 
             )
         pagination_data["list"] = GroupCrmMessageSerializer(pagination_data["list"],many=True,context={"user":self.user}).data
-
+        pagination_data['group_crm_id'] = self.group_crm_obj.id
         return pagination_data
 
 
@@ -109,7 +109,7 @@ class CustomerTaskMain(AsyncWebsocketConsumer):
                         "color": customer_obj.label.color,
                         "title": customer_obj.label.title,
                         "steps": LabelStepSerializer(customer_obj.label.label_step.steps.all(), many=True).data,
-
+                        "group_crm_id":self.group_crm_obj.id,
                         "customer_list": [CustomerSmallSerializer(customer_obj).data]
                     })
 
@@ -129,6 +129,7 @@ class CustomerTaskMain(AsyncWebsocketConsumer):
                     "label_id": label.id,
                     "color": label.color,
                     "title": label.title,
+                    "group_crm_id":self.group_crm_obj.id,
                     "steps": LabelStepSerializer(label.label_step.steps.all(), many=True).data,
                     "customer_list": []
                 })
