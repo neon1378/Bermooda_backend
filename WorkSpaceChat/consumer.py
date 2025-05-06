@@ -90,7 +90,7 @@ class GroupMessageWs(AsyncWebsocketConsumer):
         data = {
             "wallet": {
                 "id": current_workspace_obj.wallet.id if current_workspace_obj.wallet else None,
-                "balance": current_workspace_obj.wallet.balance if current_workspace_obj.wallet else 0
+                "balance": int(current_workspace_obj.wallet.balance) if current_workspace_obj.wallet else 0
             },
             "id": current_workspace_obj.id,
             "title": current_workspace_obj.title,
