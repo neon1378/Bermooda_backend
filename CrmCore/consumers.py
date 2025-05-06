@@ -215,7 +215,7 @@ class CustomerTaskMain(AsyncWebsocketConsumer):
     async def broadcast_event(self, event):
         """Helper method for broadcasting events to group"""
         await self.channel_layer.group_send(
-            f"{self.group_crm_id}_admin",
+            f"{self.group_crm_id}_crm",
             event
         )
 
