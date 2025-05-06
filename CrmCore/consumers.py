@@ -183,6 +183,7 @@ class CustomerTaskMain(AsyncWebsocketConsumer):
         main_data['group_crm_id'] = self.group_crm_obj.id
         main_data['creator_id'] = self.user.id
         serializer_data =GroupCrmMessageSerializer(data=main_data)
+        print(serializer_data.is_valid(),"5")
         if serializer_data.is_valid():
             message_obj = serializer_data.save()
             return {
@@ -198,6 +199,7 @@ class CustomerTaskMain(AsyncWebsocketConsumer):
         }
     async def create_a_message(self,data):
         message_data = await self._create_a_message(data=data)
+        print(message_data)
         if message_data['status']:
             await self.broadcast_event({
                 "type": "send_a_message",
@@ -321,10 +323,8 @@ class CustomerTaskMain(AsyncWebsocketConsumer):
             await self.read_all_messages(data=data)
 
         elif command == 'create_a_message':
-            print("1")
-            main_data = data.get("data")
-            print(main_data,"@!$!@$")
-            await self.create_a_message(data=main_data)
+
+            await self.create_a_message(data=data)
 
         elif command == 'edit_message':
             await self.edit_message(data=data)
