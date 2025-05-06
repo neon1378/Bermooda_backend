@@ -321,7 +321,9 @@ class CustomerTaskMain(AsyncWebsocketConsumer):
             await self.read_all_messages(data=data)
 
         elif command == 'create_a_message':
-            await self.create_a_message(data=data)
+            print("1")
+            main_data= data['data']
+            await self.create_a_message(data=main_data)
 
         elif command == 'edit_message':
             await self.edit_message(data=data)
