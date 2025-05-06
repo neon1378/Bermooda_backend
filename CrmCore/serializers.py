@@ -848,6 +848,7 @@ class GroupCrmMessageSerializer(serializers.ModelSerializer):
             "body",
             "group_crm",
             "group_crm_id",
+            "message_type",
             "related_object",
             "created_at_date_persian",
             "file",
