@@ -57,10 +57,10 @@ class GroupMessageWs(AsyncWebsocketConsumer):
         message_count = await self._get_all_group_unread_messages()
 
 
-        await self.channel_layer.group_send(self.user_group_name, {
-            "type": "change_current_workspace",
-            "workspace_id": self.workspace_id
-        })
+        # await self.channel_layer.group_send(self.user_group_name, {
+        #     "type": "change_current_workspace",
+        #     "workspace_id": self.workspace_id
+        # })
         await self.send(json.dumps(
             {
                 "data_type": "all_group_message_unread",
