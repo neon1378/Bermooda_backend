@@ -322,7 +322,8 @@ class CustomerTaskMain(AsyncWebsocketConsumer):
 
         elif command == 'create_a_message':
             print("1")
-            main_data= data['data']
+            main_data = data.get("data")
+            print(main_data,"@!$!@$")
             await self.create_a_message(data=main_data)
 
         elif command == 'edit_message':
