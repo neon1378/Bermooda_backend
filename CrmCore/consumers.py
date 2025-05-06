@@ -284,7 +284,7 @@ class CustomerTaskMain(AsyncWebsocketConsumer):
 
         data = json.loads(text_data)
         command = data.get('command')
-
+        print(data)
         if command == 'customer_list':
             serializer_data = await self._customer_list_serializer()
             payload = {
