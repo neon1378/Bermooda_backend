@@ -130,7 +130,7 @@ class GroupMessageWs(AsyncWebsocketConsumer):
             except WorkspaceMember.DoesNotExist:
                 pass
             data["type"] = "member"
-
+        print(data)
         return data
 
     async def change_current_workspace(self, event):
