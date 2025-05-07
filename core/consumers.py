@@ -90,9 +90,12 @@ class CoreWebSocket(AsyncJsonWebsocketConsumer):
 
             # Crm WebSocket Commands
             "customer_list":self.customer_list_handler,
+            "move_a_customer": self.move_a_customer_handler,
+
             "change_step_status":self.change_step_status_handler,
-            "move_a_customer":self.move_a_customer_handler,
+
             "change_is_followed":self.change_is_followed_handler,
+
             "crm_read_all_messages":self.crm_read_all_messages_handler,
             "crm_create_a_message":self.crm_create_a_message_handler,
             "crm_edit_message":self.crm_edit_message_handler,
@@ -322,9 +325,9 @@ class CoreWebSocket(AsyncJsonWebsocketConsumer):
     async def crm_read_all_messages_handler(self,data):
         group_crm_id = data.get("group_crm_id")
         try:
-            main_data = data.get("data",None)
-            page_number= main_data.get("page_number",1)
-            per_page_count = main_data.get("per_page_count",None)
+
+            page_number= data.get("page_number",1)
+            per_page_count = data.get("per_page_count",None)
         except:
             per_page_count = None
             page_number = 1
