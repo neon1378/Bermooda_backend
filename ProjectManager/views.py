@@ -44,7 +44,7 @@ def create_notify_message(message,related_instance,project_id,creator_id):
 
             }
 
-    async_to_sync(channel_layer.group_send)(f"{project_id}_admin", event)
+    async_to_sync(channel_layer.group_send)(f"{project_id}_gp_project", event)
     return True
 
 
@@ -94,9 +94,11 @@ class CategoryProjectManager(APIView):
         new_category_project.save()
         channel_layer = get_channel_layer()
         event = {
-            "type": "send_data"
+            "type": "send_event_task_list",
+            "project_id": new_category_project.project.id
         }
-        async_to_sync(channel_layer.group_send)(f"{new_category_project.project.id}_admin", event)
+
+        async_to_sync(channel_layer.group_send)(f"{new_category_project.project.id}_gp_project", event)
         return Response(status =status.HTTP_201_CREATED,data={
             "status":True,
             "message":"succses",
@@ -113,10 +115,12 @@ class CategoryProjectManager(APIView):
         category_project_obj.color_code=data['color_code']
         category_project_obj.save()
         channel_layer = get_channel_layer()
+
         event = {
-            "type": "send_data"
+            "type": "send_event_task_list",
+            "project_id": category_project_obj.project.id
         }
-        async_to_sync(channel_layer.group_send)(f"{category_project_obj.project.id}_admin", event)
+        async_to_sync(channel_layer.group_send)(f"{category_project_obj.project.id}_gp_project", event)
         return Response(status=status.HTTP_202_ACCEPTED,data={
             "status":True,
             "message":"succses",
@@ -142,11 +146,12 @@ class CategoryProjectManager(APIView):
             category_obj.delete()
             channel_layer = get_channel_layer()
             event = {
-                "type": "send_data"
+                "type": "send_event_task_list",
+                "project_id": project_id
             }
 
 
-            async_to_sync(channel_layer.group_send)(f"{project_id}_admin", event)
+            async_to_sync(channel_layer.group_send)(f"{project_id}_gp_project", event)
             return Response(status=status.HTTP_204_NO_CONTENT)
         else:
             if CategoryProject.objects.filter(project=category_obj.project).count() == 1:
@@ -307,10 +312,10 @@ class TaskManager(APIView):
             "id": task.id,
             "task_progress":task.task_progress(),
             "title": task.title,
-           
+
             "description": task.description,
             "order": task.order,
- 
+
             "category_task": task.category_task.title,
             "category_task_id": task.category_task.id,
             "check_list": None,
@@ -321,18 +326,18 @@ class TaskManager(APIView):
         """Retrieve tasks associated with a project."""
         project = get_object_or_404(Project, id=project_id)
         task_id = request.GET.get("task_id", None)
-            
+
         if task_id:
             task = get_object_or_404(Task, id=task_id)
             # if task.done_status is not True:
             task_data = self.get_task_data(task, project)
 
             return Response(status=status.HTTP_200_OK, data={"status": True, "message": "success", "data": task_data})
-            
+
             # return Response(status=status.HTTP_200_OK, data={"status": True, "message": "task its completed", "data":{}})
-            
-        
-        
+
+
+
         workspace_id = request.GET.get("workspace_id")
         workspace = get_object_or_404(WorkSpace, id=workspace_id)
 
@@ -353,7 +358,7 @@ class TaskManager(APIView):
         category_id = data.pop("category_task")["id"]
 
         workspace_id = data.pop("workspace_id")
-    
+
         for check_list in check_list_data:
             try:
                 date_time_to_start = f"{check_list['date_to_start']} {check_list['time_to_start']}"
@@ -370,14 +375,14 @@ class TaskManager(APIView):
                 continue
 
 
-            
+
         category = get_object_or_404(CategoryProject, id=category_id)
 
 
         task = Task.objects.create(
             **data,  category_task=category, project=project
         )
-        
+
         # Associate files with the task
         MainFile.objects.filter(id__in=file_ids).update(its_blong=True)
         task.main_file.add(*MainFile.objects.filter(id__in=file_ids))
@@ -410,7 +415,7 @@ class TaskManager(APIView):
                 task=task,
                 date_time_to_start_main = persian_to_gregorian(f"{date_to_start} {time_to_start}"),
                 date_time_to_end_main = persian_to_gregorian(f"{date_to_end} {time_to_end}")
-        
+
             )
 
             #
@@ -437,7 +442,7 @@ class TaskManager(APIView):
                     create_notification(related_instance=task,workspace=WorkSpace.objects.get(id=workspace_id),user=member.responsible_for_doing,title=title,sub_title=sub_title,side_type="new_task")
 
                     success_notif.append(member.responsible_for_doing.id)
-# 
+#
         for report_id in task_reports:
             report_obj = get_object_or_404(TaskReport,id=report_id)
             report_obj.task=task
@@ -455,7 +460,8 @@ class TaskManager(APIView):
             "type":"send_one_task",
             "task_id":task.id
         }
-        async_to_sync(channel_layer.group_send)(f"{project.id}_admin",event)
+
+        async_to_sync(channel_layer.group_send)(f"{project.id}_gp_project",event)
         return Response(status=status.HTTP_201_CREATED, data={"status": True, "message": "تسک جدید با موفقیت ثبت شد", "data": response_data})
 
     def put(self, request):
@@ -465,14 +471,14 @@ class TaskManager(APIView):
         workspace_id = data.get("workspace_id")
         workspace_obj = get_object_or_404(WorkSpace,id=workspace_id)
         if data.get("change_done_status"):
-            
+
             task.done_status = data["done_status"]
             task.save()
             return Response(status=status.HTTP_202_ACCEPTED, data={"status": True, "message": "Status updated"})
 
         # Update task fields
         task.title = data["title"]
-        
+
         task.description = data["description"]
 
 
@@ -513,13 +519,15 @@ class TaskManager(APIView):
             "type": "send_one_task",
             "task_id": task.id
         }
-        async_to_sync(channel_layer.group_send)(f"{task.project.id}_admin",event)
+
+        async_to_sync(channel_layer.group_send)(f"{task.project.id}_gp_project",event)
         return Response(status=status.HTTP_202_ACCEPTED, data={"status": True, "message": "تسک با موفقیت آپدیت شد"})
 
     def delete(self, request):
         """Delete a task."""
         workspace_obj = get_object_or_404(WorkSpace,id=request.data.get("workspace_id",None))
         task = get_object_or_404(Task, id=request.data["task_id"])
+        project_id = task.project.id
         short_text = task.title[:7] + "..."
         message = f"تسک {short_text}حذف شد "
         create_notify_message(
@@ -531,9 +539,11 @@ class TaskManager(APIView):
         task.delete()
         channel_layer = get_channel_layer()
         event ={
-            "type":"send_data"
+            "type":"send_event_task_list",
+            "project_id":project_id
         }
-        async_to_sync(channel_layer.group_send)(f"{task.project.id}_admin",event)
+
+        async_to_sync(channel_layer.group_send)(f"{project_id}_gp_project",event)
 
         return Response(status=status.HTTP_204_NO_CONTENT, data={"status": True, "message": "Task deleted"})
 
@@ -615,7 +625,8 @@ class CheckListManager(APIView):
             "type": "send_one_task",
             "task_id": task_obj.id
         }
-        async_to_sync(channel_layer.group_send)(f"{task_obj.project.id}_admin",event)
+
+        async_to_sync(channel_layer.group_send)(f"{task_obj.project.id}_gp_project",event)
         create_reminde_a_task(chek_list=check_list_obj)
         if request.user != check_list_obj.responsible_for_doing:
             title = f"بروزرسانی وظیفه"
@@ -646,7 +657,8 @@ class CheckListManager(APIView):
                     "type": "send_one_task",
                     "task_id": checklist_obj.task.id
                 }
-                async_to_sync(channel_layer.group_send)(f"{checklist_obj.task.project.id}_admin", event)
+
+                async_to_sync(channel_layer.group_send)(f"{checklist_obj.task.project.id}_gp_project", event)
                 return Response(status=status.HTTP_202_ACCEPTED,data={
                     "status":True,
                     "message":"success",
@@ -709,7 +721,8 @@ class CheckListManager(APIView):
                 "type": "send_one_task",
                 "task_id": checklist_obj.task.id
             }
-            async_to_sync(channel_layer.group_send)(f"{checklist_obj.task.project.id}_admin", event)
+
+            async_to_sync(channel_layer.group_send)(f"{checklist_obj.task.project.id}_gp_project", event)
             create_reminde_a_task(chek_list=checklist_obj)
             if request.user != checklist_obj.responsible_for_doing:
                 title = f"بروزرسانی وظیفه"
@@ -756,7 +769,8 @@ class CheckListManager(APIView):
             "type": "send_one_task",
             "task_id":task_id,
         }
-        async_to_sync(channel_layer.group_send)(f"{checklist_obj.task.project.id}_admin", event)
+
+        async_to_sync(channel_layer.group_send)(f"{checklist_obj.task.project.id}_gp_project", event)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
         
