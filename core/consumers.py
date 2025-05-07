@@ -158,6 +158,7 @@ class CoreWebSocket(AsyncJsonWebsocketConsumer):
 
         # Serialize tasks, leveraging pre-fetched related data
         serializer_data = TaskSerializer(task_objs, many=True).data
+        print(serializer_data)
 
         # Organize tasks by category using serializer data
         categories = {}
