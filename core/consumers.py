@@ -172,7 +172,7 @@ class CoreWebSocket(AsyncJsonWebsocketConsumer):
             if category_id not in categories:
                 categories[category_id] = {
                     "category_id": category_id,
-                    "project_id": self.project_obj.id,
+                    "project_id": project_id,
                     "color": category_data['color_code'],
                     "title": category_data['title'],
                     "task_list": []
@@ -185,7 +185,7 @@ class CoreWebSocket(AsyncJsonWebsocketConsumer):
                 categories[category.id] = {
                     "category_id": category.id,
                     "color": category.color_code,
-                    "project_id": self.project_obj.id,
+                    "project_id": project_id,
                     "title": category.title,
                     "task_list": []
                 }
