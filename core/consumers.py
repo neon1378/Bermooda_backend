@@ -1,13 +1,15 @@
 # consumers.py
 import json
 from django.db.models import Prefetch
+from django.shortcuts import get_object_or_404
 from channels.generic.websocket import AsyncWebsocketConsumer,AsyncJsonWebsocketConsumer
 from django.core.exceptions import PermissionDenied, ObjectDoesNotExist
-from ProjectManager.models import Project,Task,CheckList,CategoryProject
+from ProjectManager.models import Project,Task,CheckList,CategoryProject,ProjectMessage
 from WorkSpaceManager.models import  WorkSpace,WorkspaceMember,WorkSpacePermission
 from asgiref.sync import sync_to_async
-from ProjectManager.serializers import TaskSerializer,CheckListSerializer
+from ProjectManager.serializers import TaskSerializer,CheckListSerializer,ProjectMessageSerializer
 from UserManager.models import UserAccount
+from .widgets import  pagination
 
 
 
@@ -70,21 +72,23 @@ class CoreWebSocket(AsyncJsonWebsocketConsumer):
         )
     async def receive_json(self, content, **kwargs):
         command = content.get("command")
-        data = content.get("data")
+        data = content.get("data",None)
         command_handlers = {
             'task_list': self.handle_task_list,
-            # 'move_a_task': self.handle_move_task,
-            # 'change_sub_task_status': self.handle_subtask_status,
-            # 'change_task_status': self.handle_task_status,
-            # "read_all_messages": self.read_all_messages,
-            # "create_a_message": self.create_a_message,
-            # "edit_message": self.edit_message,
-            "send_extra":self.send_extra,
+            'move_a_task': self.handle_move_task,
+            'change_sub_task_status': self.handle_subtask_status,
+            'change_task_status': self.handle_task_status,
+            "read_all_messages": self.read_all_messages,
+            "create_a_message": self.create_a_message_handler,
+            "edit_message": self.edit_message_handler,
+
+
+            # "send_extra":self.send_extra,
         }
         handler = command_handlers.get(command)
 
         if handler:
-            if command == "task_list":
+            if command == "task_list" or command == "read_all_messages":
                 project_id = data.get("project_id")
                 self.project_group_name = f"{project_id}_gp_project"
 
@@ -105,6 +109,221 @@ class CoreWebSocket(AsyncJsonWebsocketConsumer):
         })
 
     # Project Task Begin
+
+    #Project Message Begin
+    @sync_to_async
+    def _all_message_serializer(self,page_number,project_id,per_page_count=None):
+
+        message_objs = ProjectMessage.objects.filter(project_id=project_id).order_by("-id")
+        if per_page_count:
+            pagination_data = pagination(query_set=message_objs,page_number=page_number,per_page_count=per_page_count)
+        else:
+            pagination_data = pagination(query_set=message_objs,page_number=page_number)
+
+
+        pagination_data['current_page'] = page_number
+        pagination_data['list'] = ProjectMessageSerializer(pagination_data['list'],many=True,context={"user":self.user}).data
+        pagination_data['project_id'] = project_id
+        return pagination_data
+    async def read_all_messages(self,data):
+        project_id = data.get("project_id")
+        try:
+
+            page_number= data.get("page_number",1)
+            per_page_count = data.get("per_page_count",None)
+        except:
+            per_page_count = None
+            page_number = 1
+
+        message_data = await self._all_message_serializer(project_id=project_id,page_number=page_number,per_page_count=per_page_count)
+        await self.send_json(
+            {
+                "data_type": "all_messages",
+                "data": message_data
+            }
+        )
+    @sync_to_async
+    def _create_a_message(self,data):
+        project_id = data.get("project_id")
+        main_data = data['data']
+        main_data['project_id'] = project_id
+        main_data['creator_id'] = self.user.id
+        serializer_data =ProjectMessageSerializer(data=main_data,context={"user":self.user})
+        if serializer_data.is_valid():
+            message_obj = serializer_data.save()
+            return {
+                "status":True,
+                "data":{
+                    "message_id":message_obj.id
+                }
+            }
+
+        return {
+            "status":False,
+            "data":serializer_data.errors
+        }
+    async def create_a_message_handler(self,data):
+        project_id = data.get("project_id")
+        message_data = await self._create_a_message(data=data)
+        if message_data['status']:
+            event = {
+                "type": "send_a_message",
+
+                "message_id": message_data['data']['message_id']
+            }
+            project_group_name = f"{project_id}_gp_project"
+            await self.channel_layer.group_send(
+                project_group_name,
+                event
+            )
+
+        else:
+            await self.send_json(
+                {
+                    "data_type": "Validation Error",
+                    "data": message_data['data']
+                }
+            )
+    @sync_to_async
+    def _one_message_serializer(self,message_id):
+        message_obj = get_object_or_404(ProjectMessage,id=message_id)
+        serializer_data = ProjectMessageSerializer(message_obj,context={"user":self.user})
+        return serializer_data.data
+    async def send_a_message(self,event):
+
+        message_data = await self._one_message_serializer(message_id=event['message_id'])
+        await self.send_json(
+            {
+                "data_type": "send_a_message",
+                "data": message_data
+
+            }
+        )
+    @sync_to_async
+    def _edit_a_message(self,data):
+
+        message_obj = get_object_or_404(ProjectMessage,id=data['message_id'])
+        message_obj.body = data['body']
+        message_obj.save()
+        return {
+            "status":True,
+            "data":{
+                "message_id":message_obj.id
+            }
+        }
+    async def edit_message_handler(self,data):
+        project_id = data.get("project_id")
+        message_data = await self._edit_a_message(data=data)
+        event = {
+            "type": "send_a_message",
+
+            "message_id": message_data['data']['message_id']
+        }
+        project_group_name = f"{project_id}_gp_project"
+        await self.channel_layer.group_send(
+            project_group_name,
+            event
+        )
+
+    #Project Message End
+    async def handle_task_status(self, data):
+        """Handle main task status changes"""
+        task = await sync_to_async(get_object_or_404)(Task, id=data['task_id'])
+
+        if not self._has_admin_access():
+            raise PermissionDenied("Access denied")
+
+        task.done_status = data['done_status']
+        await sync_to_async(task.save)()
+
+        event = {
+            "type": "send_event_task_list",
+
+            "project_id": task.project.id
+        }
+        project_group_name = f"{task.project.id}_gp_project"
+        await self.channel_layer.group_send(
+            project_group_name,
+            event
+        )
+    async def handle_subtask_status(self, data):
+        """Handle subtask status changes"""
+
+        # Fetch subtask synchronously
+        subtask = await sync_to_async(
+            lambda: CheckList.objects.select_related("responsible_for_doing").get(id=data['sub_task_id']),
+            thread_sensitive=True)()
+
+        # Fetch user synchronously
+        responsible_user = await sync_to_async(lambda: subtask.responsible_for_doing, thread_sensitive=True)()
+        task_obj = await  sync_to_async(lambda: subtask.task, thread_sensitive=True)()
+        if responsible_user != self.user:
+            raise PermissionDenied("Access denied")
+
+        # Update status
+        subtask.status = data['status']
+        await sync_to_async(subtask.save, thread_sensitive=True)()
+
+        event = {
+            "type": "send_one_task",
+            "task_id": task_obj.id,
+        }
+        project_group_name = f"{task_obj.project.id}_gp_project"
+        await self.channel_layer.group_send(
+            project_group_name,
+            event
+        )
+
+    @sync_to_async
+    def _move_a_task_logic(self,data):
+        category_id = data.get("category_id")
+        task_id = data.get("task_id")
+        orders_task=data.get("orders_task")
+        category = get_object_or_404(CategoryProject,id=category_id)
+        task = get_object_or_404(Task,id=task_id)
+        task.category_task=category
+        task.save()
+        for order_data in orders_task:
+
+            task_obj = Task.objects.get(id=orders_task['task_id'])
+            task_obj.order= order_data['order']
+            task_obj.save()
+        return task
+    async def handle_move_task(self, data):
+        task_obj = await self._move_a_task_logic(data=data)
+
+
+        event = {
+            "type":"send_one_task",
+            "task_id":data['task_id'],
+        }
+        project_group_name = f"{task_obj.project.id}_gp_project"
+        await self.channel_layer.group_send(
+            project_group_name,
+            event
+        )
+
+
+    async def send_one_task(self, event):
+
+
+        task_data = await self._one_task_serializer(task_id=event['task_id'])
+
+        await self.send_json({
+            "data_type": "get_a_task",
+            "data": task_data
+        })
+
+    @sync_to_async
+    def _one_task_serializer(self,task_id):
+        task_obj = Task.objects.get(id=task_id)
+        task_data = {
+            "category_id": task_obj.category_task.id,
+            "color": task_obj.category_task.color_code,
+            "title": task_obj.category_task.title,
+            "task_data": TaskSerializer(task_obj).data
+        }
+        return  task_data
     async def handle_task_list(self, data):
         project_id = data.get("project_id")
 
@@ -214,3 +433,6 @@ class CoreWebSocket(AsyncJsonWebsocketConsumer):
 
         # Return sorted results
         return sorted(categories.values(), key=lambda x: x['category_id'])
+
+
+    # Project Task End
