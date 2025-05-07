@@ -1,6 +1,6 @@
 # consumers.py
 import json
-from channels.generic.websocket import AsyncWebsocketConsumer
+from channels.generic.websocket import AsyncWebsocketConsumer,JsonWebsocketConsumer
 
 class UploadProgressConsumer(AsyncWebsocketConsumer):
     async def connect(self):
@@ -20,3 +20,30 @@ class UploadProgressConsumer(AsyncWebsocketConsumer):
             "data_type":"progress_status",
             "progress_percentage":progress
         }))
+
+
+class CoreWebSocket(JsonWebsocketConsumer):
+    async def connect(self):
+        self.user = self.scope["user"]
+        if not self.user.is_authenticated:
+            await self.close(code=4001)
+            return
+
+        await self.accept()
+
+        self.user_group_name = f"{self.user.id}_gp_user"
+        await self.channel_layer.group_add(
+            self.user_group_name,
+            self.channel_name
+        )
+
+
+    async def disconnect(self, close_code):
+        await self.channel_layer.group_discard(
+            self.user_group_name,
+            self.channel_name
+        )
+    async def receive_json(self,content):
+        print(content)
+        print(type(content))
+
