@@ -11,7 +11,8 @@ from ProjectManager.serializers import TaskSerializer,CheckListSerializer,Projec
 from UserManager.models import UserAccount
 from .widgets import  pagination
 
-
+from CrmCore.models import CustomerUser,GroupCrm,Label,CustomerStep
+from CrmCore.serializers import CustomerSmallSerializer,GroupCrmSerializer,LabelStepSerializer
 
 class UploadProgressConsumer(AsyncWebsocketConsumer):
     async def connect(self):
@@ -38,7 +39,7 @@ class CoreWebSocket(AsyncJsonWebsocketConsumer):
     async def connect(self):
         self.user = self.scope["user"]
         if not self.user.is_authenticated:
-            print("no")
+
             await self.close(code=4001)
             return
 
@@ -73,6 +74,7 @@ class CoreWebSocket(AsyncJsonWebsocketConsumer):
     async def receive_json(self, content, **kwargs):
         command = content.get("command")
         data = content.get("data",None)
+        print (data)
         command_handlers = {
             'task_list': self.handle_task_list,
             'move_a_task': self.handle_move_task,
@@ -86,6 +88,9 @@ class CoreWebSocket(AsyncJsonWebsocketConsumer):
 
             "edit_message": self.edit_message_handler,
 
+            # Crm WebSocket Commands
+            "customer_list":self.customer_list_handler,
+            "change_step_status":self.change_step_status_handler,
 
             # "send_extra":self.send_extra,
         }
@@ -100,6 +105,13 @@ class CoreWebSocket(AsyncJsonWebsocketConsumer):
                     self.project_group_name,
                     self.channel_name
                 )
+            if command == "customer_list":
+                group_crm_id = data.get("group_crm_id")
+                self.crm_group_name = f"{group_crm_id}_gp_group_crm"
+                await self.channel_layer.group_add(
+                    self.crm_group_name,
+                    self.channel_name
+                )
             await handler(data)
         else:
             await self.send_error("Invalid command")
@@ -111,6 +123,123 @@ class CoreWebSocket(AsyncJsonWebsocketConsumer):
             "message": message,
             "data": {}
         })
+
+    # Crm Customer Begin
+    async def change_step_status_handler(self,data):
+        group_crm_id = data.get("group_crm_id")
+
+        step_obj = await self._change_step_status(main_data=data)
+
+        event = {
+            'type': 'send_customer_list',
+            "group_crm_id":group_crm_id
+        }
+
+        await self.channel_layer.group_send(
+            f"{group_crm_id}_gp_group_crm",
+            event
+        )
+
+    @sync_to_async
+    def _change_step_status(self,main_data):
+
+        step = int(main_data['step'])
+        customer_obj = CustomerUser.objects.get(id=main_data['customer_id'])
+        step_obj = None
+        for step_item in customer_obj.label.label_step.steps.all():
+            if step_item.step == step:
+                step_obj = step_item
+
+        new_step_customer = CustomerStep.objects.create(
+            customer=customer_obj,
+            label=customer_obj.label,
+            step=step_obj
+        )
+        return new_step_customer
+
+    async def send_customer_list(self,event):
+        serializer_data = await self._customer_list_serializer(group_crm_id=event['group_crm_id'])
+        await self.send(json.dumps(
+            {
+                "data_type": "customer_list",
+                "data": serializer_data
+            }
+        ))
+    async def customer_list_handler(self,data):
+        group_crm_id=data.get("group_crm_id")
+        customer_data = await self._customer_list_serializer(group_crm_id=group_crm_id)
+
+        payload = {
+            'data_type': 'customer_list',
+            'data': customer_data,
+        }
+        await self.send_json(payload)
+    @sync_to_async
+    def _get_user_permission(self):
+        workspace= self.workspace_obj
+
+        if self.user == workspace.owner:
+            return True
+        workspace_member =WorkspaceMember.objects.get(user_account = self.user,workspace=workspace)
+        for permission in workspace_member.permissions.all():
+            if permission.permission_name == "crm":
+                if permission.permission_type == "manager":
+                    return True
+                else:
+                    return False
+    @sync_to_async
+    def _customer_list_serializer(self,group_crm_id):
+
+        user_permission = self._get_user_permission()
+        if user_permission:
+            customer_objs = CustomerUser.objects.filter(group_crm_id=group_crm_id, is_followed=False)
+        else:
+            customer_objs = CustomerUser.objects.filter(group_crm_id=group_crm_id, is_followed=False,
+                                                        user_account=self.user)
+        data_list = []
+
+        for customer_obj in customer_objs:
+            not_exists = True
+            try:
+                for data in data_list:
+                    if data['label_id'] == customer_obj.label.id:
+                        data['customer_list'].append(CustomerSmallSerializer(customer_obj).data)
+                        not_exists = False
+                        break
+                if not_exists:
+                    data_list.append({
+                        "label_id": customer_obj.label.id,
+                        "color": customer_obj.label.color,
+                        "title": customer_obj.label.title,
+                        "steps": LabelStepSerializer(customer_obj.label.label_step.steps.all(), many=True).data,
+                        "group_crm_id": group_crm_id,
+                        "customer_list": [CustomerSmallSerializer(customer_obj).data]
+                    })
+
+            except:
+                pass
+
+        label_objs = Label.objects.filter(group_crm_id=group_crm_id).order_by("-id")
+        for label in label_objs:
+            not_exists = True
+            for data in data_list:
+                if data['label_id'] == label.id:
+                    not_exists = False
+                    break
+            if not_exists:
+                data_list.append({
+
+                    "label_id": label.id,
+                    "color": label.color,
+                    "title": label.title,
+                    "group_crm_id": group_crm_id,
+                    "steps": LabelStepSerializer(label.label_step.steps.all(), many=True).data,
+                    "customer_list": []
+                })
+        data = sorted(data_list, key=lambda x: x["label_id"])
+        return data
+    #Crm Customer End
+
 
     # Project Task Begin
 
