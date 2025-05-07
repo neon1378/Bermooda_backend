@@ -26,6 +26,7 @@ class CoreWebSocket(JsonWebsocketConsumer):
     async def connect(self):
         self.user = self.scope["user"]
         if not self.user.is_authenticated:
+            print("no")
             await self.close(code=4001)
             return
 
