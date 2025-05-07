@@ -568,7 +568,7 @@ class CoreWebSocket(AsyncJsonWebsocketConsumer):
         event = {
             "type": "send_event_task_list",
 
-            "project_id": task.project.id
+            "project_id": project_id
         }
         project_group_name = f"{project_id}_gp_project"
         await self.channel_layer.group_send(
