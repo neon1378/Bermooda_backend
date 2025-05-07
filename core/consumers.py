@@ -618,11 +618,11 @@ class CoreWebSocket(AsyncJsonWebsocketConsumer):
             task_obj.save()
         return task
     async def handle_move_task(self, data):
-       # task_obj = await self._move_a_task_logic(data=data)
+        project_id = data.get("project_id")
         category = await sync_to_async(get_object_or_404)(
            CategoryProject,
            id=data['category_id']
-       )
+         )
         task = await sync_to_async(get_object_or_404)(Task, id=data['task_id'])
 
        # Update task category
@@ -639,7 +639,7 @@ class CoreWebSocket(AsyncJsonWebsocketConsumer):
             "type":"send_one_task",
             "task_id":data['task_id'],
         }
-        project_group_name = f"{task.project.id}_gp_project"
+        project_group_name = f"{project_id}_gp_project"
         await self.channel_layer.group_send(
             project_group_name,
             event
