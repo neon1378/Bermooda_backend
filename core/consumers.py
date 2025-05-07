@@ -59,6 +59,15 @@ class CoreWebSocket(AsyncJsonWebsocketConsumer):
             self.channel_name
         )
 
+    async def send_extra(self,data):
+        event = {
+            "type":"send_event_task_list",
+            "project_id":data.get("project_id"),
+        }
+        await self.channel_layer.group_send(
+            self.project_group_name,
+            event
+        )
     async def receive_json(self, content, **kwargs):
         command = content.get("command")
         data = content.get("data")
@@ -70,10 +79,19 @@ class CoreWebSocket(AsyncJsonWebsocketConsumer):
             # "read_all_messages": self.read_all_messages,
             # "create_a_message": self.create_a_message,
             # "edit_message": self.edit_message,
+            "send_extra":self.send_extra,
         }
         handler = command_handlers.get(command)
 
         if handler:
+            if command == "task_list":
+                project_id = data.get("project_id")
+                self.project_group_name = f"{project_id}_gp_project"
+
+                await self.channel_layer.group_add(
+                    self.project_group_name,
+                    self.channel_name
+                )
             await handler(data)
         else:
             await self.send_error("Invalid command")
@@ -89,12 +107,9 @@ class CoreWebSocket(AsyncJsonWebsocketConsumer):
     # Project Task Begin
     async def handle_task_list(self, data):
         project_id = data.get("project_id")
-        self.project_group_name = f"{project_id}_gp_project"
 
-        await self.channel_layer.group_add(
-            self.project_group_name,
-            self.channel_name
-        )
+
+
         """Handle task list refresh requests"""
         data = await self._main_serializer_data(project_id = project_id)
         await self.send_json({
@@ -146,6 +161,13 @@ class CoreWebSocket(AsyncJsonWebsocketConsumer):
                     break
         return task_list
 
+    async def send_event_task_list(self, event):
+        project_id = event['project_id']
+        """Handler for group send events"""
+        await self.send_json({
+            "data_type": "task_list",
+            "data": await self._main_serializer_data(project_id)
+        })
     @sync_to_async
     def _main_serializer_data(self,project_id):
         """Generate structured task data with categories more efficiently."""
