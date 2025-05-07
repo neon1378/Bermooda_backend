@@ -11,8 +11,8 @@ from ProjectManager.serializers import TaskSerializer,CheckListSerializer,Projec
 from UserManager.models import UserAccount
 from .widgets import  pagination
 
-from CrmCore.models import CustomerUser,GroupCrm,Label,CustomerStep
-from CrmCore.serializers import CustomerSmallSerializer,GroupCrmSerializer,LabelStepSerializer
+from CrmCore.models import CustomerUser,GroupCrm,Label,CustomerStep,GroupCrmMessage
+from CrmCore.serializers import CustomerSmallSerializer,GroupCrmSerializer,LabelStepSerializer,GroupCrmMessageSerializer
 
 class UploadProgressConsumer(AsyncWebsocketConsumer):
     async def connect(self):
@@ -91,7 +91,11 @@ class CoreWebSocket(AsyncJsonWebsocketConsumer):
             # Crm WebSocket Commands
             "customer_list":self.customer_list_handler,
             "change_step_status":self.change_step_status_handler,
-
+            "move_a_customer":self.move_a_customer_handler,
+            "change_is_followed":self.change_is_followed_handler,
+            "crm_read_all_messages":self.crm_read_all_messages_handler,
+            "crm_create_a_message":self.crm_create_a_message_handler,
+            "crm_edit_message":self.crm_edit_message_handler,
             # "send_extra":self.send_extra,
         }
         handler = command_handlers.get(command)
@@ -238,6 +242,194 @@ class CoreWebSocket(AsyncJsonWebsocketConsumer):
                 })
         data = sorted(data_list, key=lambda x: x["label_id"])
         return data
+
+    async def move_a_customer_handler(self,data):
+        group_crm_id = data.get("group_crm_id")
+        customer_obj = await self._move_a_customer(main_data=data)
+
+        event = {
+            'type': 'send_customer_list',
+            "group_crm_id":group_crm_id
+        }
+
+        await self.channel_layer.group_send(
+            f"{group_crm_id}_gp_group_crm",
+            event
+        )
+
+
+
+    @sync_to_async
+    def _move_a_customer(self,main_data):
+
+        customer_obj = CustomerUser.objects.get(id=main_data['customer_id'])
+
+        label_obj = Label.objects.get(id=main_data['label_id'])
+        customer_obj.label = label_obj
+
+        customer_obj.save()
+        for order_data in main_data['customer_orders']:
+            customer_order = CustomerUser.objects.get(id=order_data['customer_id'])
+            customer_order.order = order_data['order']
+            customer_order.save()
+
+        return customer_obj
+
+    async def change_is_followed_handler(self,data):
+        group_crm_id = data.get("group_crm_id")
+        customer_obj = await self._change_customer_is_followed(main_data=data)
+        event = {
+            'type': 'send_customer_list',
+            "group_crm_id":group_crm_id
+        }
+
+        await self.channel_layer.group_send(
+            f"{group_crm_id}_gp_group_crm",
+            event
+        )
+
+
+    @sync_to_async
+    def _change_customer_is_followed(self, main_data):
+        customer_id = main_data['customer_id']
+        customer_obj = get_object_or_404(CustomerUser, id=customer_id)
+        customer_obj.is_followed = main_data['is_followed']
+        customer_obj.save()
+        return customer_obj
+    #crm Group Message Begin
+
+
+
+    @sync_to_async
+    def _crm_all_message_serializer(self,group_crm_id,page_number,per_page_count=None):
+        message_objs = GroupCrmMessage.objects.filter(group_crm_id=group_crm_id).order_by("-id")
+        if per_page_count:
+            pagination_data = pagination(
+                query_set=message_objs,
+                page_number=page_number,
+                per_page_count=per_page_count
+            )
+        else:
+            pagination_data = pagination(
+                query_set=message_objs,
+                page_number=page_number,
+
+            )
+        pagination_data["list"] = GroupCrmMessageSerializer(pagination_data["list"],many=True,context={"user":self.user}).data
+        pagination_data['group_crm_id'] = group_crm_id
+        return pagination_data
+
+    async def crm_read_all_messages_handler(self,data):
+        group_crm_id = data.get("group_crm_id")
+        try:
+            main_data = data.get("data",None)
+            page_number= main_data.get("page_number",1)
+            per_page_count = main_data.get("per_page_count",None)
+        except:
+            per_page_count = None
+            page_number = 1
+        message_data = await self._crm_all_message_serializer(
+            page_number=page_number,
+            group_crm_id=group_crm_id,
+            per_page_count=per_page_count
+        )
+        await self.send(json.dumps({
+            "data_type":"crm_all_messages",
+            "data":message_data
+        }))
+
+    @sync_to_async
+    def _crm_create_a_message(self, data):
+        group_crm_id = data.get("group_crm_id")
+
+
+        data['creator_id'] = self.user.id
+        serializer_data = GroupCrmMessageSerializer(data=data)
+
+        if serializer_data.is_valid():
+            message_obj = serializer_data.save()
+            return {
+                "status": True,
+                "data": {
+                    "message_id": message_obj.id
+                }
+            }
+
+        return {
+            "status": False,
+            "data": serializer_data.errors
+        }
+
+    async def crm_create_a_message_handler(self,data):
+        group_crm_id = data.get("group_crm_id")
+        message_data = await self._crm_create_a_message(data=data)
+
+        if message_data['status']:
+
+            event = {
+                'type': 'crm_send_a_message',
+                "message_id": message_data['data']['message_id']
+            }
+
+            await self.channel_layer.group_send(
+                f"{group_crm_id}_gp_group_crm",
+                event
+            )
+
+
+        else:
+            await self.send_json(
+                {
+                    "data_type": "Validation Error",
+                    "data": message_data['data']
+                }
+            )
+
+    @sync_to_async
+    def _crm_one_message_serializer(self,message_id):
+        message_obj = get_object_or_404(GroupCrmMessage,id=message_id)
+        serializer_data = GroupCrmMessageSerializer(message_obj,context={"user":self.user})
+        return serializer_data.data
+
+    async def crm_send_a_message(self,event):
+
+        message_data = await self._crm_one_message_serializer(message_id=event['message_id'])
+        await self.send_json(
+            {
+                "data_type": "crm_send_a_message",
+                "data": message_data
+
+            }
+        )
+
+    @sync_to_async
+    def _crm_edit_a_message(self,data):
+
+        message_obj = get_object_or_404(GroupCrmMessage,id=data['message_id'])
+        message_obj.body = data['body']
+        message_obj.save()
+        return {
+            "status":True,
+            "data":{
+                "message_id":message_obj.id
+            }
+        }
+    async def crm_edit_message_handler(self,data):
+        group_crm_id = data.get("group_crm_id")
+        message_data = await self._crm_edit_a_message(data=data)
+        event = {
+            'type': 'crm_send_a_message',
+            "message_id": message_data['data']['message_id']
+        }
+
+        await self.channel_layer.group_send(
+            f"{group_crm_id}_gp_group_crm",
+            event
+        )
+
+    # Crm Group Message  End
+
+
     #Crm Customer End
 
 
