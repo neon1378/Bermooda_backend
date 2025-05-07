@@ -555,6 +555,7 @@ class CoreWebSocket(AsyncJsonWebsocketConsumer):
 
     #Project Message End
     async def handle_task_status(self, data):
+        project_id = data.get("project_id")
         """Handle main task status changes"""
         task = await sync_to_async(get_object_or_404)(Task, id=data['task_id'])
 
@@ -569,14 +570,14 @@ class CoreWebSocket(AsyncJsonWebsocketConsumer):
 
             "project_id": task.project.id
         }
-        project_group_name = f"{task.project.id}_gp_project"
+        project_group_name = f"{project_id}_gp_project"
         await self.channel_layer.group_send(
             project_group_name,
             event
         )
     async def handle_subtask_status(self, data):
         """Handle subtask status changes"""
-
+        project_id =data.get("project_id")
         # Fetch subtask synchronously
         subtask = await sync_to_async(
             lambda: CheckList.objects.select_related("responsible_for_doing").get(id=data['sub_task_id']),
@@ -596,7 +597,7 @@ class CoreWebSocket(AsyncJsonWebsocketConsumer):
             "type": "send_one_task",
             "task_id": task_obj.id,
         }
-        project_group_name = f"{task_obj.project.id}_gp_project"
+        project_group_name = f"{project_id}_gp_project"
         await self.channel_layer.group_send(
             project_group_name,
             event
