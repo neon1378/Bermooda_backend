@@ -8,7 +8,7 @@ from WorkSpaceManager.models import  WorkSpace,WorkspaceMember,WorkSpacePermissi
 from asgiref.sync import sync_to_async
 from ProjectManager.serializers import TaskSerializer,CheckListSerializer
 from UserManager.models import UserAccount
-from external_api import workspace_obj
+
 
 
 class UploadProgressConsumer(AsyncWebsocketConsumer):
