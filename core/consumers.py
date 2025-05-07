@@ -18,7 +18,7 @@ class UploadProgressConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         # Retrieve upload_id from the URL route.
         self.upload_id = self.scope['url_route']['kwargs']['upload_id']
-        print(self.upload_id)
+
         await self.channel_layer.group_add(self.upload_id, self.channel_name)
         await self.accept()
 
@@ -74,7 +74,7 @@ class CoreWebSocket(AsyncJsonWebsocketConsumer):
     async def receive_json(self, content, **kwargs):
         command = content.get("command")
         data = content.get("data",None)
-        print (data,"@!#!@3")
+
         command_handlers = {
             'task_list': self.handle_task_list,
             'move_a_task': self.handle_move_task,
@@ -727,7 +727,7 @@ class CoreWebSocket(AsyncJsonWebsocketConsumer):
 
         # Serialize tasks, leveraging pre-fetched related data
         serializer_data = TaskSerializer(task_objs, many=True).data
-        print(serializer_data)
+
 
         # Organize tasks by category using serializer data
         categories = {}
