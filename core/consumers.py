@@ -613,7 +613,7 @@ class CoreWebSocket(AsyncJsonWebsocketConsumer):
         task.save()
         for order_data in orders_task:
 
-            task_obj = Task.objects.get(id=orders_task['task_id'])
+            task_obj = Task.objects.get(id=order_data['task_id'])
             task_obj.order= order_data['order']
             task_obj.save()
         return task
