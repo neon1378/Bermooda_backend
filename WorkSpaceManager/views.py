@@ -738,7 +738,7 @@ class WorkSpaceMemberManger(APIView):
         })
 
     def post(self,request):
-
+        print(request.data)
         request.data['workspace_id'] = request.user.current_workspace_id
         more_information = request.data.get("more_information",False)
         workspace_obj = WorkSpace.objects.get(id=request.user.current_workspace_id)
@@ -751,12 +751,12 @@ class WorkSpaceMemberManger(APIView):
         if serializer_data.is_valid():
             new_member = serializer_data.save()
 
-
+            print(serializer_data.data)
 
             return Response(status=status.HTTP_201_CREATED,data={
                     "status":True,
                     "message":"کاربر با موفقیت اضافه شد",
-                    "data":WorkSpaceMemberFullDataSerializer(new_member).data
+                    "data":serializer_data.data
             })
         return Response(status=status.HTTP_400_BAD_REQUEST,data={
                 "status":False,
