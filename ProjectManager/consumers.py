@@ -286,7 +286,7 @@ class ProjectTask(AsyncWebsocketConsumer):
             Prefetch('check_list',
                      queryset=CheckList.objects.select_related('responsible_for_doing'))
         )
-        print(self._has_admin_access())
+
         if self._has_admin_access():
             return base_qs
         task_list = []

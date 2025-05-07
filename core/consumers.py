@@ -77,9 +77,13 @@ class CoreWebSocket(AsyncJsonWebsocketConsumer):
             'task_list': self.handle_task_list,
             'move_a_task': self.handle_move_task,
             'change_sub_task_status': self.handle_subtask_status,
+
             'change_task_status': self.handle_task_status,
+
             "read_all_messages": self.read_all_messages,
+
             "create_a_message": self.create_a_message_handler,
+
             "edit_message": self.edit_message_handler,
 
 
@@ -145,10 +149,10 @@ class CoreWebSocket(AsyncJsonWebsocketConsumer):
     @sync_to_async
     def _create_a_message(self,data):
         project_id = data.get("project_id")
-        main_data = data['data']
-        main_data['project_id'] = project_id
-        main_data['creator_id'] = self.user.id
-        serializer_data =ProjectMessageSerializer(data=main_data,context={"user":self.user})
+
+
+        data['creator_id'] = self.user.id
+        serializer_data =ProjectMessageSerializer(data=data,context={"user":self.user})
         if serializer_data.is_valid():
             message_obj = serializer_data.save()
             return {
