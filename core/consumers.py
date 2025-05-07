@@ -74,7 +74,7 @@ class CoreWebSocket(AsyncJsonWebsocketConsumer):
     async def receive_json(self, content, **kwargs):
         command = content.get("command")
         data = content.get("data",None)
-        print (data)
+        print (data,"@!#!@3")
         command_handlers = {
             'task_list': self.handle_task_list,
             'move_a_task': self.handle_move_task,
