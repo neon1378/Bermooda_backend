@@ -618,14 +618,28 @@ class CoreWebSocket(AsyncJsonWebsocketConsumer):
             task_obj.save()
         return task
     async def handle_move_task(self, data):
-        task_obj = await self._move_a_task_logic(data=data)
+       # task_obj = await self._move_a_task_logic(data=data)
+        category = await sync_to_async(get_object_or_404)(
+           CategoryProject,
+           id=data['category_id']
+       )
+        task = await sync_to_async(get_object_or_404)(Task, id=data['task_id'])
 
+       # Update task category
+        task.category_task = category
+        await sync_to_async(task.save)()
+
+       # Update task orders
+        for order_data in data['orders_task']:
+           t = await sync_to_async(Task.objects.get)(id=order_data['task_id'])
+           t.order = order_data['order']
+           await sync_to_async(t.save)()
 
         event = {
             "type":"send_one_task",
             "task_id":data['task_id'],
         }
-        project_group_name = f"{task_obj.project.id}_gp_project"
+        project_group_name = f"{task.project.id}_gp_project"
         await self.channel_layer.group_send(
             project_group_name,
             event
