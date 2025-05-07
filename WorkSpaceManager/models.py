@@ -274,7 +274,7 @@ class WorkspaceMember(SoftDeleteModel):
     emergency_relationship = models.CharField(max_length=30,null=True ,blank=True)
     #new fields begin
     employment_type = models.CharField(max_length=30,choices=EMPLOYMENT_TYPE,null=True,blank=True)
-    personal_code = models.CharField(max_length=10,null=True,unique=True,blank=True)
+    personal_code = models.CharField(max_length=20,null=True,unique=True,blank=True)
 
     salary_type = models.CharField(max_length=30,choices=SALARY_TYPE,null=True,blank=True)
 
