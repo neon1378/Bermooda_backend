@@ -120,8 +120,7 @@ class CoreWebSocket(AsyncJsonWebsocketConsumer):
     @sync_to_async
     def _send_new_message(self,data):
         text =  data.get("text")
-        if not text or not hasattr(self, "group_id"):
-            return
+
         serializer_data = TextMessageSerializer(data={
             "owner_id": self.user.id,
             "group_id": self.group_id,
