@@ -120,10 +120,11 @@ class CoreWebSocket(AsyncJsonWebsocketConsumer):
     @sync_to_async
     def _send_new_message(self,data):
         text =  data.get("text")
-
+        print(data)
+        group_id = data.get("group_id")
         serializer_data = TextMessageSerializer(data={
             "owner_id": self.user.id,
-            "group_id": self.group_id,
+            "group_id": group_id,
             "text": text,
         })
         if serializer_data.is_valid():
