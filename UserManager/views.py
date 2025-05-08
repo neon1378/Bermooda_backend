@@ -554,6 +554,7 @@ def change_user_password(request):
     data= request.data
     password = data['password']
     confirm_password = data['confirm_password']
+
     if password != confirm_password:
         return Response(status=status.HTTP_400_BAD_REQUEST,data={
             "status":False,
@@ -1477,9 +1478,16 @@ def change_user_profile_password(request):
     confirm_password = data.get("confirm_password")
 
     if current_password:
+
+
         if check_password(current_password,request.user.password):
             if password == confirm_password:
-
+                if current_password == password:
+                    return Response(status=status.HTTP_400_BAD_REQUEST,data={
+                        "status":False,
+                        "message":"رمز عبور فعلی شما با رمز عبور جدید شما یکسان هستند",
+                        "data":{}
+                    })
                 request.user.set_password(password)
                 request.user.save()
                 return Response(status=status.HTTP_202_ACCEPTED,data={
