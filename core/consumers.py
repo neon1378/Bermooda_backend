@@ -108,7 +108,7 @@ class CoreWebSocket(AsyncJsonWebsocketConsumer):
 
 
         return serializer_data.data
-    async def get_group_messages_handler(self):
+    async def get_group_messages_handler(self,data):
 
         data = await  self._group_message_serialize()
 
@@ -416,6 +416,7 @@ class CoreWebSocket(AsyncJsonWebsocketConsumer):
             "crm_edit_message":self.crm_edit_message_handler,
             # "send_extra":self.send_extra,
             # < < < begin workspace 1 to 1 chat command > > > #
+
             "get_group_messages":self.get_group_messages_handler,
 
             "new_message":self.new_message_handler,
