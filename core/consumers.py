@@ -120,25 +120,40 @@ class CoreWebSocket(AsyncJsonWebsocketConsumer):
     @sync_to_async
     def _send_new_message(self,data):
         text =  data.get("text")
-        print(data)
+
         group_id = data.get("group_id")
-        serializer_data = TextMessageSerializer(data={
-            "owner_id": self.user.id,
-            "group_id": group_id,
-            "text": text,
-        })
-        if serializer_data.is_valid():
-            message_obj = serializer_data.save()
-            return {
+
+
+
+        message_obj = TextMessage.objects.create(
+            owner_id=self.user.id,
+            group_id=group_id,
+            text=text
+        )
+        return {
                 "status":True,
                 "data":{
                     "message_id":message_obj.id,
                 }
             }
-        return {
-            "status":False,
-            "data":serializer_data.errors
-        }
+        # serializer_data = TextMessageSerializer(data={
+        #     "owner_id": self.user.id,
+        #     "group_id": group_id,
+        #     "text": text,
+        # })
+
+        # if serializer_data.is_valid():
+        #     message_obj = serializer_data.save()
+        #     return {
+        #         "status":True,
+        #         "data":{
+        #             "message_id":message_obj.id,
+        #         }
+        #     }
+        # return {
+        #     "status":False,
+        #     "data":serializer_data.errors
+        # }
     async def new_message_handler(self, data):
         group_id = data.get("group_id")
         group_name = f"group_message{group_id}"
@@ -357,6 +372,7 @@ class CoreWebSocket(AsyncJsonWebsocketConsumer):
         )
         self.workspace_obj = await self._get_workspace_obj()
         unread_message_count = await self._get_all_group_unread_messages()
+        await self.change_user_online(status=True)
         await self.send_json(
             {
                 "data_type": "all_group_message_unread",
@@ -372,6 +388,7 @@ class CoreWebSocket(AsyncJsonWebsocketConsumer):
         workspace_obj = WorkSpace.objects.get(id=user_account.current_workspace_id)
         return workspace_obj
     async def disconnect(self, close_code):
+        await self.change_user_online(status=False)
         await self.channel_layer.group_discard(
             self.user_group_name,
             self.channel_name
