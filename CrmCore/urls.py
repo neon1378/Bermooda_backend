@@ -10,8 +10,7 @@ urlpatterns = [
     path("LabelMangaer",views.LabelMangaer.as_view()),
 
 
-    path("CustomerUserManager",views.CustomerUserManager.as_view()),
-    path("CustomerUserManager/<int:customer_id>",views.CustomerUserManager.as_view()),
+
     path("ReportManager/<int:report_id>",views.ReportManager.as_view()),
     path("ReportManager",views.ReportManager.as_view()),
 

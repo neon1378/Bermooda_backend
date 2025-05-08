@@ -176,7 +176,7 @@ class CategoryManager(APIView):
 
 class LabelMangaer(APIView):
     permission_classes=[IsAuthenticated]
-
+    channel_layer = get_channel_layer()
     def get(self,request,label_id=None):
         if label_id:
             label_obj = get_object_or_404(Label,id=label_id)
@@ -204,11 +204,14 @@ class LabelMangaer(APIView):
         if serializer_data.is_valid():
             label_obj = serializer_data.save()
 
-            channel_layer = get_channel_layer()
+
+
             event = {
-                "type": "send_data"
+                'type': 'send_customer_list',
+                "group_crm_id": label_obj.group_crm.id
             }
-            async_to_sync(channel_layer.group_send)(f"{label_obj.group_crm.id}_crm", event)
+
+            async_to_sync(self.channel_layer.group_send)(f"{label_obj.group_crm.id}_gp_group_crm", event)
             return Response(status=status.HTTP_201_CREATED,data={
                 "status":True,
                 "message":"با موفقیت ثبت شد",
@@ -226,11 +229,14 @@ class LabelMangaer(APIView):
         serializer_data =LabelSerializer(data=request.data,instance=label_obj)
         if serializer_data.is_valid():
             serializer_data.save()
-            channel_layer = get_channel_layer()
+
+
             event = {
-                "type": "send_data"
+                'type': 'send_customer_list',
+                "group_crm_id": label_obj.group_crm.id
             }
-            async_to_sync(channel_layer.group_send)(f"{label_obj.group_crm.id}_crm", event)
+
+            async_to_sync(self.channel_layer.group_send)(f"{label_obj.group_crm.id}_gp_group_crm", event)
             return Response(status=status.HTTP_200_OK,data={
                 "status":True,
                 "message":"با موفقیت بروزرسانی شد",
@@ -252,157 +258,17 @@ class LabelMangaer(APIView):
             })
         group_crm_id = label_obj.group_crm.id
         label_obj.delete()
-        channel_layer = get_channel_layer()
+
+
         event = {
-            "type": "send_data"
+            'type': 'send_customer_list',
+            "group_crm_id": group_crm_id
         }
-        async_to_sync(channel_layer.group_send)(f"{group_crm_id}_crm", event)
+
+        async_to_sync(self.channel_layer.group_send)(f"{group_crm_id}_gp_group_crm", event)
         return Response(status=status.HTTP_204_NO_CONTENT)
     
 
-
-class CustomerUserManager(APIView):
-    permission_classes=[IsAuthenticated]
-    def get(self, request, customer_id=None):
-        group_id = request.GET.get("group_id")
-        workspace_id = request.user.current_workspace_id
-        label_id = request.GET.get("label_id", None)
-
-        group_obj = get_object_or_404(GroupCrm, id=group_id)
-        workspace_obj = get_object_or_404(WorkSpace, id=workspace_id)
-
-        # Handle single customer case
-        if customer_id:
-            customer_obj = get_object_or_404(CustomerUser, id=customer_id)
-            serializer_data = CustomerSerializer(customer_obj).data
-            try:
-                serializer_data['label']={
-                    "title":customer_obj.label.title,
-                    "id":customer_obj.label.id,
-                    "color":customer_obj.label.color
-                }
-            except:
-                serializer_data['label']={}
-            # Add group members 
-            serializer_data['users'] = [
-                {
-                    "id": member.id,
-                    "fullname": member.full_name(),
-                    "selected": customer_obj.user_account == member,
-                }
-                for member in group_obj.members.all()
-            ]
-            return Response(
-                status=status.HTTP_200_OK,
-                data={"status": True, "message": "موفق", "data": serializer_data},
-            )
-
-        # Retrieve customers based on label or group
-        if request.user == workspace_obj.owner:
-            if label_id:
-                label_obj = get_object_or_404(Label, id=label_id)
-                customers = label_obj.customer_label.all()
-            else:
-                customers = group_obj.customer_group.all()
-        else:
-            if label_id:
-                label_obj = get_object_or_404(Label, id=label_id)
-                customers = [
-                    customer
-                    for customer in label_obj.customer_label.all()
-                    if customer.user_account == request.user
-                ]
-            else:
-                customers = CustomerUser.objects.filter(user_account=request.user)
-
-        # Serialize customers
-        serializer_data = CustomerSerializer(customers, many=True).data
-        for item in serializer_data:
-            customer_obj = CustomerUser.objects.get(id=item['id'])
-            try:
-                item['label']={
-                    "title":customer_obj.label.title,
-                    "id":customer_obj.label.id,
-                    "color":customer_obj.label.color
-                }
-            except:
-                item['label']={}
-        return Response(
-            status=status.HTTP_200_OK,
-            data={"status": True, "message": "موفق", "data": serializer_data},
-        )
-
-    def post (self,request):
-        data= request.data
-
-        workspace_id = request.user.current_workspace_id
-
-        group_obj =get_object_or_404(GroupCrm,id=data.pop("group_id",None))
-
-        workspace_obj = get_object_or_404(WorkSpace,id=workspace_id)
-        serializer_data = CustomerSerializer(data=request.data)
-        if serializer_data.is_valid():
-            new_customer_obj = CustomerSerializer.create(validated_data=request.data)
-            new_customer_obj.user_account_id=request.user.id
-            new_customer_obj.save()
-            main_serializer_data = CustomerSerializer(new_customer_obj)
-            new_customer_obj.workspace =workspace_obj
-            new_customer_obj.group_crm =group_obj
-            new_customer_obj.save()
-            create_reminde_a_customer(customer=new_customer_obj)
-
-            channel_layer = get_channel_layer()
-            event = {
-                "type": "send_data"
-            }
-            async_to_sync(channel_layer.group_send)(f"{new_customer_obj.group_crm.id}_crm", event)
-            return Response(status=status.HTTP_200_OK,data={
-                "status":True,
-                "message":"موفق",
-                "data":main_serializer_data.data
-            })
-        return Response(status=status.HTTP_400_BAD_REQUEST,data=serializer_data.errors)
-        
-    def put (self,request,customer_id):
-        data= request.data
-
-        customer_obj = get_object_or_404(CustomerUser,id=customer_id)
-        category =data.get("category",None)
-
-      
-        serializer = CustomerSerializer(customer_obj, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-
-            if category or category!={}:
-                customer_obj.category = get_object_or_404(Category, id=category['id'])
-
-            customer_obj.save()
-            channel_layer = get_channel_layer()
-            event = {
-                "type": "send_data"
-            }
-            async_to_sync(channel_layer.group_send)(f"{customer_obj.group_crm.id}_crm", event)
-            create_reminde_a_customer(customer=customer_obj)
-            return Response( status=status.HTTP_200_OK,data={
-                "status":True,
-                "message":"با موفقیت بروزرسانی شد",
-                "data":{}
-            })
-        return Response(data={
-            "status":False,
-            "data":serializer.errors
-        }, status=status.HTTP_400_BAD_REQUEST)
-    def delete(self,request,customer_id):
-        customer_obj = get_object_or_404(CustomerUser,id=customer_id)
-        group_crm_id = customer_obj.group_crm.id
-        customer_obj.delete()
-        channel_layer = get_channel_layer()
-        event = {
-            "type": "send_data"
-        }
-        async_to_sync(channel_layer.group_send)(f"{group_crm_id}_crm", event)
-        return Response (status=status.HTTP_204_NO_CONTENT)
 
 
 class ReportManager(APIView):
@@ -1040,7 +906,9 @@ def exist_member_in_crm(request,group_id):
 
 
 class CustomerUserView(APIView):
+
     permission_classes  = [IsAuthenticated]
+    channel_layer = get_channel_layer()
     def get(self,request,customer_id=None):
         if customer_id:
             custommer_obj= get_object_or_404(CustomerUser,id=customer_id)
@@ -1073,11 +941,14 @@ class CustomerUserView(APIView):
             customer_obj.main_date_time_to_remember = persian_to_gregorian(customer_obj.date_time_to_remember)
             customer_obj.save()
             create_reminde_a_customer(customer=customer_obj)
-            channel_layer = get_channel_layer()
+
+
             event = {
-                "type": "send_data"
+                'type': 'send_customer_list',
+                "group_crm_id": customer_obj.group_crm.id
             }
-            async_to_sync(channel_layer.group_send)(f"{customer_obj.group_crm.id}_crm", event)
+
+            async_to_sync(self.channel_layer.group_send)(f"{customer_obj.group_crm.id}_gp_group_crm", event)
             return Response(status=status.HTTP_201_CREATED,data={
                 "status":True,
                 "message":"مشتری با موفقیت ثبت شد",
@@ -1100,11 +971,15 @@ class CustomerUserView(APIView):
             updated_customer =serializer_data.save()
             updated_customer.main_date_time_to_remember = persian_to_gregorian(updated_customer.date_time_to_remember)
             updated_customer.save()
-            channel_layer = get_channel_layer()
+
+
+
             event = {
-                "type": "send_data"
+                'type': 'send_customer_list',
+                "group_crm_id": customer_obj.group_crm.id
             }
-            async_to_sync(channel_layer.group_send)(f"{customer_obj.group_crm.id}_crm", event)
+
+            async_to_sync(self.channel_layer.group_send)(f"{customer_obj.group_crm.id}_gp_group_crm", event)
             create_reminde_a_customer(customer=updated_customer)
             return Response(status=status.HTTP_201_CREATED, data={
                 "status": True,
@@ -1121,11 +996,14 @@ class CustomerUserView(APIView):
         customer_obj = get_object_or_404(CustomerUser, id=customer_id)
         group_crm_id = customer_obj.group_crm.id
         customer_obj.delete()
-        channel_layer = get_channel_layer()
+
+
         event = {
-            "type": "send_data"
+            'type': 'send_customer_list',
+            "group_crm_id": group_crm_id
         }
-        async_to_sync(channel_layer.group_send)(f"{group_crm_id}_crm", event)
+
+        async_to_sync(self.channel_layer.group_send)(f"{group_crm_id}_gp_group_crm", event)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
@@ -1755,10 +1633,13 @@ def resell_a_customer(request,customer_id):
     customer_obj.is_followed = False
     customer_obj.save()
     channel_layer = get_channel_layer()
+
     event = {
-        "type": "send_data"
-    }
-    async_to_sync(channel_layer.group_send)(f"{customer_obj.group_crm.id}_crm", event)
+            'type': 'send_customer_list',
+            "group_crm_id": customer_obj.group_crm.id
+        }
+
+    async_to_sync(channel_layer.group_send)(f"{customer_obj.group_crm.id}_gp_group_crm", event)
     serializer_data = CustomerSmallSerializer(customer_obj)
     return Response(status=status.HTTP_200_OK,data={
         "status":True,
@@ -1785,10 +1666,13 @@ def change_customer_step(request,customer_id):
         step=step_obj
     )
     channel_layer = get_channel_layer()
+
     event = {
-        "type": "send_data"
-    }
-    async_to_sync(channel_layer.group_send)(f"{customer_obj.group_crm.id}_crm", event)
+            'type': 'send_customer_list',
+            "group_crm_id": customer_obj.group_crm.id
+        }
+
+    async_to_sync(channel_layer.group_send)(f"{customer_obj.group_crm.id}_gp_group_crm", event)
     serializer_data = CustomerSmallSerializer(customer_obj)
     return Response(status=status.HTTP_200_OK,data={
         "status":True,
