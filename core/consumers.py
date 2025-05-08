@@ -1,5 +1,7 @@
 # consumers.py
 import json
+
+from django.core.paginator import Paginator
 from django.db.models import Prefetch
 from django.shortcuts import get_object_or_404
 from channels.generic.websocket import AsyncWebsocketConsumer,AsyncJsonWebsocketConsumer
@@ -10,32 +12,335 @@ from asgiref.sync import sync_to_async
 from ProjectManager.serializers import TaskSerializer,CheckListSerializer,ProjectMessageSerializer
 from UserManager.models import UserAccount
 from .widgets import  pagination
-
+from django.utils.timezone import is_naive, make_aware, get_current_timezone
+import pytz
+from django.utils.timezone import make_aware
 from CrmCore.models import CustomerUser,GroupCrm,Label,CustomerStep,GroupCrmMessage
 from CrmCore.serializers import CustomerSmallSerializer,GroupCrmSerializer,LabelStepSerializer,GroupCrmMessageSerializer
-
-class UploadProgressConsumer(AsyncWebsocketConsumer):
-    async def connect(self):
-        # Retrieve upload_id from the URL route.
-        self.upload_id = self.scope['url_route']['kwargs']['upload_id']
-
-        await self.channel_layer.group_add(self.upload_id, self.channel_name)
-        await self.accept()
-
-    async def disconnect(self, close_code):
-        await self.channel_layer.group_discard(self.upload_id, self.channel_name)
-
-    async def upload_progress(self, event):
-        # Send the progress update to the WebSocket client.
-        progress = event['progress']
-        await self.send(text_data=json.dumps({
-            "data_type":"progress_status",
-            "progress_percentage":progress
-        }))
-
+from WorkSpaceChat.models import *
+from WorkSpaceChat.serializers import *
+# class UploadProgressConsumer(AsyncWebsocketConsumer):
+#     async def connect(self):
+#         # Retrieve upload_id from the URL route.
+#         self.upload_id = self.scope['url_route']['kwargs']['upload_id']
+#
+#         await self.channel_layer.group_add(self.upload_id, self.channel_name)
+#         await self.accept()
+#
+#     async def disconnect(self, close_code):
+#         await self.channel_layer.group_discard(self.upload_id, self.channel_name)
+#
+#     async def upload_progress(self, event):
+#         # Send the progress update to the WebSocket client.
+#         progress = event['progress']
+#         await self.send(text_data=json.dumps({
+#             "data_type":"progress_status",
+#             "progress_percentage":progress
+#         }))
+#
 
 
 class CoreWebSocket(AsyncJsonWebsocketConsumer):
+    """
+    start the workspace 1 to 1 chat
+
+    """
+    # change user is_online
+    @sync_to_async
+    def change_user_online(self,status):
+
+        user= UserAccount.objects.get(id=self.user.id)
+        user.is_online=status
+        user.save()
+
+
+    @sync_to_async
+    def _get_all_group_unread_messages(self):
+        groups = GroupMessage.objects.filter(members=self.user,workspace= self.workspace_obj).only('id')
+        return sum(group.unread_messages(user_id=self.user.id) for group in groups)
+
+
+    @sync_to_async
+    def _group_message_serialize(self):
+
+        group_messages = GroupMessage.objects.filter(
+            workspace=self.workspace_obj
+        )
+        data_list =[]
+        for gp in group_messages:
+
+            if self.user in gp.members.all():
+
+                data_list.append(gp)
+
+        def get_sort_key(gp):
+            last_msg = gp.last_message()
+            tehran_tz = pytz.timezone("Asia/Tehran")  # Explicit Tehran timezone
+
+            if last_msg:
+                created_at = last_msg.created_at
+
+                # Ensure the datetime is timezone-aware
+                if is_naive(created_at):
+                    created_at = make_aware(created_at, timezone=tehran_tz)
+                else:
+                    created_at = created_at.astimezone(tehran_tz)  # Convert to Tehran time
+
+                return created_at
+
+            # Ensure datetime.min is also aware of Tehran timezone
+            return make_aware(datetime.min, timezone=tehran_tz)
+
+        data_list.sort(key=get_sort_key, reverse=True)
+
+        serializer_data = GroupSerializer(data_list,many=True,context={'user': self.user})
+
+        for group in serializer_data.data:
+            for member in group.get("members", []):
+
+                if member['id'] != self.user.id:
+                    group['fullname'] = member['fullname']
+
+                    group['avatar_url'] = member['avatar_url']
+                    group['is_online'] = member['is_online']
+                member["self"] = member["id"] == self.user
+            group.pop("members")
+
+
+        return serializer_data.data
+    async def get_group_messages_handler(self):
+
+        data = await  self._group_message_serialize()
+
+        await self.send_json(
+            {"data_type": "group_messages", "data": data}
+        )
+
+
+    @sync_to_async
+    def _send_new_message(self,data):
+        text =  data.get("text")
+        if not text or not hasattr(self, "group_id"):
+            return
+        serializer_data = TextMessageSerializer(data={
+            "owner_id": self.user.id,
+            "group_id": self.group_id,
+            "text": text,
+        })
+        if serializer_data.is_valid():
+            message_obj = serializer_data.save()
+            return {
+                "status":True,
+                "data":{
+                    "message_id":message_obj.id,
+                }
+            }
+        return {
+            "status":False,
+            "data":serializer_data.errors
+        }
+    async def new_message_handler(self, data):
+        group_id = data.get("group_id")
+        group_name = f"group_message{group_id}"
+        new_message = await self._send_new_message(data=data)
+        if new_message['status']:
+
+
+
+            event = {
+                "type": "send_group_message",
+                "message_id": new_message["data"]["message_id"],
+                "owner_id": self.user.id,
+            }
+
+            await self.channel_layer.group_send(group_name, event)
+
+            event = {
+                "type":"send_groups"
+            }
+
+            await self.channel_layer.group_send(group_name, event)
+
+            event = {
+                "type":"send_all_unread_messages"
+            }
+            await self.channel_layer.group_send(group_name, event)
+
+        else:
+            await self.send_json(
+                {"data_type": "error", "data": new_message['data']}
+            )
+
+    async def send_all_unread_messages(self,event):
+        message_count = await self._get_all_group_unread_messages()
+        await self.send_json(
+        {
+                "data_type": "all_group_message_unread",
+                "data": {
+                    "message_count": message_count
+                }
+            }
+        )
+
+    @sync_to_async
+    def _new_message_check_read(self,event):
+        message_obj =  TextMessage.objects.get(id=event["message_id"])
+        if not message_obj.owner == self.user:
+            message_obj.is_read = True
+            message_obj.save()
+        serializer_data =  TextMessageSerializer(message_obj).data
+        serializer_data["self"] = event["owner_id"] == self.user.id
+        return serializer_data
+
+    async def send_group_message(self, event):
+        message_data = await  self._new_message_check_read(event=event)
+
+        await self.send_json(
+            {"data_type": "new_message", "data": message_data}
+        )
+
+    async def send_groups(self,event):
+        group_data = await self._group_message_serialize()
+
+        await self.send_json(
+            {"data_type": "group_messages", "data": group_data}
+        )
+    async def get_unread_messages_handler(self,data):
+
+        await self.channel_layer.group_send(self.user_group_name, {"type": "send_all_unread_messages"})
+
+    @sync_to_async
+    def _get_group_message_list(self,page_number,group_id):
+        group_obj = GroupMessage.objects.get(id= group_id)
+        read_messages = group_obj.group_text_messages.filter(is_read =False)
+        message_count = group_obj.group_text_messages.all().count()
+        print(message_count)
+        for message in read_messages:
+            if message.owner != self.user:
+                message.is_read = True
+                message.save()
+
+        text_messages = group_obj.group_text_messages.all().order_by("-id")
+
+        paginator = Paginator(text_messages, 20)  # Set items per page
+
+        # Check if the requested page exists
+        if int(page_number) > paginator.num_pages:
+            return {
+                "count": paginator.count,
+                "next": None,
+                "previous": None,
+                "list": []
+            }
+
+        # Get the page
+        page = paginator.get_page(page_number)
+
+
+
+
+
+        # Group messages by date
+        serializer_data =TextMessageSerializer(page.object_list,many=True)
+
+        for message_data in serializer_data.data:
+            message_data['self'] = message_data['owner']['id'] == self.user.id
+        return {
+            "count": paginator.count,
+            "next": page.next_page_number() if page.has_next() else None,
+            "previous": page.previous_page_number() if page.has_previous() else None,
+            "list": serializer_data.data
+        }
+
+
+
+    async def read_message_list_handler(self,data):
+        page_number = data.get("page_number",1)
+        group_id = data.get("group_id")
+        group_message_list = await self._get_group_message_list(page_number,group_id)
+        event = {
+            "type": "send_groups"
+        }
+        await self.channel_layer.group_send(self.user_group_name, event)
+        await self.send_json(
+            {
+                "data_type": "message_list",
+                "data": group_message_list
+            }
+        )
+    @sync_to_async
+    def _get_workspace_data(self, workspace_id):
+        current_workspace_obj = WorkSpace.objects.get(id=workspace_id)
+        data = {
+            "wallet": {
+                "id": current_workspace_obj.wallet.id if current_workspace_obj.wallet else None,
+                "balance": int(current_workspace_obj.wallet.balance) if current_workspace_obj.wallet else 0
+            },
+            "id": current_workspace_obj.id,
+            "title": current_workspace_obj.title,
+            "is_authenticated": current_workspace_obj.is_authenticated,
+            "jadoo_workspace_id": current_workspace_obj.jadoo_workspace_id,
+            "is_active": current_workspace_obj.is_active,
+            "workspace_permissions": [
+                {
+                    "id": permission.id,
+                    "permission_type": permission.permission_type,
+                    "is_active": permission.is_active
+                } for permission in WorkSpacePermission.objects.filter(workspace=current_workspace_obj)
+            ],
+            "unread_notifications": Notification.objects.filter(
+                workspace=current_workspace_obj,
+                user_account=self.user,
+                is_read=False
+            ).count() + Notification.objects.filter(user_account=self.user, is_read=False).count()
+        }
+
+        if self.user == current_workspace_obj.owner:
+            data["type"] = "owner"
+        else:
+            try:
+                workspac_member = WorkspaceMember.objects.get(
+                    workspace=current_workspace_obj,
+                    user_account=self.user  # Use self.user consistently
+                )
+                data["permissions"] = [
+                    {
+                        "id": permission.id,
+                        "permission_name": permission.permission_name,
+                        "permission_type": permission.permission_type
+                    } for permission in workspac_member.permissions.all()
+                ]
+                data["is_accepted"] = workspac_member.is_accepted
+            except WorkspaceMember.DoesNotExist:
+                pass
+            data["type"] = "member"
+
+        return data
+    async def change_current_workspace(self, event):
+
+        self.workspace_id = event['workspace_id']
+        self.workspace_obj = await self._get_workspace_obj()
+        self.workspace_group_name = f"group_ws_{self.workspace_obj.id}"
+
+        # Notify the user group to update groups and unread messages
+        await self.channel_layer.group_send(self.user_group_name, {"type": "send_groups"})
+        await self.channel_layer.group_send(self.user_group_name, {"type": "send_all_unread_messages"})
+
+        # Send updated workspace data to the client
+        current_workspace = await self._get_workspace_data(self.workspace_id)
+        await self.send(json.dumps({
+            "data_type": "change_current_workspace",
+            "data": {
+                "current_workspace": current_workspace
+            }
+        }))
+
+
+    """
+     end to workspace 1 to 1 chat
+     
+    """
+
     async def connect(self):
         self.user = self.scope["user"]
         if not self.user.is_authenticated:
@@ -51,6 +356,16 @@ class CoreWebSocket(AsyncJsonWebsocketConsumer):
             self.channel_name
         )
         self.workspace_obj = await self._get_workspace_obj()
+        unread_message_count = await self._get_all_group_unread_messages()
+        await self.send_json(
+            {
+                "data_type": "all_group_message_unread",
+                "data": {
+                    "message_count": unread_message_count
+                }
+            }
+        )
+
     @sync_to_async
     def _get_workspace_obj(self):
         user_account = UserAccount.objects.get(id=self.user.id)
@@ -100,6 +415,13 @@ class CoreWebSocket(AsyncJsonWebsocketConsumer):
             "crm_create_a_message":self.crm_create_a_message_handler,
             "crm_edit_message":self.crm_edit_message_handler,
             # "send_extra":self.send_extra,
+            # < < < begin workspace 1 to 1 chat command > > > #
+            "get_group_messages":self.get_group_messages_handler,
+
+            "new_message":self.new_message_handler,
+            "get_unread_messages":self.get_unread_messages_handler,
+            "read_message_list":self.read_message_list_handler,
+            # < < < end workspace 1 to 1 chat command > > > #
         }
         handler = command_handlers.get(command)
 
@@ -119,6 +441,10 @@ class CoreWebSocket(AsyncJsonWebsocketConsumer):
                     self.crm_group_name,
                     self.channel_name
                 )
+            if command == "read_message_list":
+                group_id = data.get("group_id")
+                self.group_message_name = f"group_message{group_id}"
+                await self.channel_layer.group_add(self.group_message_name, self.channel_name)
             await handler(data)
         else:
             await self.send_error("Invalid command")
@@ -166,12 +492,12 @@ class CoreWebSocket(AsyncJsonWebsocketConsumer):
 
     async def send_customer_list(self,event):
         serializer_data = await self._customer_list_serializer(group_crm_id=event['group_crm_id'])
-        await self.send(json.dumps(
+        await self.send_json(
             {
                 "data_type": "customer_list",
                 "data": serializer_data
             }
-        ))
+        )
     async def customer_list_handler(self,data):
         group_crm_id=data.get("group_crm_id")
         customer_data = await self._customer_list_serializer(group_crm_id=group_crm_id)
@@ -336,10 +662,12 @@ class CoreWebSocket(AsyncJsonWebsocketConsumer):
             group_crm_id=group_crm_id,
             per_page_count=per_page_count
         )
-        await self.send(json.dumps({
-            "data_type":"crm_all_messages",
-            "data":message_data
-        }))
+        await self.send_json(
+            {
+                "data_type": "crm_all_messages",
+                "data": message_data
+            }
+        )
 
     @sync_to_async
     def _crm_create_a_message(self, data):

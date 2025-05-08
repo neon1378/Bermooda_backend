@@ -1427,7 +1427,8 @@ def change_current_worksapce (request):
         "type": "change_current_workspace",
         "workspace_id": request.user.current_workspace_id
     }
-    async_to_sync(channel_layer.group_send)(f"user_group_{request.user.id}", event)
+
+    async_to_sync(channel_layer.group_send)(f"{request.user.id}_gp_user", event)
 
 
     return Response(status=status.HTTP_202_ACCEPTED)
