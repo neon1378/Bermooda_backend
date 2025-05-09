@@ -230,7 +230,7 @@ class CoreWebSocket(AsyncJsonWebsocketConsumer):
         group_obj = GroupMessage.objects.get(id= group_id)
         read_messages = group_obj.group_text_messages.filter(is_read =False)
         message_count = group_obj.group_text_messages.all().count()
-        print(message_count)
+
         for message in read_messages:
             if message.owner != self.user:
                 message.is_read = True
@@ -276,6 +276,7 @@ class CoreWebSocket(AsyncJsonWebsocketConsumer):
         page_number = data.get("page_number",1)
         group_id = data.get("group_id")
         group_message_list = await self._get_group_message_list(page_number,group_id)
+        print(group_message_list,"@22")
         event = {
             "type": "send_groups"
         }
