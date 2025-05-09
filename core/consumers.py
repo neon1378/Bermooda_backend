@@ -245,6 +245,7 @@ class CoreWebSocket(AsyncJsonWebsocketConsumer):
                 "count": paginator.count,
                 "next": None,
                 "previous": None,
+                "group_id":group_id,
                 "list": []
             }
 
@@ -262,6 +263,7 @@ class CoreWebSocket(AsyncJsonWebsocketConsumer):
             message_data['self'] = message_data['owner']['id'] == self.user.id
         return {
             "count": paginator.count,
+            "group_id": group_id,
             "next": page.next_page_number() if page.has_next() else None,
             "previous": page.previous_page_number() if page.has_previous() else None,
             "list": serializer_data.data
