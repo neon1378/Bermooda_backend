@@ -14,6 +14,7 @@ from UserManager.models import UserAccount
 from .widgets import  pagination
 from django.utils.timezone import is_naive, make_aware, get_current_timezone
 import pytz
+from Notification.models import Notification
 from django.utils.timezone import make_aware
 from CrmCore.models import CustomerUser,GroupCrm,Label,CustomerStep,GroupCrmMessage
 from CrmCore.serializers import CustomerSmallSerializer,GroupCrmSerializer,LabelStepSerializer,GroupCrmMessageSerializer
