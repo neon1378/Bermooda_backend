@@ -1084,6 +1084,7 @@ def create_workspace(request):
         "planing",
         "marketing",
         "human_resources"
+        "employment",
     ]
     for permission in permission_list:
         WorkSpacePermission.objects.create(
