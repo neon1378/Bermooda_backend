@@ -168,7 +168,7 @@ class CheckListSerializer(ModelSerializer):
                 main_file.its_blong = True
                 main_file.save()
                 check_list_obj.file.add(main_file)
-            check_list_obj.save()
+        check_list_obj.save()
         return check_list_obj
 
     def update(self, instance, validated_data):
@@ -303,9 +303,10 @@ class TaskSerializer(ModelSerializer):
             check_list_item['task_id'] = task.id
             serializer = CheckListSerializer(data=check_list_item)
             serializer.is_valid(raise_exception=True)
-            checklist_serializers.append(serializer)
-        for serializer in checklist_serializers:
             serializer.save()
+            # checklist_serializers.append(serializer)
+        # for serializer in checklist_serializers:
+        #     serializer.save()
 
 
         task.save()
