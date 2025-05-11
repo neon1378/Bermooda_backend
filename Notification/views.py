@@ -11,6 +11,7 @@ from UserManager.models import UserAccount,FcmToken
 from rest_framework.permissions import IsAuthenticated
 from WorkSpaceManager.models import WorkSpace,WorkspaceMember
 from django.shortcuts import get_object_or_404
+from core.widgets import pagination
 import json
 # Create your views here.
 
@@ -174,32 +175,51 @@ class NotifacticatonManager(APIView):
     
     def get(self,request):
         
-        workspace_id = request.GET.get("workspace_id",None)
+        workspace_id = request.user.current_workspace_id
+        is_paginate = request.GET.get("is_paginate",False)
+        page_number = request.GET.get("page_number",1)
+        per_page_count = request.GET.get("per_page_count",20)
 
         workspace_obj = get_object_or_404(WorkSpace,id=workspace_id)
-
-        notification_objs= Notification.objects.filter(user_account=request.user).order_by("-created")
-              
+        if not is_paginate:
+            notification_objs= Notification.objects.filter(user_account=request.user).order_by("-created")
+        else:
+            notification_data =Notification.objects.filter(user_account=request.user).order_by("-created")
+            notification_objs = pagination(query_set=notification_data,page_number=page_number,per_page_count=per_page_count)
         for item in notification_objs:
             if  item.is_read == False:
                 print("yes")
                 item.is_read=True
                 item.save()
+        if not is_paginate:
+            serializer_data= [
+                 {
+                    "id":notification_obj.id,
+                    "title":notification_obj.title,
+                    "jtime":notification_obj.jtime(),
+                    "sub_title":notification_obj.sub_title,
+                    "custom_data":notif_data(notification_obj=notification_obj,workspace_obj=workspace_obj if notification_obj.workspace else None )
+                 } for notification_obj in notification_objs if workspace_obj== notification_obj.workspace or not notification_obj.workspace
+            ]
+        else:
+            data_list =[]
+            for notification_obj in notification_objs['list']:
+                if workspace_obj == notification_obj.workspace or not notification_obj.workspace:
+                    dic ={
+                        "id": notification_obj.id,
+                        "title": notification_obj.title,
+                        "jtime": notification_obj.jtime(),
+                        "sub_title": notification_obj.sub_title,
+                        "custom_data": notif_data(notification_obj=notification_obj,
+                                                  workspace_obj=workspace_obj if notification_obj.workspace else None)
+                    }
+                    data_list.append(dic)
+            notification_obj['list']= data_list
 
-        serializer_data= [
-             {
-                "id":notification_obj.id,
-                "title":notification_obj.title,
-                "jtime":notification_obj.jtime(),
-                "sub_title":notification_obj.sub_title,
-                "custom_data":notif_data(notification_obj=notification_obj,workspace_obj=workspace_obj if notification_obj.workspace else None )
-             } for notification_obj in notification_objs if workspace_obj== notification_obj.workspace or not notification_obj.workspace
-        ]
-        print(serializer_data)
         return Response(status=status.HTTP_200_OK,data={
             "status":True,
             "message":"success",
-            "data":serializer_data
+            "data":serializer_data if not is_paginate else notification_obj
             
         })
         
