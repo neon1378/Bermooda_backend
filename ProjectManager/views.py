@@ -1378,14 +1378,14 @@ class MainCheckListManager(APIView):
         page_number = request.GET.get("page_number",1)
         task_obj = get_object_or_404(Task,id=task_id)
         check_list_objs = CheckList.objects.filter(task=task_obj)
-        pagination_data =pagination(query_set=check_list_objs,page_number=page_number,per_page_count=5)
+        # pagination_data =pagination(query_set=check_list_objs,page_number=page_number,per_page_count=5)
 
         serializer_data = CheckListSerializer(check_list_objs,many=True)
-        pagination_data["list"]  = CheckListSerializer(pagination_data["list"],many=True).data
+        # pagination_data["list"]  = CheckListSerializer(pagination_data["list"],many=True).data
         return Response(status=status.HTTP_200_OK, data={
             "status": True,
             "message": "موفق",
-            "data": pagination_data
+            "data": serializer_data.data
         })
     def post(self,request):
         request.data['workspace_id'] = request.user.current_workspace_id
