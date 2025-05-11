@@ -43,6 +43,7 @@ urlpatterns = [
     path("MainTaskManager/<int:task_id>", views.MainTaskManager.as_view()),
 
     path("MainTaskManager", views.MainTaskManager.as_view()),
+
     path("CheckListTimerManager/<int:timer_id>", views.CheckListTimerManager.as_view()),
 
 

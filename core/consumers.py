@@ -1097,21 +1097,22 @@ class CoreWebSocket(AsyncJsonWebsocketConsumer):
         # Organize tasks by category using serializer data
         categories = {}
         for task in serializer_data:
-            category_id = task['category_task_id']
-            if category_id not in all_categories:
-                continue  # Skip invalid categories (data integrity issue)
+            if task['category_task']:
+                category_id = task['category_task']['id']
+                if category_id not in all_categories:
+                    continue  # Skip invalid categories (data integrity issue)
 
-            # Use category data from serializer to maintain compatibility
-            category_data = task["category_task"]
-            if category_id not in categories:
-                categories[category_id] = {
-                    "category_id": category_id,
-                    "project_id": project_id,
-                    "color": category_data['color_code'],
-                    "title": category_data['title'],
-                    "task_list": []
-                }
-            categories[category_id]['task_list'].append(task)
+                # Use category data from serializer to maintain compatibility
+                category_data = task["category_task"]
+                if category_id not in categories:
+                    categories[category_id] = {
+                        "category_id": category_id,
+                        "project_id": project_id,
+                        "color": category_data['color_code'],
+                        "title": category_data['title'],
+                        "task_list": []
+                    }
+                categories[category_id]['task_list'].append(task)
 
         # Fill in empty categories from pre-fetched data
         for category in category_objs:
