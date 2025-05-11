@@ -18,7 +18,8 @@ from django.db.models import Avg, Count, Sum
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
         
-
+from django.utils import timezone
+import datetime as dt
 
 class ProjectDepartment(SoftDeleteModel):
     title = models.CharField(max_length=200,null=True)
@@ -190,7 +191,7 @@ class Task(SoftDeleteModel):
     done_status = models.BooleanField(default=False)
     description = models.TextField(null=True)
     main_file = models.ManyToManyField(MainFile)
-    order = models.PositiveIntegerField(default=0)
+    order = models.PositiveIntegerField(default=0,blank=True)
     category_task = models.ForeignKey(CategoryProject, on_delete=models.SET_NULL, null=True,
                                       related_name="task_category")
     project = models.ForeignKey(Project, on_delete=models.SET_NULL, null=True, related_name="task")
@@ -249,6 +250,7 @@ class Task(SoftDeleteModel):
             'Performance': 0
         }
 class CheckList(SoftDeleteModel):
+
     title = models.TextField(null=True)
     difficulty = models.IntegerField(default=1)
     status = models.BooleanField(default=False)
@@ -391,3 +393,49 @@ class ProjectMessage(SoftDeleteModel):
         jalali_datetime = jdatetime.datetime.fromgregorian(datetime=self.created_at)
 
         return jalali_datetime.strftime("%Y/%m/%d")
+
+
+class CheckListTimer(models.Model):
+    STATUS_CHOICES = [
+        ('running', 'Running'),
+        ('paused', 'Paused'),
+        ('stopped', 'Stopped'),
+    ]
+
+    start_time = models.DateTimeField(null=True, blank=True)
+    elapsed_time = models.DurationField(default=0)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='stopped')
+    is_done = models.BooleanField(default=False)
+    check_list = models.OneToOneField(CheckList,on_delete=models.CASCADE,related_name="timer")
+    def play(self):
+        if self.status != 'running':
+            self.start_time = timezone.now()
+            self.status = 'running'
+            self.save()
+
+    def pause(self):
+        if self.status == 'running':
+            now = timezone.now()
+            self.elapsed_time += now - self.start_time
+            self.start_time = None
+            self.status = 'paused'
+            self.save()
+
+    def stop(self):
+        if self.status == 'running':
+            now = timezone.now()
+            self.elapsed_time += now - self.start_time
+        self.start_time = None
+        self.status = 'stopped'
+        self.save()
+
+    def reset(self):
+        self.start_time = None
+        self.elapsed_time = dt.timedelta(seconds=0)
+        self.status = 'stopped'
+        self.save()
+
+    def get_elapsed_seconds(self):
+        if self.status == 'running':
+            return int(self.elapsed_time.total_seconds() + (timezone.now() - self.start_time).total_seconds())
+        return int(self.elapsed_time.total_seconds())

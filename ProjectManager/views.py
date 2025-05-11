@@ -292,9 +292,12 @@ class ProjectManager(APIView):
 
 
 
+
+
+
 class TaskManager(APIView):
     permission_classes = [IsAuthenticated]
-    import jdatetime
+
 
 
 
@@ -318,7 +321,7 @@ class TaskManager(APIView):
 
             "category_task": task.category_task.title,
             "category_task_id": task.category_task.id,
-            "check_list": None,
+
             "file_urls": self.task_url_creator(task),
         }
 
@@ -351,9 +354,9 @@ class TaskManager(APIView):
         """Create a new task."""
         project = get_object_or_404(Project, id=project_id)
         data = request.data
-        task_reports = data.get("task_reports",[])
+
         check_list_data = data.pop("check_list",[])
-        task_reports = data.pop("task_reports",[])
+
         file_ids = data.pop("file_id_list", [])
         category_id = data.pop("category_task")["id"]
 
@@ -443,10 +446,7 @@ class TaskManager(APIView):
 
                     success_notif.append(member.responsible_for_doing.id)
 #
-        for report_id in task_reports:
-            report_obj = get_object_or_404(TaskReport,id=report_id)
-            report_obj.task=task
-            report_obj.save()
+
         short_text = task.title[:7] + "..."
         message = f"تسک {short_text} به بورد اضافه شد"
         create_notify_message(
@@ -1240,3 +1240,228 @@ def completed_tasks(request):
 
 
 
+class MainTaskManager(APIView):
+    permission_classes=[IsAuthenticated]
+    channel_layer = get_channel_layer()
+
+    def get(self,request,task_id=None):
+        if task_id:
+            task_obj = get_object_or_404(Task,id=task_id)
+            serializer_data = TaskSerializer(task_obj)
+            return Response(status=status.HTTP_200_OK,data={
+                "status":True,
+                "message":"موفق",
+                "data":serializer_data.data
+            })
+        project_id = request.GET.get("project_id")
+        task_objs = Task.objects.filter(project_id=project_id)
+        serializer_data = TaskSerializer(task_objs,many=True)
+        return Response(status=status.HTTP_200_OK, data={
+            "status": True,
+            "message": "موفق",
+            "data": serializer_data.data
+        })
+    def post(self,request):
+        request.data['workspace_id'] = request.user.current_workspace_id
+        workspace_id = request.user.current_workspace_id
+        serializer_data = TaskSerializer(data=request.data,context={"user":request.user})
+        if serializer_data.is_valid():
+            task_obj = serializer_data.save()
+            success_notif = []
+            for member in task_obj.check_list.all():
+
+                if member.responsible_for_doing != request.user:
+                    if member.responsible_for_doing.id not in success_notif:
+                        title = f"وظیفه جدید"
+                        sub_title = f"وظیفه {task_obj.title} توسط {request.user.fullname} به  پروژه شما اضافه شد"
+                        create_notification(related_instance=task_obj, workspace=WorkSpace.objects.get(id=workspace_id),
+                                            user=member.responsible_for_doing, title=title, sub_title=sub_title,
+                                            side_type="new_task")
+
+                        success_notif.append(member.responsible_for_doing.id)
+
+
+            short_text = task_obj.title[:7] + "..."
+            message = f"تسک {short_text} به بورد اضافه شد"
+            create_notify_message(
+                message=message,
+                related_instance=task_obj,
+                project_id=task_obj.project.id,
+                creator_id=request.user.id
+            )
+
+            event = {
+                "type": "send_one_task",
+                "task_id": task_obj.id
+            }
+
+            async_to_sync(self.channel_layer.group_send)(f"{task_obj.project.id}_gp_project", event)
+            return Response(status=status.HTTP_201_CREATED,data={
+                "status":True,
+                "message":"با موفقیت ثبت شد",
+                "data":serializer_data.data
+            })
+        return Response(status=status.HTTP_400_BAD_REQUEST,data={
+            "status":False,
+            "message":"Validations Error ",
+            "data":serializer_data.errors
+        })
+    def put(self,request,task_id):
+        request.data['workspace_id'] = request.user.current_workspace_id
+        workspace_obj = WorkSpace.objects.get(id=request.user.cu)
+        task_obj= get_object_or_404(Task,id=task_id)
+        serializer_data= TaskSerializer(data=request.data,instance=task_obj,context={"user":request.user})
+        if serializer_data.is_valid():
+            task_obj = serializer_data.save()
+            success_notif = []
+            for member in task_obj.check_list.all():
+                if member.responsible_for_doing.id not in success_notif:
+                    if member.responsible_for_doing != request.user:
+                        title = f"بروزرسانی وظیفه"
+                        sub_title = f"وظیفه {task_obj.title} توسط {request.user.fullname} بروزرسانی شد"
+                        create_notification(related_instance=task_obj, workspace=workspace_obj,
+                                            user=member.responsible_for_doing, title=title, sub_title=sub_title,
+                                            side_type="update_task")
+                        success_notif.append(member.responsible_for_doing.id)
+            task_obj.save()
+            short_text = task_obj.title[:7] + "..."
+            message = f"تسک {short_text} بروزرسانی  شد"
+            create_notify_message(
+                message=message,
+                related_instance=task_obj,
+                project_id=task_obj.project.id,
+                creator_id=request.user.id
+            )
+
+            event = {
+                "type": "send_one_task",
+                "task_id": task_obj.id
+            }
+
+            async_to_sync(self.channel_layer.group_send)(f"{task_obj.project.id}_gp_project", event)
+            return Response(status=status.HTTP_202_ACCEPTED,data={
+                "status":True,
+                "message":"با موفقیت بروزرسانی شد",
+                "data":serializer_data.data
+
+            })
+        return Response(status=status.HTTP_400_BAD_REQUEST,data={
+            "status":False,
+            "message":"Validations Error ",
+            "data":serializer_data.errors
+        })
+
+    def delete (self,request,task_id):
+        task = get_object_or_404(Task,id=task_id)
+        task.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+class MainCheckListManager(APIView):
+    permission_classes = [IsAuthenticated]
+
+    channel_layer = get_channel_layer()
+    def get(self,request,check_list_id=None):
+        if check_list_id:
+            check_list_obj = get_object_or_404(CheckList,id=check_list_id)
+            serializer_data = CheckListSerializer(check_list_obj)
+            return Response(status=status.HTTP_200_OK,data={
+                "status":True,
+                "message":"موفق",
+                "data":serializer_data.data
+            })
+        task_id = request.GET.get("task_id")
+        task_obj = get_object_or_404(Task,id=task_id)
+        check_list_objs = CheckList.objects.filter(task=task_obj)
+        serializer_data = CheckListSerializer(check_list_objs,many=True)
+        return Response(status=status.HTTP_200_OK, data={
+            "status": True,
+            "message": "موفق",
+            "data": serializer_data.data
+        })
+    def post(self,request):
+        request.data['workspace_id'] = request.user.current_workspace_id
+        serializer_data = CheckListSerializer(data=request.data,context={"user":request.user})
+        if serializer_data.is_valid():
+            check_list_obj = serializer_data.save()
+            short_text = check_list_obj.title[:7] + "..."
+            task_short_text = check_list_obj.task.title[:7] + "..."
+            message = f"چک لیست  {short_text}به تسک  {task_short_text} اضافه شد  "
+            create_notify_message(
+                message=message,
+                related_instance=check_list_obj,
+                project_id=check_list_obj.task.project.id,
+                creator_id=request.user.id
+            )
+
+            event = {
+                "type": "send_one_task",
+                "task_id": check_list_obj.task.id
+            }
+
+            async_to_sync(self.channel_layer.group_send)(f"{check_list_obj.task.project.id}_gp_project", event)
+            create_reminde_a_task(chek_list=check_list_obj)
+            if request.user != check_list_obj.responsible_for_doing:
+                title = f"بروزرسانی وظیفه"
+                sub_title = f"چک لیست {check_list_obj.title} در تسک {check_list_obj.task.title} توسط {request.user.fullname} برای شما اضافه شد "
+                create_notification(related_instance=check_list_obj.task,
+                                    workspace=check_list_obj.task.project.workspace,
+                                    user=check_list_obj.responsible_for_doing, title=title, sub_title=sub_title,
+                                    side_type="update_task")
+            return Response(status=status.HTTP_201_CREATED,data={
+                "status":True,
+                "message":"با موفقیت ثبت شد",
+                "data":serializer_data.data
+            })
+        return Response(status=status.HTTP_400_BAD_REQUEST,data={
+            "status":False,
+            "message":"Validation Error",
+            "data":serializer_data.errors
+
+        })
+    def put(self,request,check_list_id):
+        instance = get_object_or_404(CheckList,id=check_list_id)
+        request.data['workspace_id'] = request.user.current_workspace_id
+        serializer_data = CheckListSerializer(instance=instance,data=request.data,context={"user":request.user})
+        if serializer_data.is_valid():
+            check_list_obj = serializer_data.save()
+
+            event = {
+                "type": "send_one_task",
+                "task_id": check_list_obj.task.id
+            }
+
+            async_to_sync(self.channel_layer.group_send)(f"{check_list_obj.task.project.id}_gp_project", event)
+            create_reminde_a_task(chek_list=check_list_obj)
+            if request.user != check_list_obj.responsible_for_doing:
+                title = f"بروزرسانی وظیفه"
+                sub_title = f"چک لیست {check_list_obj.title} در تسک {check_list_obj.task.title} توسط {request.user.fullname} بروزرسانی شد "
+                create_notification(related_instance=check_list_obj.task,
+                                    workspace=check_list_obj.task.project.workspace,
+                                    user=check_list_obj.responsible_for_doing, title=title, sub_title=sub_title,
+                                    side_type="update_task")
+            short_text = check_list_obj.title[:7] + "..."
+            task_short_text = check_list_obj.task.title[:7] + "..."
+            message = f"چک لیست  {short_text}در تسک  {task_short_text} بروزرسانی شد  "
+
+            create_notify_message(
+                message=message,
+                related_instance=check_list_obj,
+                project_id=check_list_obj.task.project.id,
+                creator_id=request.user.id
+            )
+            return Response(status=status.HTTP_202_ACCEPTED,data={
+                "status":True,
+                "message":"با موفقیت بروزرسانی شد",
+                "data":serializer_data.data
+            })
+
+        return Response(status=status.HTTP_400_BAD_REQUEST, data={
+            "status": False,
+            "message": "Validation Error",
+            "data": serializer_data.errors
+
+        })
+    def delete (self,request,check_list_id):
+        check_list_obj = get_object_or_404(CheckList,id=check_list_id)
+        check_list_obj.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)

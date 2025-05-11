@@ -6,12 +6,46 @@ from core.models import MainFile
 from core.serializers import  MainFileSerializer
 from MailManager.serializers import MemberSerializer
 from UserManager.serializers import MemberSerializer as UserSerializer
+from core.widgets import persian_to_gregorian,create_reminder
+from Notification.views import  create_notification
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
 
 
 
+def create_reminde_a_task(chek_list):
+    if chek_list.date_time_to_start_main:
+        title = "یاد آوری وظیفه"
+        short_text = ' '.join(chek_list.title.split()[:15]) + ('...' if len(chek_list.title.split()) > 15 else '')
+        sub_title = f"وقت شروع وظیفه  {short_text} هست "
+        create_reminder(related_instance=chek_list, remind_at=chek_list.date_time_to_start_main, title=title, sub_title=sub_title)
+    elif chek_list.date_time_to_end_main:
+        title = "یاد آوری وظیفه",
+        short_text = ' '.join(chek_list.title.split()[:15]) + ('...' if len(chek_list.title.split()) > 15 else '')
+        sub_title = f"تایم انجام وظیفه {short_text} تمام شده است  "
+        create_reminder(related_instance=chek_list, remind_at=chek_list.date_time_to_start_main, title=title,
+                        sub_title=sub_title)
 
 
+def create_notify_message(message,related_instance,project_id,creator_id):
+    content_type = ContentType.objects.get_for_model(related_instance.__class__)
+    message_obj = ProjectMessage.objects.create(
+        message_type="notification",
+        content_type=content_type,
+        object_id=related_instance.id,
+        body=message,
+        project_id=project_id,
+        creator_id=creator_id
+    )
+    channel_layer = get_channel_layer()
+    event = {
+                "type": "send_a_message",
+                "message_id": message_obj.id
 
+            }
+
+    async_to_sync(channel_layer.group_send)(f"{project_id}_gp_project", event)
+    return True
 class ProjectDepartmentSerializer(ModelSerializer):
     workspace_id = serializers.IntegerField(write_only=True,required=True)
     manager_id = serializers.IntegerField(write_only=True,required=True)
@@ -51,10 +85,15 @@ class LabelSerializer(ModelSerializer):
         fields = "__all__"
 
 class CheckListSerializer(ModelSerializer):
-    label = LabelSerializer()
+
     file = MainFileSerializer(read_only=True,many=True)
-    responsible_for_doing = MemberSerializer(read_only=True)
+
     label = LabelSerializer(read_only=True)
+    label_id = serializers.IntegerField(write_only=True)
+    file_id_list = serializers.ListField(write_only=True,required=False,allow_null=True)
+    responsible_for_doing_id = serializers.IntegerField(write_only=True,required=False,allow_null=True)
+    responsible_for_doing = UserSerializer(read_only=True)
+    task_id = serializers.IntegerField(required=True,write_only=True)
     class Meta:
         model = CheckList
         fields = [
@@ -73,16 +112,127 @@ class CheckListSerializer(ModelSerializer):
             "project_id_main",
             "date_to_end",
             "time_to_end",
+            #new
+            "label_id",
+            "file_id_list",
+            "responsible_for_doing_id",
+            "responsible_for_doing",
+            "task_id",
         ]
+    def create(self, validated_data):
+        user = self.context.get("user")
+        date_to_start = validated_data.get("date_to_start",None)
+        time_to_start = validated_data.get("time_to_start",None)
+        date_to_end = validated_data.get("date_to_end",None)
+        time_to_end = validated_data.get("time_to_end", None)
+        file_id_list = validated_data.pop("file_id_list",None)
+        title = validated_data.get("title")
+        responsible_for_doing_id = validated_data.get("responsible_for_doing_id", None)
+        task_id = validated_data.pop("task_id")
+        label_id = validated_data.pop("label_id",None)
+        task_obj = get_object_or_404(Task,id=task_id)
+
+
+        if date_to_start and time_to_start and date_to_end and time_to_end:
+            try:
+                date_time_to_start = f"{date_to_start} {time_to_start}"
+                date_time_to_end = f"{date_to_end} {time_to_end}"
+
+                date_time_start_obj = jdatetime.datetime.strptime(date_time_to_start, "%Y/%m/%d %H:%M")
+                date_time_end_obj = jdatetime.datetime.strptime(date_time_to_end, "%Y/%m/%d %H:%M")
+                if date_time_start_obj >= date_time_end_obj:
+                    raise serializers.ValidationError(
+                        {
+                            "status": False,
+                            "message": f"در چک لیست {title} تاریخ شروع و پایان درست نمیباشد"
+                        }
+                    )
+            except:
+                pass
+
+
+        check_list_obj = CheckList.objects.create(
+            **validated_data,
+            task=task_obj,
+
+            date_time_to_start_main=persian_to_gregorian(f"{date_to_start} {time_to_start}"),
+            date_time_to_end_main=persian_to_gregorian(f"{date_to_end} {time_to_end}")
+        )
+        if label_id :
+            check_list_obj.label_id=label_id
+        if responsible_for_doing_id:
+            check_list_obj.responsible_for_doing_id=responsible_for_doing_id
+        for file_id in file_id_list:
+            main_file = MainFile.objects.get(id=file_id)
+            main_file.its_blong = True
+            main_file.save()
+            check_list_obj.file.add(main_file)
+        check_list_obj.save()
+        return check_list_obj
+
+    def update(self, instance, validated_data):
+        user = self.context.get("user")
+        label_id = validated_data.get("label_id", None)
+        title = validated_data.get("title",None)
+        responsible_for_doing_id = validated_data.get("responsible_for_doing_id", None)
+        date_to_start = validated_data.get("date_to_start", None)
+        time_to_start = validated_data.get("time_to_start", None)
+        date_to_end = validated_data.get("date_to_end", None)
+        time_to_end = validated_data.get("time_to_end", None)
+        difficulty = validated_data.get("difficulty", None)
+
+        if label_id:
+            instance.label_id = label_id['id']
+
+        if responsible_for_doing_id:
+            instance.responsible_for_doing_id = responsible_for_doing_id
+
+        instance.title = title
+        instance.date_to_start = date_to_start
+        instance.time_to_start = time_to_start
+        instance.date_to_end = date_to_end
+        instance.time_to_end = time_to_end
+        try:
+            instance.date_time_to_start_main = persian_to_gregorian(f"{date_to_start} {time_to_start}")
+        except:
+            pass
+
+        try:
+            instance.date_time_to_end_main = persian_to_gregorian(f"{date_to_end} {time_to_end}")
+        except:
+            pass
+
+        instance.difficulty = difficulty
+        existing_file_ids = list(instance.file.values_list("id", flat=True))
+
+        # Update associated files
+        file_ids = validated_data.get("file_id_list", [])
+        MainFile.objects.filter(id__in=file_ids).update(its_blong=True)
+        instance.file.set(MainFile.objects.filter(id__in=file_ids))
+
+        # Identify and delete files that are no longer associated with the task
+        removed_file_ids = set(existing_file_ids) - set(file_ids)
+        MainFile.objects.filter(id__in=removed_file_ids).delete()
+        instance.save()
+
+        return instance
+
 class TaskSerializer(ModelSerializer):
     check_list = CheckListSerializer(many=True)
-    category_task = CategoryProjectSerializer()
+    category_task = CategoryProjectSerializer(read_only=True)
+    project_id = serializers.IntegerField(write_only=True,required=True)
+    file_id_list = serializers.ListField(write_only=True,required=False,allow_null=True)
+    file_urls = serializers.SerializerMethodField(read_only=True)
+    check_lists = serializers.ListField(write_only=True,required=False,allow_null=True)
+    category_task_id = serializers.IntegerField(write_only=True,required=True)
+    workspace_id = serializers.IntegerField(write_only=True,required=True)
 
     class Meta:
         model = Task
         fields = [
             "id",
             "done_status",
+
             "is_deleted",
             "project_id_main",
             "check_list",
@@ -91,73 +241,96 @@ class TaskSerializer(ModelSerializer):
             "description",
             "category_task",
             "category_task_id",
+
+            #new
+            "task_progress",
+            "file_id_list",
+            "project_id",
+
         ]
 
+
+    def get_file_urls(self,obj):
+        return MainFileSerializer(obj.main_file.all(),many=True).data
     def create(self, validated_data):
-        check_list_data = validated_data.pop('check_list')
-        task_label = validated_data.pop('task_label')
-        validated_data.pop("workspace_id")
-        file_id_list = validated_data.pop("file_id_list",[])
-           
-        category_task_id = validated_data.pop('category_task')['id']
 
-        category_task_obj = get_object_or_404(CategoryProject,id=category_task_id)
+        project_id = validated_data.pop("project_id")
+        check_list_data = validated_data.pop("check_lists", None)
+        file_ids = validated_data.pop("file_id_list",None)
+        category_id = validated_data.pop("category_task_id")
+        workspace_id = validated_data.pop("workspace_id")
+        project = get_object_or_404(Project, id=project_id)
 
-   
-        task_label_title = task_label['title']
-        task_label_color_code = task_label['color_code']
-        # if TaskLabel.objects.filter(title= task_label_title).exists():
-        #     try:
-        #         task_label_obj = TaskLabel.objects.get(title=task_label_title)
-        #     except:
-        #         task_label_obj = TaskLabel.objects.filter(title= task_label_title)[0]
-  
-        # else:
-        #     task_label_obj = TaskLabel(title=task_label_title,color_code=task_label_color_code)
-        #     task_label_obj.save()
+        user = self.context.get("user")
 
 
-        task_obj = Task.objects.create(**validated_data,category_task=category_task_obj)
-        
-        for file_id in file_id_list :
-            try:
-                main_file_obj = MainFile.objects.get(id=file_id)
-                main_file_obj.its_blong =True
-                main_file_obj.save()
-                task_obj.main_file.add(main_file_obj)
-            except:
-                pass 
-   
-        try:
-            last_task = category_task_obj.task_category.last()
-            
-            task_obj.order= int(last_task.order) +1
-        except:
-            task_obj.order=1
-        task_obj.save()
 
 
-        for check_list in check_list_data:
-            responsible_for_doing_id = check_list['responsible_for_doing']
-            user=UserAccount.objects.get(id=responsible_for_doing_id) 
-            check_list = CheckList.objects.create( 
-                title =check_list['title'],
-                status =check_list['status'],
-                date_to_start =check_list['date_to_start'],
-                time_to_start =check_list['time_to_start'],
-                date_to_end =check_list['date_to_end'],
-                time_to_end =check_list['time_to_end'],
-                responsible_for_doing=user)
-            task_obj.check_list.add(check_list)
-        return task_obj
-    
-    def update(self, validated_data):
 
-        check_list_data = validated_data.pop('check_list')
-        task_label = validated_data.pop('task_label')
-        validated_data.pop("workspace_id")
-        file_id_list = validated_data.pop("file_id_list",[])
 
+
+
+
+        category = get_object_or_404(CategoryProject, id=category_id)
+
+        task = Task.objects.create(
+            **validated_data, category_task_id=category_id, project_id=project_id
+        )
+
+        # Associate files with the task
+        MainFile.objects.filter(id__in=file_ids).update(its_blong=True)
+        task.main_file.add(*MainFile.objects.filter(id__in=file_ids))
+
+        # Set task order
+        last_task = category.task_category.order_by("order").last()
+        task.order = (last_task.order + 1) if last_task else 1
+        task.save()
+
+
+        # Create checklist items
+        checklist_serializers = []
+        for check_list_item in check_list_data:
+
+            if not check_list_item['responsible_for_doing_id']:
+                check_list_item['responsible_for_doing_id'] = user.id
+            check_list_item['task_id'] = task.id
+            serializer = CheckListSerializer(data=check_list_item)
+            serializer.is_valid(raise_exception=True)
+            checklist_serializers.append(serializer)
+        for serializer in checklist_serializers:
+            serializer.save()
+
+
+        task.save()
+
+
+
+
+
+        return task
+    def update(self, instance, validated_data):
+        # Update task fields
+
+        user = self.context.get("user")
+        file_ids = validated_data.get("file_id_list",[])
+        instance.title = validated_data.get("title")
+        workspace_id = validated_data.pop("workspace_id")
+        workspace_obj = get_object_or_404(WorkSpace,id=workspace_id)
+        instance.description = validated_data.get("description")
+
+        existing_file_ids = list(instance.main_file.values_list("id", flat=True))
+
+        # Update associated files
+
+        MainFile.objects.filter(id__in=file_ids).update(its_blong=True)
+        instance.main_file.set(MainFile.objects.filter(id__in=file_ids))
+
+        # Identify and delete files that are no longer associated with the task
+        removed_file_ids = set(existing_file_ids) - set(file_ids)
+        MainFile.objects.filter(id__in=removed_file_ids).delete()
+
+
+        return instance
         
 
     

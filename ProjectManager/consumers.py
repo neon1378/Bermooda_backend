@@ -22,7 +22,7 @@ from channels.db import database_sync_to_async
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import get_object_or_404
 
-
+from datetime import timedelta
 from core.models import MainFile
 load_dotenv()
 
@@ -424,3 +424,48 @@ class ProjectTask(AsyncWebsocketConsumer):
             "message": message,
             "data": {}
         })
+
+
+class Timer(models.Model):
+    STATUS_CHOICES = [
+        ('running', 'Running'),
+        ('paused', 'Paused'),
+        ('stopped', 'Stopped'),
+    ]
+
+    start_time = models.DateTimeField(null=True, blank=True)
+    elapsed_time = models.DurationField(default=timedelta)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='stopped')
+
+    def play(self):
+        if self.status != 'running':
+            self.start_time = timezone.now()
+            self.status = 'running'
+            self.save()
+
+    def pause(self):
+        if self.status == 'running':
+            now = timezone.now()
+            self.elapsed_time += now - self.start_time
+            self.start_time = None
+            self.status = 'paused'
+            self.save()
+
+    def stop(self):
+        if self.status == 'running':
+            now = timezone.now()
+            self.elapsed_time += now - self.start_time
+        self.start_time = None
+        self.status = 'stopped'
+        self.save()
+
+    def reset(self):
+        self.start_time = None
+        self.elapsed_time = 0
+        self.status = 'stopped'
+        self.save()
+
+    def get_elapsed_seconds(self):
+        if self.status == 'running':
+            return int(self.elapsed_time.total_seconds() + (timezone.now() - self.start_time).total_seconds())
+        return int(self.elapsed_time.total_seconds())
