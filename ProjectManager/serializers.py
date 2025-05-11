@@ -324,7 +324,7 @@ class TaskSerializer(ModelSerializer):
             if not check_list_item['responsible_for_doing_id']:
                 check_list_item['responsible_for_doing_id'] = user.id
             task_id = task.id
-            check_list_item['task'] = task
+            check_list_item['task_id'] = task.id
 
 
             serializer = CheckListSerializer(data=check_list_item)
