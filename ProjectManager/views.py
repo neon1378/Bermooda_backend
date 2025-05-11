@@ -1238,8 +1238,6 @@ def completed_tasks(request):
 
 
 
-
-
 class MainTaskManager(APIView):
     permission_classes=[IsAuthenticated]
     channel_layer = get_channel_layer()
@@ -1254,12 +1252,16 @@ class MainTaskManager(APIView):
                 "data":serializer_data.data
             })
         project_id = request.GET.get("project_id")
+        page_number = request.GET.get("page_number",1)
         task_objs = Task.objects.filter(project_id=project_id)
-        serializer_data = TaskSerializer(task_objs,many=True)
+
+        paginate_data = pagination(query_set=task_objs,page_number=page_number)
+        paginate_data['list'] = TaskSerializer(paginate_data['list'],many=True).data
+
         return Response(status=status.HTTP_200_OK, data={
             "status": True,
             "message": "موفق",
-            "data": serializer_data.data
+            "data": paginate_data
         })
     def post(self,request):
         request.data['workspace_id'] = request.user.current_workspace_id
@@ -1373,13 +1375,17 @@ class MainCheckListManager(APIView):
                 "data":serializer_data.data
             })
         task_id = request.GET.get("task_id")
+        page_number = request.GET.get("page_number",1)
         task_obj = get_object_or_404(Task,id=task_id)
         check_list_objs = CheckList.objects.filter(task=task_obj)
+        pagination_data =pagination(query_set=check_list_objs,page_number=page_number,per_page_count=5)
+
         serializer_data = CheckListSerializer(check_list_objs,many=True)
+        pagination_data["list"]  = CheckListSerializer(pagination_data["list"],many=True).data
         return Response(status=status.HTTP_200_OK, data={
             "status": True,
             "message": "موفق",
-            "data": serializer_data.data
+            "data": pagination_data
         })
     def post(self,request):
         request.data['workspace_id'] = request.user.current_workspace_id
