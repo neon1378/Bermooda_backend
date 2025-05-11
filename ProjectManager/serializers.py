@@ -301,9 +301,12 @@ class TaskSerializer(ModelSerializer):
             if not check_list_item['responsible_for_doing_id']:
                 check_list_item['responsible_for_doing_id'] = user.id
             task_id = task.id
-            check_list_item['task_id'] = task_id
+            # check_list_item['task_id'] = task_id
+
             serializer = CheckListSerializer(data=check_list_item)
+
             serializer.is_valid(raise_exception=True)
+            serializer.validated_data['task_id'] =task_id
             checklist_serializers.append(serializer)
         for serializer in checklist_serializers:
             serializer.save()
