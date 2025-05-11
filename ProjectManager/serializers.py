@@ -219,7 +219,7 @@ class CheckListSerializer(ModelSerializer):
         return instance
 
 class TaskSerializer(ModelSerializer):
-    check_list = CheckListSerializer(many=True)
+    check_list = CheckListSerializer(many=True,read_only=True)
     category_task = CategoryProjectSerializer(read_only=True)
     project_id = serializers.IntegerField(write_only=True,required=True)
     file_id_list = serializers.ListField(write_only=True,required=False,allow_null=True)
