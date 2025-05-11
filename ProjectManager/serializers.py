@@ -183,7 +183,7 @@ class CheckListSerializer(ModelSerializer):
         difficulty = validated_data.get("difficulty", None)
 
         if label_id:
-            instance.label_id = label_id['id']
+            instance.label_id = label_id
 
         if responsible_for_doing_id:
             instance.responsible_for_doing_id = responsible_for_doing_id
