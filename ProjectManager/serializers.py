@@ -125,7 +125,7 @@ class CheckListSerializer(ModelSerializer):
         time_to_start = validated_data.get("time_to_start",None)
         date_to_end = validated_data.get("date_to_end",None)
         time_to_end = validated_data.get("time_to_end", None)
-        file_id_list = validated_data.pop("file_id_list",None)
+        file_id_list = validated_data.pop("file_id_list",[])
         title = validated_data.get("title")
         responsible_for_doing_id = validated_data.get("responsible_for_doing_id", None)
         task_id = validated_data.pop("task_id")
@@ -162,12 +162,13 @@ class CheckListSerializer(ModelSerializer):
             check_list_obj.label_id=label_id
         if responsible_for_doing_id:
             check_list_obj.responsible_for_doing_id=responsible_for_doing_id
-        for file_id in file_id_list:
-            main_file = MainFile.objects.get(id=file_id)
-            main_file.its_blong = True
-            main_file.save()
-            check_list_obj.file.add(main_file)
-        check_list_obj.save()
+        if file_id_list:
+            for file_id in file_id_list:
+                main_file = MainFile.objects.get(id=file_id)
+                main_file.its_blong = True
+                main_file.save()
+                check_list_obj.file.add(main_file)
+            check_list_obj.save()
         return check_list_obj
 
     def update(self, instance, validated_data):
