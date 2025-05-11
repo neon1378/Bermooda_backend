@@ -220,7 +220,7 @@ class NotifacticatonManager(APIView):
         return Response(status=status.HTTP_200_OK,data={
             "status":True,
             "message":"success",
-            "data":serializer_data if not is_paginate else notification_obj
+            "data":serializer_data if not is_paginate else notification_objs
             
         })
         
