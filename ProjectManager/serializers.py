@@ -89,7 +89,7 @@ class CheckListSerializer(ModelSerializer):
     file = MainFileSerializer(read_only=True,many=True)
 
     label = LabelSerializer(read_only=True)
-    label_id = serializers.IntegerField(write_only=True)
+    label_id = serializers.IntegerField(write_only=True,required=False,allow_null=True)
     file_id_list = serializers.ListField(write_only=True,required=False,allow_null=True)
     responsible_for_doing_id = serializers.IntegerField(write_only=True,required=False,allow_null=True)
     responsible_for_doing = UserSerializer(read_only=True)
