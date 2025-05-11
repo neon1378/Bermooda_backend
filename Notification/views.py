@@ -181,14 +181,15 @@ class NotifacticatonManager(APIView):
         per_page_count = request.GET.get("per_page_count",20)
 
         workspace_obj = get_object_or_404(WorkSpace,id=workspace_id)
+        all_notifications = Notification.objects.filter(user_account=request.user,is_read=False).order_by("-created")
         if not is_paginate:
             notification_objs= Notification.objects.filter(user_account=request.user).order_by("-created")
         else:
             notification_data =Notification.objects.filter(user_account=request.user).order_by("-created")
             notification_objs = pagination(query_set=notification_data,page_number=page_number,per_page_count=per_page_count)
-        for item in notification_objs:
-            if  item.is_read == False:
-                print("yes")
+
+        for item in all_notifications:
+
                 item.is_read=True
                 item.save()
         if not is_paginate:
