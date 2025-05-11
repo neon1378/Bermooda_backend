@@ -251,6 +251,14 @@ class Task(SoftDeleteModel):
         }
 class CheckList(SoftDeleteModel):
 
+    CHECK_LIST_TYPE = (
+        ("no_schedule","NoSchedule"),
+        ("with_schedule","WithSchedule"),
+        ("based_on_weight","BasedOnWeight")
+    )
+
+    check_list_type = models.CharField(max_length=30,choices=CHECK_LIST_TYPE,null=True,default="no_schedule",blank=True)
+
     title = models.TextField(null=True)
     difficulty = models.IntegerField(default=1)
     status = models.BooleanField(default=False)
@@ -395,7 +403,7 @@ class ProjectMessage(SoftDeleteModel):
         return jalali_datetime.strftime("%Y/%m/%d")
 
 
-class CheckListTimer(models.Model):
+class CheckListTimer(SoftDeleteModel):
     STATUS_CHOICES = [
         ('running', 'Running'),
         ('paused', 'Paused'),
@@ -403,10 +411,10 @@ class CheckListTimer(models.Model):
     ]
 
     start_time = models.DateTimeField(null=True, blank=True)
-    elapsed_time = models.DurationField(default=0)
+    elapsed_time = models.DurationField(default=timedelta)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='stopped')
     is_done = models.BooleanField(default=False)
-    check_list = models.OneToOneField(CheckList,on_delete=models.CASCADE,related_name="timer")
+    check_list = models.OneToOneField(CheckList,on_delete=models.CASCADE,related_name="timer",null=True)
     def play(self):
         if self.status != 'running':
             self.start_time = timezone.now()
@@ -427,6 +435,7 @@ class CheckListTimer(models.Model):
             self.elapsed_time += now - self.start_time
         self.start_time = None
         self.status = 'stopped'
+        self.is_done=True
         self.save()
 
     def reset(self):

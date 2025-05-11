@@ -84,10 +84,21 @@ class LabelSerializer(ModelSerializer):
         model =TaskLabel
         fields = "__all__"
 
+class CheckListTimerSerializer(ModelSerializer):
+    class Meta:
+        model = CheckListTimer
+        fields = [
+            "id",
+            "status",
+            "is_done",
+            "get_elapsed_seconds",
+
+        ]
+
 class CheckListSerializer(ModelSerializer):
 
     file = MainFileSerializer(read_only=True,many=True)
-
+    timer = CheckListTimerSerializer(read_only=True)
     label = LabelSerializer(read_only=True)
     label_id = serializers.IntegerField(write_only=True,required=False,allow_null=True)
     file_id_list = serializers.ListField(write_only=True,required=False,allow_null=True)
@@ -100,6 +111,7 @@ class CheckListSerializer(ModelSerializer):
             "file",
             "label",
             "is_delayed",
+
             "id",
             "task_data",
             "difficulty",
@@ -118,6 +130,8 @@ class CheckListSerializer(ModelSerializer):
             "responsible_for_doing_id",
             "responsible_for_doing",
             "task_id",
+            "check_list_type",
+            "timer",
         ]
     def create(self, validated_data):
         user = self.context.get("user")
@@ -131,7 +145,7 @@ class CheckListSerializer(ModelSerializer):
         task_id = validated_data.pop("task_id")
         label_id = validated_data.pop("label_id",None)
         task_obj = get_object_or_404(Task,id=task_id)
-
+        check_list_type = validated_data.pop("check_list_type",None)
 
         if date_to_start and time_to_start and date_to_end and time_to_end:
             try:
@@ -169,6 +183,14 @@ class CheckListSerializer(ModelSerializer):
                 main_file.save()
                 check_list_obj.file.add(main_file)
         check_list_obj.save()
+        if check_list_type:
+            check_list_obj.check_list_type=check_list_type
+            if check_list_type == "based_on_weight":
+                try:
+                    CheckListTimer.objects.create(check_list=check_list_obj)
+                except:
+                    pass
+
         return check_list_obj
 
     def update(self, instance, validated_data):
@@ -250,6 +272,7 @@ class TaskSerializer(ModelSerializer):
             "project_id",
             "check_list_data",
             "workspace_id",
+
 
         ]
 

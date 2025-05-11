@@ -1475,3 +1475,85 @@ class MainCheckListManager(APIView):
         check_list_obj = get_object_or_404(CheckList,id=check_list_id)
         check_list_obj.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+
+class CheckListTimerManager(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self,request,timer_id):
+        timer_obj = get_object_or_404(CheckListTimer,id=timer_id)
+        serializer_data =CheckListTimerSerializer(timer_obj)
+        # if check_list_obj.responsible_for_doing != request.user or check_list_obj.check_list_type != "based_on_weight":
+        #     return Response(status=status.HTTP_400_BAD_REQUEST,data={
+        #         "status":False,
+        #         "message":"فقط کاربر "
+        #     })
+        return Response(status=status.HTTP_200_OK,data={
+            "status":True,
+            "message":"موفق",
+            "data":serializer_data.data
+        })
+
+    def post (self,request,timer_id):
+        data= request.data
+        command = data.get("command")
+        workspace_obj = WorkSpace.objects.get(id=request.user.current_workspace_id)
+        timer_obj = get_object_or_404(CheckListTimer,id=timer_id)
+        if command == "play":
+            running_exists = CheckList.objects.filter(
+                task__project__workspace=workspace_obj,
+                responsible_for_doing=request.user,
+                check_list_type="based_on_weight",
+                timer__status="running"
+            ).exists()
+
+            if running_exists:
+                return Response(
+                    {
+                        "status": False,
+                        "message": "شما در حال حاضر تسک دیگری در حال اجرا دارید"
+                    },
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            if timer_obj.status == "running":
+                return Response(
+                    {
+                        "status":True,
+                        "message":"این تسک در حال اجرا میباشد",
+                        "data":CheckListTimerSerializer(timer_obj).data
+                    },status=status.HTTP_201_CREATED
+                )
+            timer_obj.play()
+            return Response(
+                {
+                    "status":True,
+                    "message":"با موفقیت این تسک به اجرا درآمد",
+                    "data": CheckListTimerSerializer(timer_obj).data
+                },status=status.HTTP_201_CREATED
+            )
+
+        elif command == "pause":
+            timer_obj.pause()
+            return Response (
+                {
+                    "status": True,
+                    "message": "با موفقیت این تسک متوقف شد",
+                    "data": CheckListTimerSerializer(timer_obj).data
+                },status=status.HTTP_201_CREATED
+            )
+        elif command == "stop":
+            timer_obj.stop()
+            return Response(
+                {
+                    "status": True,
+                    "message": "با موفقیت این تسک پایان یافت",
+                    "data": CheckListTimerSerializer(timer_obj).data
+                },status=status.HTTP_201_CREATED
+            )
+        else:
+            return Response(
+                {
+                    "status":False,
+                    "message":"Invalid command"
+                } ,status=status.HTTP_400_BAD_REQUEST
+            )
