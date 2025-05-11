@@ -189,7 +189,7 @@ from datetime import timedelta
 class Task(SoftDeleteModel):
     title = models.TextField(null=True)
     done_status = models.BooleanField(default=False)
-    description = models.TextField(null=True)
+    description = models.TextField(null=True,blank=True)
     main_file = models.ManyToManyField(MainFile)
     order = models.PositiveIntegerField(default=0,blank=True)
     category_task = models.ForeignKey(CategoryProject, on_delete=models.SET_NULL, null=True,
