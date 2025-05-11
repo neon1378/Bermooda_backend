@@ -215,7 +215,7 @@ class NotifacticatonManager(APIView):
                                                   workspace_obj=workspace_obj if notification_obj.workspace else None)
                     }
                     data_list.append(dic)
-            notification_obj['list']= data_list
+            notification_objs['list']= data_list
 
         return Response(status=status.HTTP_200_OK,data={
             "status":True,
