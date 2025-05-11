@@ -1308,8 +1308,11 @@ class MainTaskManager(APIView):
         })
     def put(self,request,task_id):
         request.data['workspace_id'] = request.user.current_workspace_id
-        workspace_obj = WorkSpace.objects.get(id=request.user.cu)
+        workspace_obj = WorkSpace.objects.get(id=request.user.current_workspace_id)
+
+
         task_obj= get_object_or_404(Task,id=task_id)
+        request.data['project_id'] =  task_obj.project.id
         serializer_data= TaskSerializer(data=request.data,instance=task_obj,context={"user":request.user})
         if serializer_data.is_valid():
             task_obj = serializer_data.save()
@@ -1421,6 +1424,7 @@ class MainCheckListManager(APIView):
     def put(self,request,check_list_id):
         instance = get_object_or_404(CheckList,id=check_list_id)
         request.data['workspace_id'] = request.user.current_workspace_id
+        request.data['task_id'] = instance.task.id
         serializer_data = CheckListSerializer(instance=instance,data=request.data,context={"user":request.user})
         if serializer_data.is_valid():
             check_list_obj = serializer_data.save()

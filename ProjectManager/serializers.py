@@ -106,7 +106,7 @@ class CheckListSerializer(ModelSerializer):
             "end_date_time_sort",
             "title",
             "status",
-            "responsible_for_doing",
+
             "date_to_start",
             "time_to_start",
             "project_id_main",
@@ -223,7 +223,7 @@ class TaskSerializer(ModelSerializer):
     project_id = serializers.IntegerField(write_only=True,required=True)
     file_id_list = serializers.ListField(write_only=True,required=False,allow_null=True)
     file_urls = serializers.SerializerMethodField(read_only=True)
-    check_lists = serializers.ListField(write_only=True,required=False,allow_null=True)
+    check_list_data = serializers.ListField(write_only=True,required=False,allow_null=True)
     category_task_id = serializers.IntegerField(write_only=True,required=True)
     workspace_id = serializers.IntegerField(write_only=True,required=True)
 
@@ -237,6 +237,7 @@ class TaskSerializer(ModelSerializer):
             "project_id_main",
             "check_list",
             "title",
+            "file_urls",
             "order",
             "description",
             "category_task",
@@ -246,6 +247,8 @@ class TaskSerializer(ModelSerializer):
             "task_progress",
             "file_id_list",
             "project_id",
+            "check_list_data",
+            "workspace_id",
 
         ]
 
@@ -253,9 +256,12 @@ class TaskSerializer(ModelSerializer):
     def get_file_urls(self,obj):
         return MainFileSerializer(obj.main_file.all(),many=True).data
     def create(self, validated_data):
-
+        try:
+            done_status= validated_data.pop("done_status",None)
+        except:
+            pass
         project_id = validated_data.pop("project_id")
-        check_list_data = validated_data.pop("check_lists", None)
+        check_list_data = validated_data.pop("check_list_data", None)
         file_ids = validated_data.pop("file_id_list",None)
         category_id = validated_data.pop("category_task_id")
         workspace_id = validated_data.pop("workspace_id")
@@ -276,7 +282,7 @@ class TaskSerializer(ModelSerializer):
         task = Task.objects.create(
             **validated_data, category_task_id=category_id, project_id=project_id
         )
-
+        task.project=project
         # Associate files with the task
         MainFile.objects.filter(id__in=file_ids).update(its_blong=True)
         task.main_file.add(*MainFile.objects.filter(id__in=file_ids))
