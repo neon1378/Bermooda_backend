@@ -216,11 +216,24 @@ class NotifacticatonManager(APIView):
                     }
                     data_list.append(dic)
             notification_objs['list']= data_list
+        if not is_paginate:
+            return Response(status=status.HTTP_200_OK,data={
+                "status":True,
+                "message":"success",
+                "data":serializer_data
 
-        return Response(status=status.HTTP_200_OK,data={
-            "status":True,
-            "message":"success",
-            "data":serializer_data if not is_paginate else notification_objs
-            
-        })
-        
+            })
+        else:
+            return Response(status=status.HTTP_200_OK, data={
+                "status": True,
+                "message": "success",
+                "data": notification_objs['list'],
+                "extra":{
+                    "count":notification_objs['count'],
+                    "next":notification_objs['next'],
+                    "previous":notification_objs['previous'],
+                }
+
+            })
+
+
