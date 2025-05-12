@@ -588,7 +588,7 @@ class WorkSpaceMemberFullDataSerializer(serializers.ModelSerializer):
             deleted_member.full_name= f"{first_name} {last_name}"
             deleted_member.fullname = f"{deleted_member.first_name} {deleted_member.last_name}"
             deleted_member.is_accepted = False
-            if user_acc.current_workspace_id == 0 or not WorkSpace.objects.filter(id=user_acc.current_workspace_id,workspace=workspace).exists():
+            if user_acc.current_workspace_id == 0 or not WorkSpace.objects.filter(id=user_acc.current_workspace_id).exists():
                 user_acc.current_workspace_id = workspace.id
                 user_acc.save()
 
