@@ -518,8 +518,8 @@ class WorkSpaceMemberFullDataSerializer(serializers.ModelSerializer):
         print(validated_data)
 
         from .views import create_permission_for_member
-        favorite_name_list = validated_data.pop("favorite_name_list",None)
-        skill_name_list = validated_data.pop("skill_name_list",None)
+        favorite_name_list = validated_data.pop("favorite_name_list",[])
+        skill_name_list = validated_data.pop("skill_name_list",[])
         employment_type = validated_data.pop("employment_type",None)
         salary_type = validated_data.pop("salary_type",None)
 
@@ -534,7 +534,7 @@ class WorkSpaceMemberFullDataSerializer(serializers.ModelSerializer):
 
         workspace = get_object_or_404(WorkSpace, id=workspace_id)
 
-        permissions = validated_data.pop("permissions")
+        permissions = validated_data.pop("permissions",[])
         phone = validated_data.get("phone_number")
         more_information= validated_data.pop("more_information",False)
         state_id = validated_data.pop("state_id",None)
@@ -634,12 +634,13 @@ class WorkSpaceMemberFullDataSerializer(serializers.ModelSerializer):
                 folder_obj.save()
             for favorite in deleted_member.favorites.all():
                 favorite.hard_delete()
-            for favorite in  favorite_name_list:
-                Favorite.objects.create(
-                    title=favorite,
-                    member=deleted_member
+            if favorite_name_list:
+                for favorite in  favorite_name_list:
+                    Favorite.objects.create(
+                        title=favorite,
+                        member=deleted_member
 
-                )
+                    )
             for skill in  deleted_member.skills.all():
                 skill.hard_delete()
 
@@ -695,13 +696,13 @@ class WorkSpaceMemberFullDataSerializer(serializers.ModelSerializer):
             main_file.its_blong = True
             main_file.save()
             member.bad_record=main_file
+        if favorite_name_list:
+            for favorite in favorite_name_list:
+                Favorite.objects.create(
+                    title=favorite,
+                    member=member
 
-        for favorite in favorite_name_list:
-            Favorite.objects.create(
-                title=favorite,
-                member=member
-
-            )
+                )
         for skill in skill_name_list:
             Skill.objects.create(
                 title=skill,
