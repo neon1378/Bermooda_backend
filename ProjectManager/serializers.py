@@ -182,7 +182,7 @@ class CheckListSerializer(ModelSerializer):
                 main_file.its_blong = True
                 main_file.save()
                 check_list_obj.file.add(main_file)
-        check_list_obj.save()
+
         if check_list_type:
             check_list_obj.check_list_type=check_list_type
             if check_list_type == "based_on_weight":
@@ -190,7 +190,7 @@ class CheckListSerializer(ModelSerializer):
                     CheckListTimer.objects.create(check_list=check_list_obj)
                 except:
                     pass
-
+        check_list_obj.save()
         return check_list_obj
 
     def update(self, instance, validated_data):
