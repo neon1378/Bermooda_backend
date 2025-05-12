@@ -1223,8 +1223,10 @@ def check_list_archive(request,task_id):
 def completed_tasks(request):
     project_id = request.GET.get("project_id")
     page_number=request.GET.get("page_number",1)
+
     project_obj = get_object_or_404(Project,id=project_id)
     completed_task_objs= Task.objects.filter(project=project_obj,done_status=True)
+
     data = pagination(query_set=completed_task_objs,page_number=page_number)
     data['list'] = TaskSerializer(data['list'],many=True).data
 
@@ -1358,7 +1360,14 @@ class MainTaskManager(APIView):
 
     def delete (self,request,task_id):
         task = get_object_or_404(Task,id=task_id)
+        project_id = task.project.id
         task.delete()
+        event ={
+            "type":"send_event_task_list",
+            "project_id":project_id
+        }
+
+        async_to_sync(self.channel_layer.group_send)(f"{project_id}_gp_project",event)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 class MainCheckListManager(APIView):
@@ -1473,7 +1482,15 @@ class MainCheckListManager(APIView):
         })
     def delete (self,request,check_list_id):
         check_list_obj = get_object_or_404(CheckList,id=check_list_id)
+        project_id= check_list_obj.task.project.id
         check_list_obj.delete()
+
+        event ={
+            "type":"send_event_task_list",
+            "project_id":project_id
+        }
+
+        async_to_sync(self.channel_layer.group_send)(f"{project_id}_gp_project",event)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
