@@ -344,6 +344,8 @@ class CoreWebSocket(AsyncJsonWebsocketConsumer):
         # Notify the user group to update groups and unread messages
         await self.channel_layer.group_send(self.user_group_name, {"type": "send_groups"})
         await self.channel_layer.group_send(self.user_group_name, {"type": "send_all_unread_messages"})
+        await self.channel_layer.group_send(self.user_group_name, {"type": "send_wallet_detail_data"})
+
 
         # Send updated workspace data to the client
         current_workspace = await self._get_workspace_data(self.workspace_id)
@@ -443,6 +445,7 @@ class CoreWebSocket(AsyncJsonWebsocketConsumer):
             "new_message":self.new_message_handler,
             "get_unread_messages":self.get_unread_messages_handler,
             "read_message_list":self.read_message_list_handler,
+            "wallet_detail":self.wallet_detail_handler,
             # < < < end workspace 1 to 1 chat command > > > #
         }
         handler = command_handlers.get(command)
@@ -478,6 +481,30 @@ class CoreWebSocket(AsyncJsonWebsocketConsumer):
             "message": message,
             "data": {}
         })
+    #wallet Detail Begin
+    @sync_to_async
+    def wallet_detail_data (self):
+        return {
+            "id":self.workspace_obj.wallet.id,
+            "balance":self.workspace_obj.wallet.balance
+        }
+
+    async def wallet_detail_handler(self,data):
+        wallet_data = await self.wallet_detail_data()
+        await self.send_json(
+            {
+                "data_type":"wallet_detail",
+                "data":wallet_data
+            }
+        )
+    async def send_wallet_detail_data(self,event):
+        wallet_data = await self.wallet_detail_data()
+        await self.send_json(
+            {
+                "data_type": "wallet_detail",
+                "data": wallet_data
+            }
+        )
 
     # Crm Customer Begin
     async def change_step_status_handler(self,data):
