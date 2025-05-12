@@ -196,6 +196,7 @@ class CheckListSerializer(ModelSerializer):
     def update(self, instance, validated_data):
         user = self.context.get("user")
         label_id = validated_data.get("label_id", None)
+        check_list_type= validated_data.get("check_list_type")
         title = validated_data.get("title",None)
         responsible_for_doing_id = validated_data.get("responsible_for_doing_id", None)
         date_to_start = validated_data.get("date_to_start", None)
@@ -203,6 +204,11 @@ class CheckListSerializer(ModelSerializer):
         date_to_end = validated_data.get("date_to_end", None)
         time_to_end = validated_data.get("time_to_end", None)
         difficulty = validated_data.get("difficulty", None)
+        if check_list_type:
+            instance.check_list_type = check_list_type
+            if check_list_type == "based_on_weight" and not instance.timer:
+
+                CheckListTimer.objects.create(check_list=instance)
 
         if label_id:
             instance.label_id = label_id
