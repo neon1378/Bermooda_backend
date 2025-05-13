@@ -613,7 +613,7 @@ def create_username_pass(request):
         main_file = MainFile.objects.get(id=avatar_id)
         main_file.its_blong=True
         user_acc.avatar =main_file
-
+    user_acc.register_at=datetime.now()
     user_acc.save()
     try:
         api_connection = ExternalApi(token="asdasd", headers_required=False)
@@ -684,6 +684,7 @@ def login_user(request):
                 print(response.json())
                 respnse_data = response.json()
                 user_acc.refrence_token=respnse_data['data']['token']
+                user_acc.last_login = datetime.now()
                 user_acc.save()
             except:
                 pass

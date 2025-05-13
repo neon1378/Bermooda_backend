@@ -70,6 +70,7 @@ class UserAccount(AbstractBaseUser,PermissionsMixin):
     avatar = models.ForeignKey(MainFile,on_delete=models.SET_NULL,null=True)
     username = models.CharField(max_length=70, unique=True,null=True)
     state = models.ForeignKey(State, on_delete=models.SET_NULL, null=True)
+    register_at = models.DateTimeField(null=True)
     city = models.ForeignKey(City, on_delete=models.SET_NULL, null=True)
     fake_name = models.CharField(max_length=55,null=True)
     is_bonos = models.BooleanField(default=True)
