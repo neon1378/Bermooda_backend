@@ -92,7 +92,7 @@ class UserAccount(AbstractBaseUser,PermissionsMixin):
     refrence_token = models.TextField(null=True)
     is_profile = models.BooleanField(default=False)
     current_workspace_id = models.BigIntegerField(default=0)
-    sms_q = models.IntegerField(default=0)
+    sms_q = models.IntegerField(default=-1)
     is_auth = models.BooleanField(default=False)
     
 
