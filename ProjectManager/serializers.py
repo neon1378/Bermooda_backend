@@ -206,7 +206,7 @@ class CheckListSerializer(ModelSerializer):
         difficulty = validated_data.get("difficulty", None)
         if check_list_type:
             instance.check_list_type = check_list_type
-            if check_list_type == "based_on_weight" and not instance.timer:
+            if check_list_type == "based_on_weight" and not CheckListTimer.objects.filter(check_list=instance).exists():
 
                 CheckListTimer.objects.create(check_list=instance)
 
