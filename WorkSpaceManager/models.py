@@ -25,10 +25,10 @@ class IndustrialActivity(SoftDeleteModel):
 class WorkSpace (SoftDeleteModel):
     title = models.CharField(max_length=30,null=True,blank=True)
     owner = models.ForeignKey(UserAccount,on_delete=models.CASCADE,null=True,related_name="workspace_owner",blank=True)
-    is_authenticated = models.BooleanField(default=False)
+    is_authenticated = models.BooleanField(default=True)
     activated = models.BooleanField(default=True)
 
-
+    is_auth_accepted = models.BooleanField(default=False)
     BUSINESS_TYPE = (
         ("کسب کار آنلاین","کسب کار آنلاین "),
         ("کسب کار آفلاین","کسب کار آفلاین "),

@@ -1075,6 +1075,7 @@ def create_workspace(request):
 
     new_workspace_obj = WorkSpace(title= data['title'])
     new_workspace_obj.owner=request.user
+    new_workspace_obj.is_authenticated=True
     new_workspace_obj.save()
     permission_list = [
         "project_board",
@@ -1369,6 +1370,7 @@ def get_user_data (request):
                 "id":current_workspace_obj.wallet.id,
                 "balance":current_workspace_obj.wallet.balance
             },
+            "is_auth":current_workspace_obj.is_auth,
             "id":current_workspace_obj.id,
             "title":current_workspace_obj.title,
             "is_authenticated":current_workspace_obj.is_authenticated,
