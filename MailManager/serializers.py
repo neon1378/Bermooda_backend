@@ -161,10 +161,10 @@ class MailSerializer(ModelSerializer):
     members = MemberSerializer(read_only=True, many=True)
 
     file_id_list = serializers.ListField(write_only=True)
-    files = FileDetail(read_only=True, many=True)
+    files = MainFileSerializer(read_only=True, many=True)
     creator_id = serializers.IntegerField(write_only=True)
     creator = MemberSerializer(read_only=True)
-    mail_image = FileDetail(read_only=True)
+    mail_image = MainFileSerializer(read_only=True)
     mail_image_id = serializers.IntegerField(write_only=True, required=False)
     label = MaliLabelSerializer(read_only=True)
     label_id = serializers.IntegerField(write_only=True)
