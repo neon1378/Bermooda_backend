@@ -131,6 +131,7 @@ class WorkSpaceSerializer(ModelSerializer):
             "title",
             "id",
             "industrialactivity_id",
+            "is_auth_accepted",
             "industrialactivity",
             "personal_information_status",
             "business_type",
