@@ -1009,7 +1009,7 @@ def get_workspaces (request):
         dic = {
             "id":workspace.id,
             "title":workspace.title,
-            "is_auth_accepted":workspace.is_auth_accepted,
+            "auth_status":workspace.auth_status,
             "is_authenticated":workspace.is_authenticated,
             "jadoo_workspace_id":workspace.jadoo_workspace_id,
             "is_active":workspace.is_active,
@@ -1029,7 +1029,7 @@ def get_workspaces (request):
             "id": member.workspace.id,
             "title": member.workspace.title,
             "is_authenticated": member.workspace.is_authenticated,
-            "is_auth_accepted":member.workspace.is_auth_accepted,
+            "auth_status":member.workspace.auth_status,
             "jadoo_workspace_id": member.workspace.jadoo_workspace_id,
             "is_active": member.workspace.is_active,
             "type": "member",
@@ -1372,7 +1372,7 @@ def get_user_data (request):
                 "id":current_workspace_obj.wallet.id,
                 "balance":current_workspace_obj.wallet.balance
             },
-            "is_auth_accepted":current_workspace_obj.is_auth_accepted,
+            "auth_status":current_workspace_obj.auth_status,
             "id":current_workspace_obj.id,
             "title":current_workspace_obj.title,
             "is_authenticated":current_workspace_obj.is_authenticated,

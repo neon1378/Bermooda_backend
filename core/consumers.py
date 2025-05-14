@@ -295,7 +295,7 @@ class CoreWebSocket(AsyncJsonWebsocketConsumer):
                 "id": current_workspace_obj.wallet.id if current_workspace_obj.wallet else None,
                 "balance": int(current_workspace_obj.wallet.balance) if current_workspace_obj.wallet else 0
             },
-            "is_auth_accepted": current_workspace_obj.is_auth_accepted,
+            "auth_status": current_workspace_obj.auth_status,
             "id": current_workspace_obj.id,
             "title": current_workspace_obj.title,
             "is_authenticated": current_workspace_obj.is_authenticated,
