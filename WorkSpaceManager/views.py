@@ -149,7 +149,7 @@ class WorkspaceManager(APIView):
                     new_wallet = Wallet(balance=50000,workspace=workspace_obj)
                     new_wallet.save()
 
-                workspace_obj.auth_status = "is_pending"
+                workspace_obj.auth_status = "pending"
                 try:
                         api_connection = ExternalApi(token=workspace_obj.owner.refrence_token)
 

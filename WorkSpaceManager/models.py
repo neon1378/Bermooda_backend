@@ -31,9 +31,9 @@ class WorkSpace (SoftDeleteModel):
     is_auth_accepted = models.BooleanField(default=False)
 
     AUTH_STATUS = (
-        ("is_pending","IsPending"),
-        ("is_accepted","IsAccepted"),
-        ("is_rejected","IsRejected")
+        ("pending","Pending"),
+        ("accepted","Accepted"),
+        ("rejected","Rejected")
     )
     BUSINESS_TYPE = (
         ("کسب کار آنلاین","کسب کار آنلاین "),
@@ -57,7 +57,7 @@ class WorkSpace (SoftDeleteModel):
         ("professional","PROFESSIONAL"),
     )
 
-    auth_status = models.CharField(max_length=20,choices=AUTH_STATUS,null=True,blank=True,default="is_rejected")
+    auth_status = models.CharField(max_length=20,choices=AUTH_STATUS,null=True,blank=True,default="rejected")
     plan_started_date = models.DateTimeField(null=True)
     payment_method = models.CharField(max_length=30,choices=PAYMENT_METHOD,default="wallet")
     plan_method = models.CharField(null=True,max_length=30,choices=PLAN_METHOD)
