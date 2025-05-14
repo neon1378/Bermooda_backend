@@ -149,8 +149,8 @@ class WorkspaceManager(APIView):
                     new_wallet = Wallet(balance=50000,workspace=workspace_obj)
                     new_wallet.save()
 
-                if workspace_obj.is_authenticated == False:
-                    try:
+                workspace_obj.auth_status = "is_pending"
+                try:
                         api_connection = ExternalApi(token=workspace_obj.owner.refrence_token)
 
                         payload = {
@@ -184,8 +184,8 @@ class WorkspaceManager(APIView):
 
                         workspace_obj.jadoo_workspace_id = response_data['id']
                         workspace_obj.save()
-                    except:
-                        pass
+                except:
+                    pass
 
                 workspace_obj.is_authenticated = True
                 workspace_obj.save()
