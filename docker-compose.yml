@@ -10,7 +10,7 @@ services:
 
   web:
     build: .
-    command: gunicorn your_project.wsgi:application --bind 0.0.0.0:8030
+    command: gunicorn your_project.wsgi:application --bind 0.0.0.0:8000
     volumes:
       - ./static:/app/static
       - ./media:/app/media
@@ -23,7 +23,7 @@ services:
 
   asgi:
     build: .
-    command: daphne -b 0.0.0.0 -p 8040 your_project.asgi:application
+    command: daphne -b 0.0.0.0 -p 8001 your_project.asgi:application
     ports:
       - "8040:8040"
     env_file:
@@ -34,9 +34,19 @@ services:
   celery_worker:
     build: .
     command: celery -A your_project worker --loglevel=info
-
+    env_file:
+      - .env
     depends_on:
       - redis
+
+  celery_beat:
+    build: .
+    command: celery -A your_project beat --loglevel=info
+    env_file:
+      - .env
+    depends_on:
+      - redis
+      - celery_worker
 
 volumes:
   redis_data:
