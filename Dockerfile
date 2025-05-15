@@ -6,6 +6,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     default-libmysqlclient-dev \
     pkg-config \
+    libmagic1 \
     && rm -rf /var/lib/apt/lists/*
 
 # Set work directory
