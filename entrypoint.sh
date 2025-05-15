@@ -14,7 +14,7 @@ python manage.py migrate
 # Collect static files
 python manage.py collectstatic --noinput
 
-# Create celerybeat schedule file if not exists
+# Create celerybeat schedule file if needed
 if [ "$CELERY_BEAT" = "true" ]; then
   python manage.py celerybeat_init
 fi
