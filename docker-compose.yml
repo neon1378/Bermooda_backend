@@ -30,23 +30,23 @@ services:
 #      - .env
     depends_on:
       - redis
-
-  celery_worker:
-    build: .
-    command: celery -A your_project worker --loglevel=info
-#    env_file:
-#      - .env
-    depends_on:
-      - redis
-
-  celery_beat:
-    build: .
-    command: celery -A your_project beat --loglevel=info
-#    env_file:
-#      - .env
-    depends_on:
-      - redis
-      - celery_worker
+#
+#  celery_worker:
+#    build: .
+#    command: celery -A your_project worker --loglevel=info
+##    env_file:
+##      - .env
+#    depends_on:
+#      - redis
+#
+#  celery_beat:
+#    build: .
+#    command: celery -A your_project beat --loglevel=info
+##    env_file:
+##      - .env
+#    depends_on:
+#      - redis
+#      - celery_worker
 
 volumes:
   redis_data:
