@@ -934,8 +934,19 @@ class CustomerUserView(APIView):
     def post(self,request):
         data= request.data
         data['workspace_id'] =request.user.current_workspace_id
-        data['user_account_id'] =request.user.id
 
+        data['user_account_id'] =request.user.id
+        group_crm_objs = GroupCrm.objects.filter(workspace= data['workspace_id'])
+        for group in group_crm_objs:
+            is_customer_exists = CustomerUser.objects.filter(phone_number=data['phone_number'], group_crm=group).exists()
+            if is_customer_exists:
+                return Response(
+                    status=status.HTTP_400_BAD_REQUEST,
+                    data= {
+                        "status": False,
+                        "message": "شماره تلفن وارد شده در حال حاضر در کسب و کار شما وجود دارد"
+                    }
+                )
         serializer_data = CustomerSmallSerializer(data=request.data)
         if serializer_data.is_valid():
             customer_obj = serializer_data.save()
