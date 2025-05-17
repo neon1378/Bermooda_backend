@@ -490,7 +490,7 @@ class CoreWebSocket(AsyncJsonWebsocketConsumer):
     def wallet_detail_data (self):
         return {
             "id":self.workspace_obj.wallet.id,
-            "balance":self.workspace_obj.wallet.balance
+            "balance":int(self.workspace_obj.wallet.balance) if self.workspace_obj.wallet.balance else 0,
         }
 
     async def wallet_detail_handler(self,data):
