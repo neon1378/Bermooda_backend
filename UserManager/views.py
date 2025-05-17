@@ -155,7 +155,7 @@ class SendOtpView(APIView):
                     "message": "شماره تلفن وارد شده اشتباه میباشد"
                 }
             )
-        user_account = UserAccount.objects.get_or_create(phone_number=phone_number,is_register=True)
+        user_account, created = UserAccount.objects.get_or_create(phone_number=phone_number, is_register=False)
 
         otp = str(random.randint(100000, 999999))
         if not  PhoneOTP.objects.filter(phone_number = user_account.phone_number).exists():
