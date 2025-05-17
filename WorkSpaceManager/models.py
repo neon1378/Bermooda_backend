@@ -35,6 +35,7 @@ class WorkSpace (SoftDeleteModel):
         ("accepted","Accepted"),
         ("rejected","Rejected")
     )
+
     BUSINESS_TYPE = (
         ("کسب کار آنلاین","کسب کار آنلاین "),
         ("کسب کار آفلاین","کسب کار آفلاین "),

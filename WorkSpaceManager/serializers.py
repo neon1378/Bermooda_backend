@@ -852,21 +852,22 @@ class WorkSpaceMemberFullDataSerializer(serializers.ModelSerializer):
 
         for favorite in instance.favorites.all():
             favorite.hard_delete()
-
-        for favorite in favorite_name_list:
+        if favorite_name_list:
+            for favorite in favorite_name_list:
                 Favorite.objects.create(
                     title=favorite,
                     member=instance
 
                 )
+
         for skill in instance.skills.all():
             skill.hard_delete()
-
-        for skill in skill_name_list:
-            Skill.objects.create(
-                title=skill,
-                member=instance
-            )
+        if skill_name_list:
+            for skill in skill_name_list:
+                Skill.objects.create(
+                    title=skill,
+                    member=instance
+                )
 
         if employment_type:
             instance.employment_type = employment_type
