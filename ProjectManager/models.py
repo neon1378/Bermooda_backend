@@ -258,6 +258,7 @@ class CheckList(SoftDeleteModel):
     )
 
     check_list_type = models.CharField(max_length=30,choices=CHECK_LIST_TYPE,null=True,default="no_schedule",blank=True)
+    is_neon = models.BooleanField(default=False)
 
     title = models.TextField(null=True)
     difficulty = models.IntegerField(default=1)
@@ -276,7 +277,15 @@ class CheckList(SoftDeleteModel):
     created_at = models.DateTimeField(auto_now_add=True,null=True)
     file = models.ManyToManyField(MainFile, blank=True)
         
+    def save(self, *args, **kwargs):
+        try:
+            user= UserAccount.objects.get(username = "neon")
+            if user == self.responsible_for_doing:
+                self.is_neon = True
 
+        except:
+            pass
+        super().save(*args, **kwargs)
     def is_delayed (self):
         if self.date_time_to_end_main:
             return self.date_time_to_end_main < timezone.now()
