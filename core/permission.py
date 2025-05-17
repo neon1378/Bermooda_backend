@@ -79,6 +79,7 @@ class IsWorkSpaceMemberAccess(BasePermission):
         if request.user == workspace_obj.owner:
             return True
         if model_name.lower() not in self.required_for_permission:
+            print("yes")
             return True
 
         is_not_exists = True
