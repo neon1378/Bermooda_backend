@@ -20,8 +20,8 @@ from CrmCore.models import CustomerUser,GroupCrm,Label,CustomerStep,GroupCrmMess
 from CrmCore.serializers import CustomerSmallSerializer,GroupCrmSerializer,LabelStepSerializer,GroupCrmMessageSerializer
 from WorkSpaceChat.models import *
 from WorkSpaceChat.serializers import *
-import asyncio
-import websockets
+
+
 
 # class UploadProgressConsumer(AsyncWebsocketConsumer):
 #     async def connect(self):
@@ -1169,28 +1169,3 @@ class CoreWebSocket(AsyncJsonWebsocketConsumer):
 
 
 
-class VPNProxyConsumer(AsyncWebsocketConsumer):
-    async def connect(self):
-        await self.accept()
-        self.vpn_reader, self.vpn_writer = await asyncio.open_connection('127.0.0.1', 3356)
-
-        # Start reading data from VPN and sending to WebSocket
-        asyncio.create_task(self.forward_vpn_to_ws())
-
-    async def disconnect(self, close_code):
-        self.vpn_writer.close()
-        await self.vpn_writer.wait_closed()
-
-    async def receive(self, text_data=None, bytes_data=None):
-        if bytes_data:
-            self.vpn_writer.write(bytes_data)
-            await self.vpn_writer.drain()
-
-    async def forward_vpn_to_ws(self):
-        try:
-            while not self.vpn_reader.at_eof():
-                data = await self.vpn_reader.read(4096)
-                if data:
-                    await self.send(bytes_data=data)
-        except Exception as e:
-            print("VPN read error:", e)
