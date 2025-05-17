@@ -15,7 +15,15 @@ class LabelAdmin(admin.ModelAdmin):
         # Use the custom manager's queryset
         return self.model.objects.get_queryset()
 
+@admin.register(PhoneOTP)
+class PhoneOTPAdmin(admin.ModelAdmin):
+    list_display = ("id","phone_number","otp")
+    list_filter = ('id',)
 
+
+    def get_queryset(self, request):
+        # Use the custom manager's queryset
+        return self.model.objects.get_queryset()
 
 admin.site.register(BonosPhone)
 
