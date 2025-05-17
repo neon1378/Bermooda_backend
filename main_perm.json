@@ -300,6 +300,8 @@
     ]
 
 },
+
+
 {  "permission_name":"crm",
     "methods":[
         "post",
@@ -687,7 +689,7 @@
 
     "items":[
         {
-            "view_name":"workspacemembermanger",
+            "view_name":"foldermanager",
 
             "permissions":[
                 {
@@ -699,15 +701,15 @@
                         },
                         {
                             "method":"post",
-                            "status":true
+                            "status":false
                         },
                         {
                             "method":"put",
-                            "status":true
+                            "status":false
                         },
                         {
                             "method":"delete",
-                            "status":true
+                            "status":false
                         }
                     ]
 

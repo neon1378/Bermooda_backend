@@ -14,7 +14,7 @@ from django.views.decorators.csrf import csrf_protect
 
 from ProjectManager.models import ProjectDepartment
 from .models import *
-from core.permission import IsWorkSpaceUser
+from core.permission import IsWorkSpaceUser,IsWorkSpaceMemberAccess
 from MailManager.models import MailStatus
 from core.models import City,State
 from django.contrib.auth.hashers import check_password
@@ -249,7 +249,7 @@ def get_all_city_per_state (request,state_id):
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated,IsWorkSpaceMemberAccess])
 def get_users_info(request):
     workspace_id = request.user.current_workspace_id
     workspace_obj= get_object_or_404(WorkSpace,id=workspace_id)
@@ -743,7 +743,7 @@ def login_user(request):
 
 
 class UserAccountManager(APIView):
-    permission_classes=[IsAuthenticated,IsWorkSpaceUser]
+    permission_classes=[IsAuthenticated]
     def get (self,request,user_id=None):
         workspace_id = request.user.current_workspace_id
         response_data = []

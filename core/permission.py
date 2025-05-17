@@ -2,7 +2,7 @@
 from rest_framework.permissions import BasePermission
 from UserManager.models import GroupMain,PermissionCategory,ViewName,PermissionType
 from django.shortcuts import get_object_or_404
-from WorkSpaceManager.models import WorkSpace
+from WorkSpaceManager.models import WorkSpace,WorkspaceMember
 class IsAccess(BasePermission):
     def has_permission(self, request, view):
         # Determine workspace object based on request method
@@ -46,25 +46,41 @@ class IsAccess(BasePermission):
 
 
 class IsWorkSpaceMemberAccess(BasePermission):
+    def __init__(self):
+        self.required_for_permission =[
+            "crmdepartmentmanager",
+            "groupcrmmanager",
+            "categorymanager",
+            "customerusermanager",
+            "projectmanager",
+            "projectdepartmentmanager",
+            "taskmanager",
+            "categoryprojectmanager",
+            "foldermanager",
+        ]
     def has_permission(self, request, view):
         model_name = getattr(view, 'queryset', None) or view.__class__.__name__.replace("View", "").capitalize()
-        if request.method in ['POST',"PUT","DELETE"]:
-            try:
-                workspace_id = request.data.get("workspace_id")
-            except:
-                self.message = "workspace_id its a required field"
+        workspace_id = request.user.current_workspace_id
+        if workspace_id == 0 or not WorkSpace.objects.filter(id=workspace_id).exists():
+            workspace_owner = WorkSpace.objects.filter(owner=request.user).first()
+            workspace_member = WorkspaceMember.objects.filter(user_account= request.user).first()
+            if workspace_owner:
+                request.user.current_workspace_id=workspace_owner.id
+                request.user.save()
+            elif workspace_member:
+                request.user.current_workspace_id = workspace_member.workspace.id
+                request.user.save()
+            else:
+                self.message = "you have to create a workspace first"
                 return False
-        elif request.method == "GET":
-            try:
-                workspace_id = request.GET.get("workspace_id")
-            except:
-                self.message = "workspace_id its a required field"
-                return False
-        else:
-            return True
+
+
         workspace_obj = get_object_or_404(WorkSpace,id=workspace_id)
         if request.user == workspace_obj.owner:
             return True
+        if model_name.lower() not in self.required_for_permission:
+            return True
+
         is_not_exists = True
         permission_dic = {}
         for member in workspace_obj.workspace_member.all():
