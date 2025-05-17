@@ -62,7 +62,7 @@ def create_reminde_a_task(chek_list):
                         sub_title=sub_title)
 
 class CategoryProjectManager(APIView):
-    permission_classes =[IsAuthenticated]
+    permission_classes =[IsAuthenticated,IsWorkSpaceMemberAccess]
     def get(self,request,category_id):
         category_obj = get_object_or_404(CategoryProject,id=category_id)
         return Response(status=status.HTTP_200_OK,data={
@@ -169,7 +169,7 @@ class CategoryProjectManager(APIView):
 
 
 class ProjectManager(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated,IsWorkSpaceMemberAccess]
     
 
 
@@ -296,7 +296,7 @@ class ProjectManager(APIView):
 
 
 class TaskManager(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated,IsWorkSpaceMemberAccess]
 
 
 
@@ -556,7 +556,7 @@ class TaskManager(APIView):
 
 
 class CheckListManager(APIView):
-    permission_classes=[IsAuthenticated]
+    permission_classes=[IsAuthenticated,IsWorkSpaceMemberAccess]
 
     def _convert_jalali_to_datetime(self, date_str, time_str):
         """ Convert Jalali date and time string to a datetime object. """
@@ -780,7 +780,7 @@ class CheckListManager(APIView):
         
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated,IsWorkSpaceMemberAccess])
 def get_project_users(request,project_id):
     workspace_id = request.user.current_workspace_id
     workspace_obj = get_object_or_404(WorkSpace,id=workspace_id)
@@ -854,6 +854,7 @@ def test_html_page(request,project_id):
 
 
 class LabelTaskManager(APIView):
+    permission_classes=[IsAuthenticated,IsWorkSpaceMemberAccess]
     def label_serializer(self,label_obj):
         return {
             "order":label_obj.order,
@@ -932,6 +933,7 @@ class LabelTaskManager(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 class TaskReportManager(APIView):
+    permission_classes=[IsAuthenticated,IsWorkSpaceMemberAccess]
     def get(self,request,report_id=None):
         data = request.data
         if report_id:
@@ -1022,7 +1024,7 @@ class TaskReportManager(APIView):
 
 
 class ProjectDepartmentManager(APIView):
-    permission_classes=[IsAuthenticated]
+    permission_classes=[IsAuthenticated,IsWorkSpaceMemberAccess]
     def get(self,request,department_id=None):
         if department_id:
             department_obj = get_object_or_404(ProjectDepartment,id=department_id)
@@ -1106,7 +1108,7 @@ class ProjectDepartmentManager(APIView):
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated,IsWorkSpaceMemberAccess])
 def my_task_checklist(request,project_id):
     page_number = request.GET.get("page_number",1)
     project_obj = get_object_or_404(Project,id=project_id)
@@ -1133,7 +1135,7 @@ def my_task_checklist(request,project_id):
 
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated,IsWorkSpaceMemberAccess])
 def referral_task(request,task_id):
     data =request.data
     project_id = data.get("project_id")
@@ -1150,7 +1152,7 @@ def referral_task(request,task_id):
     })
 
 class TaskArchiveManager(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated,IsWorkSpaceMemberAccess]
 
     def get(self, request,task_id=None):
         if task_id:
@@ -1208,7 +1210,7 @@ class TaskArchiveManager(APIView):
             "data":TaskSerializer(task_obj).data
         })
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated,IsWorkSpaceMemberAccess])
 def check_list_archive(request,task_id):
     try:
         task_obj = Task.all_objects.get(id=task_id, is_deleted=True)
@@ -1224,7 +1226,7 @@ def check_list_archive(request,task_id):
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated,IsWorkSpaceMemberAccess])
 def completed_tasks(request):
     project_id = request.GET.get("project_id")
     page_number=request.GET.get("page_number",1)
@@ -1246,7 +1248,7 @@ def completed_tasks(request):
 
 
 class MainTaskManager(APIView):
-    permission_classes=[IsAuthenticated]
+    permission_classes=[IsAuthenticated,IsWorkSpaceMemberAccess]
     channel_layer = get_channel_layer()
 
     def get(self,request,task_id=None):
@@ -1376,7 +1378,7 @@ class MainTaskManager(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 class MainCheckListManager(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated,IsWorkSpaceMemberAccess]
 
     channel_layer = get_channel_layer()
     def get(self,request,check_list_id=None):
@@ -1501,7 +1503,7 @@ class MainCheckListManager(APIView):
 
 
 class CheckListTimerManager(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated,IsWorkSpaceMemberAccess]
     def get(self,request,timer_id):
         timer_obj = get_object_or_404(CheckListTimer,id=timer_id)
         serializer_data =CheckListTimerSerializer(timer_obj)

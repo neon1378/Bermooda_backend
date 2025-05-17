@@ -10,12 +10,14 @@ from django.shortcuts import get_object_or_404
 from WorkSpaceManager.models import WorkspaceMember
 from WorkSpaceManager.serializers import WorkSpaceMemberSerializer
 from rest_framework.decorators import api_view,permission_classes
+from core.permission import IsWorkSpaceMemberAccess
+
 
 # Create your views here.
 
 
 class FolderManager(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated,IsWorkSpaceMemberAccess]
     def get(self,request,slug=None):
         page_number = request.GET.get("page_number",1)
         workspace_obj =WorkSpace.objects.get(id=request.user.current_workspace_id)

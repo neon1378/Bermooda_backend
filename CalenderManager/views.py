@@ -17,9 +17,9 @@ from ProjectManager.serializers import CheckListSerializer
 from django.shortcuts import get_object_or_404
 from CrmCore.serializers import CustomerSmallSerializer
 from CrmCore.models import CustomerUser
-
+from core.permission import  IsWorkSpaceMemberAccess
 class MeetingLabelManager(APIView):
-    permission_classes=[IsAuthenticated]
+    permission_classes=[IsAuthenticated,IsWorkSpaceMemberAccess]
     def get(self,request,label_id=None):
         if label_id:
             label_obj = get_object_or_404(MeetingLabel,id=label_id)
@@ -80,7 +80,7 @@ class MeetingLabelManager(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 class CalenderManger(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated,IsWorkSpaceMemberAccess]
 
     def is_jalali_leap_year(self, year):
         """
@@ -329,7 +329,7 @@ class CalenderManger(APIView):
         meeting_obj.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated,IsWorkSpaceMemberAccess])
 def get_a_meeting(request,meeting_id):
     meeting_obj = get_object_or_404(Meeting,id=meeting_id)
     serializer_data = MeetingSerializer(meeting_obj,context={'user': request.user})

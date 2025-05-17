@@ -12,7 +12,7 @@ from rest_framework.decorators import api_view,permission_classes
 from WorkSpaceManager.models import WorkSpace
 from django.db.models import Q
 from .serializers import *
-from core.permission import IsWorkSpaceUser
+from core.permission import IsWorkSpaceMemberAccess
 from itertools import groupby
 from django.db.models import DateField
 from django.db.models.functions import Cast
@@ -20,7 +20,7 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from Notification.views import create_notification
 class MailLabelManager(APIView):
-    permission_classes=[IsAuthenticated,IsWorkSpaceUser]
+    permission_classes=[IsAuthenticated,IsWorkSpaceMemberAccess]
     def get (self,request,label_id=None):
         if label_id:
             mail_label_obj = get_object_or_404(MailLabel,id=label_id)
@@ -83,7 +83,7 @@ class MailLabelManager(APIView):
 
 
 class MailManager(APIView):
-    permission_classes = [IsAuthenticated,IsWorkSpaceUser]
+    permission_classes = [IsAuthenticated,IsWorkSpaceMemberAccess]
     def _pagination_method (self,query_set,page_number,user):
 
 
@@ -222,7 +222,7 @@ class MailManager(APIView):
 
 class MailReportManager(APIView):
 
-    permission_classes = [IsAuthenticated,IsWorkSpaceUser]
+    permission_classes = [IsAuthenticated,IsWorkSpaceMemberAccess]
     def get (self,request,report_id=None):
         
         if report_id:
@@ -265,7 +265,7 @@ class MailReportManager(APIView):
 
 
 
-@permission_classes([IsAuthenticated,IsWorkSpaceUser])
+@permission_classes([IsAuthenticated,IsWorkSpaceMemberAccess])
 @api_view(['PUT'])
 def add_signature_to_mail (request,recipient_id):
     workspace_id = request.user.current_workspace_id
@@ -312,7 +312,7 @@ def add_signature_to_mail (request,recipient_id):
         
 
 class MailStatusManager(APIView):
-    permission_classes = [IsAuthenticated, IsWorkSpaceUser]
+    permission_classes = [IsAuthenticated, IsWorkSpaceMemberAccess]
 
     def get(self, request, mail_id):
         mail_obj = get_object_or_404(Mail, id=mail_id)
@@ -467,7 +467,7 @@ def create_statuses (request):
 
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated,IsWorkSpaceUser])
+@permission_classes([IsAuthenticated,IsWorkSpaceMemberAccess])
 def add_or_discard_to_favorite(request,mail_id):
     mail_obj = get_object_or_404(Mail,id=mail_id)
     try:
@@ -488,7 +488,7 @@ def add_or_discard_to_favorite(request,mail_id):
         "message":"success",
         "data":{}
     })
-@permission_classes([IsAuthenticated,IsWorkSpaceUser])
+@permission_classes([IsAuthenticated,IsWorkSpaceMemberAccess])
 @api_view(['GET'])
 def mail_actions (request,mail_id):
     # Get the Mail object
@@ -524,7 +524,7 @@ def mail_actions (request,mail_id):
 
 
 class CategoryDraftManger(APIView):
-    permission_classes=[IsAuthenticated,IsWorkSpaceUser]
+    permission_classes=[IsAuthenticated,IsWorkSpaceMemberAccess]
     def get(self,request,category_id=None):
         if category_id:
             category_obj  = get_object_or_404(CategoryDraft,id=category_id)
@@ -592,7 +592,7 @@ class CategoryDraftManger(APIView):
 
 
 class DraftManger(APIView):
-    permission_classes=[IsAuthenticated,IsWorkSpaceUser]
+    permission_classes=[IsAuthenticated,IsWorkSpaceMemberAccess]
     def get(self,request,draft_id=None):
         if draft_id:
             draft_obj = get_object_or_404(DraftManger,id=draft_id)

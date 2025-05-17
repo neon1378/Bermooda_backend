@@ -1,4 +1,5 @@
-
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
 from rest_framework.permissions import BasePermission
 from UserManager.models import GroupMain,PermissionCategory,ViewName,PermissionType
 from django.shortcuts import get_object_or_404
@@ -47,6 +48,7 @@ class IsAccess(BasePermission):
 
 class IsWorkSpaceMemberAccess(BasePermission):
     def __init__(self):
+        self.channel_layer = get_channel_layer()
         self.required_for_permission =[
             "crmdepartmentmanager",
             "groupcrmmanager",
@@ -67,9 +69,24 @@ class IsWorkSpaceMemberAccess(BasePermission):
             if workspace_owner:
                 request.user.current_workspace_id=workspace_owner.id
                 request.user.save()
+
+
+                event = {
+                    "type": "change_current_workspace",
+                    "workspace_id": request.user.current_workspace_id
+                }
+
+                async_to_sync(self.channel_layer.group_send)(f"{request.user.id}_gp_user", event)
+
             elif workspace_member:
                 request.user.current_workspace_id = workspace_member.workspace.id
                 request.user.save()
+                event = {
+                    "type": "change_current_workspace",
+                    "workspace_id": request.user.current_workspace_id
+                }
+
+                async_to_sync(self.channel_layer.group_send)(f"{request.user.id}_gp_user", event)
             else:
                 self.message = "you have to create a workspace first"
                 return False
@@ -79,7 +96,7 @@ class IsWorkSpaceMemberAccess(BasePermission):
         if request.user == workspace_obj.owner:
             return True
         if model_name.lower() not in self.required_for_permission:
-            print("yes")
+
             return True
 
         is_not_exists = True

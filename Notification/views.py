@@ -1,5 +1,6 @@
 from django.shortcuts import render
-from rest_framework import status 
+from rest_framework import status
+from core.permission import IsWorkSpaceMemberAccess
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.decorators import api_view,permission_classes
@@ -171,7 +172,7 @@ def create_notification (related_instance,workspace=None,user=None,title=None,su
     
 
 class NotifacticatonManager(APIView):
-    permission_classes=[IsAuthenticated]
+    permission_classes=[IsAuthenticated,IsWorkSpaceMemberAccess]
     
     def get(self,request):
         

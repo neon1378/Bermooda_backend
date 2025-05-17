@@ -24,10 +24,11 @@ from core.permission import IsAccess,IsWorkSpaceUser
 load_dotenv()
 from WalletManager.models import Wallet
 from rest_framework.parsers import MultiPartParser, FormParser
+from core.permission import IsWorkSpaceMemberAccess
 
 # Create your views here.
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated,IsWorkSpaceMemberAccess])
 def get_industrial_activity(request):
     industrial_activity =IndustrialActivity.objects.all()
     serializer_data = IndustrialActivitySerializer(industrial_activity,many=True)
@@ -39,7 +40,7 @@ def get_industrial_activity(request):
     })
 
 class WorkspaceManager(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated,IsWorkSpaceMemberAccess]
     jadoo_base_url = os.getenv("JADOO_BASE_URL")
 
     def delete(self,request,workspace_id):
@@ -211,7 +212,7 @@ class WorkspaceManager(APIView):
 
 
 @api_view(['PUT'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated,IsWorkSpaceMemberAccess])
 def update_workspace_information(request,workspace_id):
     workspace_obj = get_object_or_404(WorkSpace,id=workspace_id)
     request.data['user_id'] = request.user.id
@@ -239,7 +240,7 @@ def update_workspace_information(request,workspace_id):
 
 
 @api_view(['PUT'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated,IsWorkSpaceMemberAccess])
 def update_workspace_personal_information(request,workspace_id):
 
     workspace_obj = get_object_or_404(WorkSpace,id=workspace_id)
@@ -304,7 +305,7 @@ def update_workspace_personal_information(request,workspace_id):
 
 
 @api_view(['GET'])
-@permission_classes([AllowAny])
+@permission_classes([AllowAny,IsWorkSpaceMemberAccess])
 def create_category (request):
     jadoo_base_url = os.getenv("JADOO_BASE_URL")
     token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOi8vc2VydmVyLmphZG9vLmFwcC9hcGkvdjEvdXNlci9hdXRoL2NyZWF0ZUJ1c2luZXNzVXNlciIsImlhdCI6MTczOTcxNDQ4MywiZXhwIjoxNzQwOTI0MDgzLCJuYmYiOjE3Mzk3MTQ0ODMsImp0aSI6Ik1uS1ZUbXBZMGFXVDkyVEgiLCJzdWIiOiI2NSIsInBydiI6IjIzYmQ1Yzg5NDlmNjAwYWRiMzllNzAxYzQwMDg3MmRiN2E1OTc2ZjcifQ.oKNvh7AZ2jxIclWGdIk3qbDXoF88pz87NWv6yGoi0oU"
@@ -327,7 +328,7 @@ def create_category (request):
 
     return Response(status=status.HTTP_200_OK)
 
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated,IsWorkSpaceMemberAccess])
 @parser_classes([MultiPartParser, FormParser])
 @api_view(['POST']) 
 def create_workspace_image (request,workspace_id):
@@ -347,7 +348,7 @@ def create_workspace_image (request,workspace_id):
         }
     })
 @api_view(['DELETE'])
-@permission_classes([IsAuthenticated,IsAccess])
+@permission_classes([IsAuthenticated,IsWorkSpaceMemberAccess])
 def delete_workspace_member(request,member_id):
     workspace_obj = get_object_or_404(WorkSpace,id=request.data['workspace_id'])
     workspace_member = get_object_or_404(WorkspaceMember,id=member_id)
@@ -415,7 +416,7 @@ def create_permissions(request):
 
 
 class PermissionManager(APIView):
-    permission_classes=[IsAuthenticated]
+    permission_classes=[IsAuthenticated,IsWorkSpaceMemberAccess]
     def get(self,request):
 
         workspace_id = request.user.current_workspace_id
@@ -579,7 +580,7 @@ def create_permission_for_member (member_id,permissions):
 
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated,IsWorkSpaceMemberAccess])
 def accept_workspace_invitation (request):
     data =request.data
 
@@ -624,7 +625,7 @@ def accept_workspace_invitation (request):
 
 
 
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated,IsWorkSpaceMemberAccess])
 @api_view(['GET'])
 def get_expert_users(request):
     workspace_obj = WorkSpace.objects.get(id=request.user.current_workspace_id)
@@ -651,7 +652,7 @@ def get_expert_users(request):
     })
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated,IsWorkSpaceMemberAccess])
 def get_manager_users(request):
         workspace_obj = WorkSpace.objects.get(id=request.user.current_workspace_id)
     # if request.user == workspace_obj.owner:
@@ -695,7 +696,7 @@ def get_manager_users(request):
 
 
 class WorkSpaceMemberManger(APIView):
-    permission_classes= [IsAuthenticated]
+    permission_classes= [IsAuthenticated,IsWorkSpaceMemberAccess]
 
 
     def get(self, request, member_id=None):
@@ -830,7 +831,7 @@ class WorkSpaceMemberManger(APIView):
             "message": "you dont have permission dont try!!",
             "data": {}
         })
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated,IsWorkSpaceMemberAccess])
 @api_view(['GET'])
 def get_text_workspace_invite(request):
     workspace_obj = WorkSpace.objects.get(id =request.user.current_workspace_id)
@@ -1034,7 +1035,7 @@ def create_workspace_to_jadoo(request):
 
 
 class WorkSpacePermissionManager(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated,IsWorkSpaceMemberAccess]
     def get(self,request,permission_id=None):
         if permission_id:
             permission_obj = get_object_or_404(WorkSpacePermission, id=permission_id)
@@ -1113,7 +1114,7 @@ def get_message(request):
     return Response(result, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated,IsWorkSpaceMemberAccess])
 def study_category(request):
     study_objs = StudyCategory.objects.all()
 

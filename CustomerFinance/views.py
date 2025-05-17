@@ -18,12 +18,14 @@ import os
 load_dotenv()
 import qrcode
 from django.core.files.base import ContentFile
+from core.permission import IsWorkSpaceMemberAccess
+
 from io import BytesIO
 # Invoice Manager Begin 
 
 
 class InvoiceManager(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated,IsWorkSpaceMemberAccess]
     
     def add_file_urls(self, invoice_obj):
         """Helper method to add signature and logo file URLs to the serialized invoice."""
@@ -112,7 +114,7 @@ class InvoiceManager(APIView):
 
 
 class InvoiceStatusManager(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated,IsWorkSpaceMemberAccess]
 
     def get(self, request, *args, **kwargs):
         group_crm_id = request.GET.get("group_crm_id")
@@ -149,7 +151,7 @@ class InvoiceStatusManager(APIView):
 
 
 class InvoiceStatusDetailManager(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated,IsWorkSpaceMemberAccess]
 
     def get(self, request, status_id):
         invoice_status_obj = get_object_or_404(InvoiceStatus, id=status_id)
@@ -186,7 +188,7 @@ class InvoiceStatusDetailManager(APIView):
 
 
 @api_view(['PUT'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated,IsWorkSpaceMemberAccess])
 def change_invoice_status(request,invoice_id):
     data= request.data
     invoice_obj = get_object_or_404(Invoice,id=invoice_id)
@@ -314,7 +316,7 @@ def create_buyer_signature(request,invoice_id):
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated,IsWorkSpaceMemberAccess])
 def get_invoice_code (request):
 
     while True:

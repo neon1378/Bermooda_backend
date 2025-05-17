@@ -37,7 +37,7 @@ def create_reminde_a_customer(customer):
         create_reminder(related_instance=customer, remind_at=customer.main_date_time_to_remember, title=title, sub_title=sub_title)
 
 class CrmDepartmentManager(APIView):
-    permission_classes=[IsAuthenticated]
+    permission_classes=[IsAuthenticated,IsWorkSpaceMemberAccess]
     def get(self,request,department_id=None):
 
         if department_id:
@@ -111,7 +111,7 @@ class CrmDepartmentManager(APIView):
 
 
 class CategoryManager(APIView):
-    permission_classes=[IsAuthenticated]
+    permission_classes=[IsAuthenticated,IsWorkSpaceMemberAccess]
     def get(self,request,category_id=None):
         if category_id:
             category_obj = get_object_or_404(Category,id=category_id)
@@ -175,7 +175,7 @@ class CategoryManager(APIView):
 
 
 class LabelMangaer(APIView):
-    permission_classes=[IsAuthenticated]
+    permission_classes=[IsAuthenticated,IsWorkSpaceMemberAccess]
     channel_layer = get_channel_layer()
     def get(self,request,label_id=None):
         if label_id:
@@ -273,7 +273,7 @@ class LabelMangaer(APIView):
 
 class ReportManager(APIView):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated,IsWorkSpaceMemberAccess]
     def add_file_urls(self, report_obj):
    
         base_url = os.getenv("BASE_URL")
@@ -761,7 +761,7 @@ class GroupCrmManager(APIView):
 
 
 @api_view(['PUT'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated,IsWorkSpaceMemberAccess])
 def change_customer_supervisor(request,customer_id):
     data=request.data
     customer_obj = get_object_or_404(CustomerUser,id=customer_id)
@@ -778,7 +778,7 @@ def change_customer_supervisor(request,customer_id):
     return Response(status=status.HTTP_200_OK)
 
 @api_view(['PUT'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated,IsWorkSpaceMemberAccess])
 def change_customer_status(request,customer_id):
     data= request.data
     label_id = data.get("label_id",None)
@@ -805,7 +805,7 @@ def change_customer_status(request,customer_id):
 
 
 
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated,IsWorkSpaceMemberAccess])
 @api_view(['GET'])
 def get_crm_group_members(request,group_id):
     workspace_id= request.user.current_workspace_id
@@ -848,7 +848,7 @@ def get_crm_group_members(request,group_id):
 
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated,IsWorkSpaceMemberAccess])
 def create_report_message(request,customer_id):
     customer_obj = get_object_or_404(CustomerUser,id=customer_id)
     data = request.data
@@ -882,7 +882,7 @@ def create_report_message(request,customer_id):
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated,IsWorkSpaceMemberAccess])
 def exist_member_in_crm(request,group_id):
     group_crm = get_object_or_404(GroupCrm,id=group_id)
     workspace_obj = WorkSpace.objects.get(id=request.user.current_workspace_id)
@@ -908,7 +908,7 @@ def exist_member_in_crm(request,group_id):
 
 class CustomerUserView(APIView):
 
-    permission_classes  = [IsAuthenticated]
+    permission_classes  = [IsAuthenticated,IsWorkSpaceMemberAccess]
     channel_layer = get_channel_layer()
     def get(self,request,customer_id=None):
         if customer_id:
@@ -1020,7 +1020,7 @@ class CustomerUserView(APIView):
 
 
 class CampaignManager(APIView):
-    permission_classes=[IsAuthenticated]
+    permission_classes=[IsAuthenticated,IsWorkSpaceMemberAccess]
     def get(self,request,campaign_id=None):
         if campaign_id:
             campaign_obj = get_object_or_404(Campaign,id=campaign_id)
@@ -1073,7 +1073,7 @@ class CampaignManager(APIView):
             "data": serializer_data.errors
         })
 @api_view(['GET'])
-@permission_classes([AllowAny])
+@permission_classes([AllowAny,IsWorkSpaceMemberAccess])
 def campaign_show (request,uuid):
     campaign = get_object_or_404(Campaign,uuid=uuid)
     x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
@@ -1136,7 +1136,7 @@ def submit_form (request,uuid):
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated,IsWorkSpaceMemberAccess])
 def get_campaign_form(request,campaign_form_id=None):
 
     if campaign_form_id:
@@ -1162,7 +1162,7 @@ def get_campaign_form(request,campaign_form_id=None):
 
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated,IsWorkSpaceMemberAccess])
 def referral_the_lead(request):
     data =request.data
     campaign_form_id_list = data.get("campaign_form_id_list",[])
@@ -1200,7 +1200,7 @@ def create_fake_ip (request):
 
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated,IsWorkSpaceMemberAccess])
 def referral_customer(request,customer_id):
     data= request.data
     customer_obj = get_object_or_404(CustomerUser,id=customer_id)
@@ -1217,7 +1217,7 @@ def referral_customer(request,customer_id):
     })
 
 class CustomerArchive(APIView):
-    permission_classes= [IsAuthenticated]
+    permission_classes= [IsAuthenticated,IsWorkSpaceMemberAccess]
     def get(self,request):
 
         group_crm_id = request.GET.get("group_crm_id")
@@ -1294,7 +1294,7 @@ def persian_to_datetime(persian_date_time):
         return None
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated,IsWorkSpaceMemberAccess])
 def my_customers(request):
     group_crm_id = request.GET.get("group_crm_id")
     customer_objs = CustomerUser.objects.filter(group_crm_id=group_crm_id,user_account=request.user)
@@ -1378,7 +1378,7 @@ def create_label_steps(request):
 
 
 class LabelStepManager(APIView):
-    permission_classes=[IsAuthenticated]
+    permission_classes=[IsAuthenticated,IsWorkSpaceMemberAccess]
     def get(self,request):
         label_id = request.GET.get("label_id")
         label_obj = get_object_or_404(Label,id=label_id)
@@ -1448,7 +1448,7 @@ def get_customers_by_role(user, workspace,group_crm_obj):
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated,IsWorkSpaceMemberAccess])
 def customer_success_sells(request):
 
     page_number = request.GET.get("page_number", 1)
@@ -1469,7 +1469,7 @@ def customer_success_sells(request):
 
 
 class CustomerDocumentManager(APIView):
-    permission_classes=[IsAuthenticated]
+    permission_classes=[IsAuthenticated,IsWorkSpaceMemberAccess]
     def get(self,request,document_id=None):
         if document_id:
             document_obj =get_object_or_404(CustomerDocument,id=document_id)
@@ -1509,7 +1509,7 @@ class CustomerDocumentManager(APIView):
 
 
 class CustomerBankManager(APIView):
-    permission_classes=[IsAuthenticated]
+    permission_classes=[IsAuthenticated,IsWorkSpaceMemberAccess]
     def get(self,request,customer_b_id=None):
         page_number =request.GET.get("page_number",1)
         if customer_b_id:
@@ -1568,7 +1568,7 @@ class CustomerBankManager(APIView):
         customer_bank.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated,IsWorkSpaceMemberAccess])
 @api_view(['POST'])
 def send_a_customer_to_board(request):
     customer_bank_id_list = request.data.get("customer_bank_id_list")
@@ -1609,7 +1609,7 @@ def send_a_customer_to_board(request):
 
 
 class CustomerStatusManager(APIView):
-    permission_classes=[IsAuthenticated]
+    permission_classes=[IsAuthenticated,IsWorkSpaceMemberAccess]
 
     def post(self,request,customer_id):
 
@@ -1634,7 +1634,7 @@ class CustomerStatusManager(APIView):
 
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated,IsWorkSpaceMemberAccess])
 def resell_a_customer(request,customer_id):
     customer_obj = get_object_or_404(CustomerUser,id=customer_id)
 
@@ -1663,7 +1663,7 @@ def resell_a_customer(request,customer_id):
 
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated,IsWorkSpaceMemberAccess])
 def change_customer_step(request,customer_id):
     data = request.data
     step = int(data['step'])
