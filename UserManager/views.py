@@ -1,4 +1,5 @@
 from asgiref.sync import async_to_sync
+from autobahn.util import newid
 from channels.layers import get_channel_layer
 from django.shortcuts import render
 from django.middleware.csrf import get_token
@@ -63,6 +64,219 @@ key = os.getenv("PHONE_KEY")  # Replace this with your actual generated key
 
 cipher_suite = Fernet(key)
 
+# new logic for autentication users
+
+
+class LoginView(APIView):
+    permission_classes=[AllowAny]
+    def post(self, request):
+        data = request.data
+
+        phone_number = data.get('phone_number')
+        password = data.get("password")
+        is_user_exists = UserAccount.objects.filter(phone_number=phone_number,is_register=True).exists()
+        if not is_user_exists:
+            return Response(status=status.HTTP_400_BAD_REQUEST,data={
+                "status":False,
+                "message":"شماره تلفن یا رمز عبور اشتباه میباشد"
+            })
+        user_account = UserAccount.objects.get(phone_number=phone_number)
+        if not check_password(password,user_account.password):
+            return Response(status=status.HTTP_400_BAD_REQUEST,data={
+                "status":False,
+                "message":"شماره تلفن یا رمز عبور اشتباه میباشد"
+            })
+
+        token = Token.objects.get_or_create(user=user_account)
+        refresh = RefreshToken.for_user(user_account)
+        refresh_expiry = datetime.fromtimestamp(refresh.access_token.payload['exp'])
+        refresh_expiry_aware = make_aware(refresh_expiry)
+        user_account.last_login = datetime.now()
+        jadoo_server = os.getenv("JADOO_BASE_URL")
+        try:
+            url = f"{jadoo_server}/user/auth/getUserTokenById?id={user_account.refrence_id}"
+            response = requests.get(url=url)
+
+            respnse_data = response.json()
+            user_account.refrence_token = respnse_data['data']['token']
+
+            user_account.save()
+        except:
+            pass
+        if user_account.current_workspace_id == 0 or not WorkSpace.objects.filter(id=user_account.current_workspace_id).exists():
+
+            workspace_owner = WorkSpace.objects.filter(owner=user_account).first()
+            workspace_member = WorkspaceMember.objects.filter(user_account=user_account).first()
+            if workspace_owner:
+                user_account.current_workspace_id=workspace_member.id
+                change_current_workspace_jadoo(user_acc=user_account, workspace_obj=workspace_owner)
+
+            if workspace_member:
+                user_account.current_workspace_id=workspace_member.workspace.id
+                change_current_workspace_jadoo(user_acc=user_account, workspace_obj=workspace_member.workspace)
+        # otp = str(random.randint(100000, 999999))
+        user_account.save()
+
+        return Response(status=status.HTTP_200_OK, data={
+            "status": True,
+            "message": "موفق",
+            "data": {
+                'jwt_token': {
+                    'refresh': str(refresh),
+                    'access': str(refresh.access_token),
+                    'refresh_expires_at': refresh_expiry_aware.isoformat(),
+                },
+                "token": str(token[0]),
+                "jadoo_token": user_account.refrence_token,
+                "workspaces": make_workspace_query(user_acc=user_account),
+                "refrence_id": user_account.refrence_id
+            }
+        })
+
+
+class SendOtpView(APIView):
+    permission_classes=[AllowAny]
+    def post(self,request):
+        data = request.data
+        phone_number = data.get("phone_number")
+        if UserAccount.objects.filter(phone_number=phone_number).exists() or UserAccount.objects.filter(phone_number=phone_number,is_register=True).exists():
+            return Response(status=status.HTTP_400_BAD_REQUEST,data={
+                "status":False,
+                "message":"شماره وارد شده در حال حاضر در برمودا ثبت نام کرده است "
+            })
+
+        pattern = r"^09\d{9}$"
+
+        if not re.match(pattern, phone_number):
+            return Response(
+                status=status.HTTP_400_BAD_REQUEST,
+                data={
+                    "status": False,
+                    "message": "شماره تلفن وارد شده اشتباه میباشد"
+                }
+            )
+        user_account = UserAccount.objects.get_or_create(phone_number=phone_number,is_register=True)
+
+        otp = str(random.randint(100000, 999999))
+        if not  PhoneOTP.objects.filter(phone_number = user_account.phone_number).exists():
+            new_otp = PhoneOTP.objects.create(
+                phone_number = user_account.phone_number,
+                otp =otp,
+                created_at=datetime.now()
+            )
+        else:
+            new_otp = PhoneOTP.objects.get(phone_number = user_account.phone_number)
+            new_otp.otp = otp
+            new_otp.created_at = datetime.now()
+            new_otp.save()
+
+        return Response(status=status.HTTP_200_OK, data={
+            "status": True,
+            "message":"کد تاییدیه با موفقیت ارسال شد ",
+            "data":{
+                "phone_number": user_account.phone_number
+            }
+        })
+
+
+
+
+
+
+class VerifyOTPView(APIView):
+    permission_classes = [AllowAny]
+    def post(self, request):
+        phone_number = request.data.get('phone_number')
+        otp = request.data.get('otp')
+
+        otp_record = PhoneOTP.objects.filter(phone_number=phone_number, otp=otp).first()
+        if otp_record and otp_record.is_valid():
+            user_account = UserAccount.objects.get(phone_number=phone_number)
+            otp_record.delete()
+            return Response(data ={
+                'message': 'کاربر با موفقیت  احراز هویت شد',
+                "status": True,
+                "data":{
+                    "phone_number":phone_number,
+                    "slug": user_account.slug,
+                }
+            }, status=status.HTTP_201_CREATED)
+        return Response({
+            "status":False,
+            "message":"کد تایید اشتباه میباشد",
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+class CreateUserView(APIView):
+    permission_classes=[AllowAny]
+    def post(self,request):
+
+
+        data = request.data
+        user_slug = data.get("slug")
+        user_acc = UserAccount.objects.get(slug=user_slug)
+        # username=data['username']
+        password = data['password']
+        avatar_id = data.get("avatar_id", None)
+        confirm_password = data['confirm_password']
+        fullname = data['fullname']
+
+        if password != confirm_password:
+            return Response(status=status.HTTP_400_BAD_REQUEST, data={
+                "status": False,
+                "message": "رمز عبور ها با هم شباهت ندارند",
+                "data": {}
+            })
+        if WorkspaceMember.objects.filter(user_account=user_acc).exists():
+            current_workspace = WorkspaceMember.objects.filter(user_account=user_acc).first()
+            change_current_workspace_jadoo(user_acc=user_acc, workspace_obj=current_workspace)
+            user_acc.current_workspace_id = current_workspace.workspace.id
+            user_acc.save()
+
+        refresh = RefreshToken.for_user(user_acc)
+
+        user_acc.set_password(password)
+        user_acc.is_register = True
+        user_acc.fullname = fullname
+        if avatar_id:
+            main_file = MainFile.objects.get(id=avatar_id)
+            main_file.its_blong = True
+            user_acc.avatar = main_file
+        user_acc.register_at = datetime.now()
+        user_acc.save()
+        try:
+            api_connection = ExternalApi(token="asdasd", headers_required=False)
+
+            response_data = api_connection.post(
+                data={
+                    "mobile": user_acc.phone_number,
+                    "fullname": user_acc.fullname,
+                    "avatar_url": user_acc.avatar_url(),
+
+                },
+                end_point="/user/auth/createBusinessUser"
+            )
+
+            user_acc.refrence_id = int(response_data['id'])
+            user_acc.refrence_token = response_data['token']
+            user_acc.save()
+        except:
+            pass
+
+        user_acc.save()
+        return Response(status=status.HTTP_201_CREATED, data={
+            "status": True,
+            "message": "با موفقیت  انجام شد",
+            "data": {
+                'jwt_token': {
+                    'refresh': str(refresh),
+                    'access': str(refresh.access_token),
+                },
+                "token": str(Token.objects.get_or_create(user=user_acc)[0]),
+                "workspaces": make_workspace_query(user_acc=user_acc),
+                "jadoo_token": user_acc.refrence_token,
+                "refrence_id": user_acc.refrence_id
+            }
+        })
 
 
 def encrypt(data: str) -> str:

@@ -78,6 +78,16 @@ urlpatterns = [
     path("CreateAvatar",views.create_avatar),
     
     path("AccountVerify",views.account_verify),
+
+
+
+    path("AuthUser",views.LoginView.as_view()),
+
+    path("SendOtpCode",views.SendOtpView.as_view()),
+    path("VerifyOtpCode",views.VerifyOTPView.as_view()),
+
+    path("CreateUserDetail", views.CreateUserView.as_view()),
+
     # path("DeleteAccount",views.delete_account),
 
     

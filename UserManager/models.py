@@ -8,6 +8,7 @@ from datetime import timedelta
 from django.contrib.auth.models import User, Group
 import os 
 from dotenv import load_dotenv
+from core.widgets import generate_random_slug
 load_dotenv()
 class UserAccountManager(BaseUserManager):
     def create_user(self,username,password):
@@ -95,6 +96,7 @@ class UserAccount(AbstractBaseUser,PermissionsMixin):
     sms_q = models.IntegerField(default=-1)
     is_auth = models.BooleanField(default=False)
     
+    slug = models.SlugField(unique=True,null=True, blank=True)
 
 
 
@@ -103,6 +105,16 @@ class UserAccount(AbstractBaseUser,PermissionsMixin):
     # def save(self, *args, **kwargs):
     #     print(f"Saving user: {self.current_workspace_id}")
     #     super().save(*args, **kwargs)
+
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            slug = generate_random_slug()
+            while UserAccount.objects.filter(slug=slug).exists():
+                slug = generate_random_slug()
+            self.slug = slug
+        super().save(*args, **kwargs)
+
     def __str__(self):
         if self.phone_number == "09360604115":
 
@@ -220,7 +232,10 @@ class JadooToken(models.Model):
 
     
 
-    
 
 
 
+class PhoneOTP(models.Model):
+    phone_number = models.CharField(max_length=11,null=True,blank=True)
+    otp = models.CharField(max_length=6,null=True)
+    created_at = models.DateTimeField(null=True)
