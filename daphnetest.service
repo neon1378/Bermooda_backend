@@ -1,0 +1,11 @@
+[Service]
+Type=simple
+User=neon
+WorkingDirectory=/home/neon/projects/bermooda_test/Bermooda_backend
+Environment=DJANGO_SETTINGS_MODULE=CrmManager.settings
+ExecStart=/home/neon/projects/bermooda_test/.venv/bin/python /home/neon/projects/bermooda_test/.venv/bin/daphne -e ssl:8020:/home/neon/ssl_certs/server.ws.bermooda.app/privkey.pem:certKey=/home/neon/ssl_certs/server.ws.bermooda.app/fullchain.pem CrmManager.asgi:application
+
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

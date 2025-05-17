@@ -273,8 +273,9 @@ class CheckList(SoftDeleteModel):
     label = models.ForeignKey(TaskLabel, on_delete=models.SET_NULL, null=True, blank=True)
     date_time_to_start_main = models.DateTimeField(null=True)
     date_time_to_end_main = models.DateTimeField(null=True)
+    created_at = models.DateTimeField(auto_now_add=True,null=True)
     file = models.ManyToManyField(MainFile, blank=True)
-
+        
 
     def is_delayed (self):
         if self.date_time_to_end_main:
