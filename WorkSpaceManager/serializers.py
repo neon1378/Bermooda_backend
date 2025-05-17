@@ -635,6 +635,7 @@ class WorkSpaceMemberFullDataSerializer(serializers.ModelSerializer):
                 folder_obj.save()
             for favorite in deleted_member.favorites.all():
                 favorite.hard_delete()
+
             if favorite_name_list:
                 for favorite in  favorite_name_list:
                     Favorite.objects.create(
@@ -756,8 +757,8 @@ class WorkSpaceMemberFullDataSerializer(serializers.ModelSerializer):
         return member
 
     def update(self, instance, validated_data):
-        favorite_name_list = validated_data.pop("favorite_name_list", None)
-        skill_name_list = validated_data.pop("skill_name_list", None)
+        favorite_name_list = validated_data.pop("favorite_name_list", [])
+        skill_name_list = validated_data.pop("skill_name_list", [])
         employment_type = validated_data.pop("employment_type", None)
         salary_type = validated_data.pop("salary_type", None)
 
@@ -853,11 +854,11 @@ class WorkSpaceMemberFullDataSerializer(serializers.ModelSerializer):
             favorite.hard_delete()
 
         for favorite in favorite_name_list:
-            Favorite.objects.create(
-                title=favorite,
-                member=instance
+                Favorite.objects.create(
+                    title=favorite,
+                    member=instance
 
-            )
+                )
         for skill in instance.skills.all():
             skill.hard_delete()
 
