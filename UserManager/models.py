@@ -240,3 +240,7 @@ class PhoneOTP(models.Model):
     phone_number = models.CharField(max_length=11,null=True,blank=True)
     otp = models.CharField(max_length=6,null=True)
     created_at = models.DateTimeField(null=True)
+
+
+    def is_valid(self):
+        return timezone.now() <= self.created_at + timedelta(minutes=10)
