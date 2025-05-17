@@ -251,7 +251,8 @@ def get_all_city_per_state (request,state_id):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_users_info(request):
-    workspace_obj= get_object_or_404(WorkSpace,id=request.GET.get("workspace_id",None))
+    workspace_id = request.user.current_workspace_id
+    workspace_obj= get_object_or_404(WorkSpace,id=workspace_id)
     user_acc_list = []
     for workspace_member in WorkspaceMember.objects.filter(workspace=workspace_obj):
 
@@ -372,7 +373,7 @@ def test_file (request):
 class ReadyTextManager(APIView):
     permission_classes=[IsAuthenticated]
     def get (self,request,ready_text_id=None):
-        workspace_id= request.GET.get("workspace_id")
+        workspace_id= request.user.current_workspace_id
         if ready_text_id:
             ready_text_obj = get_object_or_404(ReadyText,id=ready_text_id)
             serializer_data =ReadyTextSerializer(ready_text_obj)
@@ -744,7 +745,7 @@ def login_user(request):
 class UserAccountManager(APIView):
     permission_classes=[IsAuthenticated,IsWorkSpaceUser]
     def get (self,request,user_id=None):
-        workspace_id = request.GET.get("workspace_id")
+        workspace_id = request.user.current_workspace_id
         response_data = []
         workspae_obj = get_object_or_404(WorkSpace, id=workspace_id)
         base_url = os.getenv("BASE_URL")

@@ -415,10 +415,10 @@ def create_permissions(request):
 
 
 class PermissionManager(APIView):
-    permission_classes=[IsAuthenticated,IsWorkSpaceUser]
+    permission_classes=[IsAuthenticated]
     def get(self,request):
 
-        workspace_id = request.GET.get("workspace_id")
+        workspace_id = request.user.current_workspace_id
 
         member_id = request.GET.get("member_id")
         workspace_member_obj =get_object_or_404(WorkspaceMember,id=member_id)
@@ -445,7 +445,7 @@ class PermissionManager(APIView):
 
     def put(self,request,permission_id):
         data= request.data
-        workspace_id= data.get("workspace_id")
+        workspace_id= request.user.current_workspace_id
         avatar_id =data.get("avatar_id",None)
         workspace_obj = get_object_or_404(WorkSpace,id=workspace_id)
 
