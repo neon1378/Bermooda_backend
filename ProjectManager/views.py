@@ -354,7 +354,7 @@ class TaskManager(APIView):
         """Create a new task."""
         project = get_object_or_404(Project, id=project_id)
         data = request.data
-
+        data.pop("task_reports")
         check_list_data = data.pop("check_list",[])
 
         file_ids = data.pop("file_id_list", [])
