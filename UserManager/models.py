@@ -113,6 +113,7 @@ class UserAccount(AbstractBaseUser,PermissionsMixin):
             while UserAccount.objects.filter(slug=slug).exists():
                 slug = generate_random_slug()
             self.slug = slug
+            print("yes")
         super().save(*args, **kwargs)
 
     def __str__(self):
