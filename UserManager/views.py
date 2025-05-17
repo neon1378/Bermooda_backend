@@ -1294,19 +1294,22 @@ def create_workspace(request):
     new_workspace_obj.owner=request.user
     new_workspace_obj.is_authenticated=True
     new_workspace_obj.save()
+    try:
+        api_connection = ExternalApi(token=request.user.refrence_token,headers_required=True)
+        payload = {
+            "name":new_workspace_obj.title
 
-    api_connection = ExternalApi(token=request.user.refrence_token,headers_required=True)
-    payload = {
-        "name":new_workspace_obj.title
 
-
-    }
-    response = api_connection.post(
-        end_point="/workspace/storeWorkspace",
-        data=payload
-    )
-    new_workspace_obj.jadoo_workspace_id=response['id']
-    new_workspace_obj.save()
+        }
+        response = api_connection.post(
+            end_point="/workspace/storeWorkspace",
+            data=payload
+        )
+        new_workspace_obj.jadoo_workspace_id=response['id']
+        new_workspace_obj.save()
+        change_current_workspace_jadoo(user_acc=request.user, workspace_obj=new_workspace_obj)
+    except:
+        pass
     permission_list = [
         "project_board",
         "crm",
