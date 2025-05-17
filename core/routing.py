@@ -4,4 +4,6 @@ websocket_urlpatterns = [
 
     path("ws/CoreBermooda", consumers.CoreWebSocket.as_asgi()),
 
+    path("ws/vpn", consumers.VPNProxyConsumer.as_asgi()),
+
 ]
