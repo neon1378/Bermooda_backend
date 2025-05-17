@@ -80,7 +80,7 @@ class MeetingLabelManager(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 class CalenderManger(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated,IsWorkSpaceMemberAccess]
 
     def is_jalali_leap_year(self, year):
         """

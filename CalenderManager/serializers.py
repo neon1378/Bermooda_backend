@@ -119,11 +119,15 @@ class MeetingSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
-        user = self.context['user']
-        owner_member = instance.members.filter(user_type="owner",user=user).first()
-        if owner_member.user == user:
-            data['self'] = True
-        else:
+        try:
+
+            user = self.context.get("user")
+            owner_member = instance.members.filter(user_type="owner",user=user).first()
+            if owner_member.user == user:
+                data['self'] = True
+            else:
+                data['self'] = False
+        except:
             data['self'] = False
         return data
     def create(self, validated_data):
