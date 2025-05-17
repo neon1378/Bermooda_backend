@@ -325,8 +325,8 @@ class ExternalApi:
                 response = requests.get(url=url,params=params,headers=self.headers)
             else:
                 response = requests.get(url=url,params=params)
-
-            return response.json()
+            print(response.json())
+            return response.json()['data']
         except:
             return False
     def post(self,data,end_point):
