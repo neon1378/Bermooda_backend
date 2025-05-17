@@ -324,7 +324,7 @@ class ExternalApi:
             if self.headers_required:
                 response = requests.get(url=url,params=params,headers=self.headers)
             else:
-                response = requests.get(url=url,params=params)
+                response = requests.get(url=url)
             print(response.json())
             return response.json()['data']
         except:
