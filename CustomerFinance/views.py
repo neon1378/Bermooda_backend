@@ -77,6 +77,7 @@ class InvoiceManager(APIView):
     def post(self,request):
         data =request.data
         customer_id = data['customer_id']
+        request.data['workspace_id'] = request.user.current_workspace_id
         serializer_data = InvoiceSerializer(data= request.data)
 
         if serializer_data.is_valid():

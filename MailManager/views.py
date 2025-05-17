@@ -31,7 +31,7 @@ class MailLabelManager(APIView):
                 "message":"success",
                 "data":serializer_data.data
             })
-        workspace_id= request.GET.get("workspace_id")
+        workspace_id= request.user.current_workspace_id
         workspace_obj = get_object_or_404(WorkSpace,id=workspace_id)
         mail_label_objs= MailLabel.objects.filter(workspace=workspace_obj)
         serializer_data =MaliLabelSerializer(mail_label_objs,many=True)
@@ -134,7 +134,7 @@ class MailManager(APIView):
     def get(self,request,mail_id=None):
         search_query = request.GET.get("search_query",None)
         page_number = request.GET.get("page_number",1)
-        workspace_id = request.GET.get("workspace_id")
+        workspace_id = request.user.current_workspace_id
         is_favorite = request.GET.get("is_favorite",None)
         label_id = request.GET.get("label_id",None)
         start_date = request.GET.get("start_date", None)  # 1403/12/01
@@ -195,14 +195,15 @@ class MailManager(APIView):
     def post(self,request):
 
         request.data['creator_id'] = request.user.id
-        
+        workspace_id = request.user.current_workspace_id
+        request.data['workspace_id']= workspace_id
         mail_serializer= MailSerializer(data=request.data)
         if mail_serializer.is_valid():
             mail_obj = mail_serializer.save()
             for member in MailRecipient.objects.filter(mail=mail_obj):
                 sub_title = f"نامه جدیدی از طرف {mail_obj.creator.fullname} دریافت کردید"
                 title = "نامه اداری"
-                create_notification(related_instance=mail_obj,workspace=WorkSpace.objects.get(id=request.data['workspace_id']),user=member.user,title=title,sub_title=sub_title,side_type="recive_mail")
+                create_notification(related_instance=mail_obj,workspace=WorkSpace.objects.get(id=workspace_id),user=member.user,title=title,sub_title=sub_title,side_type="recive_mail")
 
             return Response(status=status.HTTP_200_OK,data={
                 "status":True,
@@ -267,6 +268,7 @@ class MailReportManager(APIView):
 @permission_classes([IsAuthenticated,IsWorkSpaceUser])
 @api_view(['PUT'])
 def add_signature_to_mail (request,recipient_id):
+    workspace_id = request.user.current_workspace_id
     data= request.data
     signature_file_id = data['signature_file_id'] 
     mail_recipient = get_object_or_404(MailRecipient,id=recipient_id)
@@ -282,17 +284,17 @@ def add_signature_to_mail (request,recipient_id):
             if request.user != recipient.user:
                 sub_title = f"نامه توسط  {request.user.fullname} با موفقیت امضا شد"
                 title = "نامه اداری"
-                create_notification(related_instance=recipient.mail,workspace=WorkSpace.objects.get(id=request.data['workspace_id']),user=recipient.user,title=title,sub_title=sub_title,side_type="mail_signatured")
+                create_notification(related_instance=recipient.mail,workspace=WorkSpace.objects.get(id=workspace_id),user=recipient.user,title=title,sub_title=sub_title,side_type="mail_signatured")
             recipient.mail.create_mail_action(user_sender=request.user,user=recipient.user,title="امضا کرد")
         if request.user != mail_recipient.mail.creator:
                 sub_title = f"نامه توسط  {request.user.fullname} با موفقیت امضا شد"
                 title = "نامه اداری"
-                create_notification(related_instance=mail_recipient.mail,workspace=WorkSpace.objects.get(id=request.data['workspace_id']),user=mail_recipient.mail.creator,title=title,sub_title=sub_title,side_type="mail_signatured")
+                create_notification(related_instance=mail_recipient.mail,workspace=WorkSpace.objects.get(id=workspace_id),user=mail_recipient.mail.creator,title=title,sub_title=sub_title,side_type="mail_signatured")
 
         if mail_recipient.mail.sign_completed():
                 sub_title = f"نامه {mail_recipient.mail.title} به صورت کامل امضا شده است"
                 title = "نامه اداری"
-                create_notification(related_instance=mail_recipient.mail,workspace=WorkSpace.objects.get(id=request.data['workspace_id']),user=mail_recipient.mail.creator,title=title,sub_title=sub_title,side_type="mail_signatured")
+                create_notification(related_instance=mail_recipient.mail,workspace=WorkSpace.objects.get(id=workspace_id),user=mail_recipient.mail.creator,title=title,sub_title=sub_title,side_type="mail_signatured")
         serializer_data =MailRecipientSerializer(mail_recipient)
         return Response(status=status.HTTP_202_ACCEPTED,data={
             "status":True,
@@ -314,7 +316,7 @@ class MailStatusManager(APIView):
 
     def get(self, request, mail_id):
         mail_obj = get_object_or_404(Mail, id=mail_id)
-        workspace_id = request.GET.get("workspace_id")
+        workspace_id = request.user.current_workspace_id
 
         mail_status = MailStatus.objects.filter(workspace_id=workspace_id)
         status_list = [
@@ -354,7 +356,7 @@ class MailStatusManager(APIView):
     def put(self, request, mail_id):
         mail_obj = get_object_or_404(Mail, id=mail_id)
         if request.user == mail_obj.creator:
-            workspace_id = request.data.get('workspace_id')
+            workspace_id = request.user.current_workspace_id
             mail_status = MailStatus.objects.filter(workspace_id=workspace_id)
 
             user_id = request.data.get('user_id',None)
@@ -534,7 +536,7 @@ class CategoryDraftManger(APIView):
                 "message":"success",
                 "data":serializer_data.data
             })
-        workspace_id = request.GET.get("workspace_id")
+        workspace_id = request.user.current_workspace_id
         
         serializer_data = CategoryDraftSerializer(CategoryDraft.objects.filter(workspace_id=workspace_id,owner=request.user),many=True)
         return Response(status=status.HTTP_200_OK,data={
@@ -546,6 +548,7 @@ class CategoryDraftManger(APIView):
     def post(self,request):
       
         request.data['owner_id'] = request.user.id
+        request.data['workspace_id'] = request.user.current_workspace_id
         serializer_data= CategoryDraftSerializer(data=request.data)
 
         if serializer_data.is_valid():
@@ -561,8 +564,10 @@ class CategoryDraftManger(APIView):
             "data":serializer_data.errors
         })
     def put(self,request,category_id):
+        request.data['workspace_id'] = request.user.current_workspace_id
         instance = get_object_or_404(CategoryDraft,id=category_id)
         serializer_data = CategoryDraftSerializer(instance=instance,data=request.data)
+
         if serializer_data.is_valid():
             serializer_data.save()
             return Response(status=status.HTTP_200_OK,data={
@@ -599,10 +604,10 @@ class DraftManger(APIView):
 
             })
 
-        workspace_id= request.GET.get("workspace_id")
+        workspace_id= request.user.current_workspace_id
         response_data =[]
         
-        for category in CategoryDraft.objects.filter(workspace_id=request.GET.get("workspace_id"),owner= request.user):
+        for category in CategoryDraft.objects.filter(workspace_id=workspace_id,owner= request.user):
             dic ={
             "category_id":category.id,
             "category_title":category.title,
@@ -626,7 +631,9 @@ class DraftManger(APIView):
 
     def post(self,request):
         request.data['owner_id'] =request.user.id
+        request.data['workspace_id'] = request.user.current_workspace_id
         serializer_data=DraftSerializer(data=request.data)
+
         if serializer_data.is_valid():
             serializer_data.save()
             return Response(status=status.HTTP_201_CREATED,data={
@@ -641,6 +648,7 @@ class DraftManger(APIView):
 
         })
     def put(self,request,draft_id):
+        request.data['workspace_id'] = request.user.current_workspace_id
         draft_obj = get_object_or_404(Draft,id=draft_id)
         serializer_data = DraftSerializer(instance=draft_obj,data=request.data)
         if serializer_data.is_valid():

@@ -10,6 +10,7 @@ from django.shortcuts import get_object_or_404
 from WorkSpaceManager.models import WorkspaceMember
 from WorkSpaceManager.serializers import WorkSpaceMemberSerializer
 from rest_framework.decorators import api_view,permission_classes
+
 # Create your views here.
 
 
@@ -82,19 +83,47 @@ class FolderManager(APIView):
 
 
 
+
+
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def get_folder_members(request,slug):
-    folder_obj = get_object_or_404(Folder,slug=slug)
+def get_folder_members (request):
+    folder_slug = request.GET.get('folder_slug')
+    page_number = request.GET.get('page_number',1)
+    folder_obj = get_object_or_404(Folder,slug=folder_slug)
+    paginate_data = pagination(query_set=folder_obj.members.all(),page_number=page_number)
+    workspace_member_list = [
 
-    serializer_data =[]
-    for member in folder_obj.members.all():
-        workspace_member_obj = WorkspaceMember.objects.get(user_account=member,workspace=folder_obj.workspace)
-        serializer_data.append(WorkSpaceMemberSerializer(workspace_member_obj).data)
+    ]
+    for member in paginate_data['list']:
+        if member == folder_obj.workspace.owner:
+            workspace_member_list.append(
+                {
+                    "user_account":{
+                        "id":member.id,
+                        "full_name":member.full_name,
+
+                    },
+                    "type":"owner"
+                }
+            )
+        else:
+            workspace_member_obj = WorkspaceMember.objects.get(user_account=member,workspace=folder_obj.workspace)
+            serializer_data = WorkSpaceMemberSerializer(workspace_member_obj).data
+            serializer_data['type'] ="member"
+            workspace_member_list.append(serializer_data)
+    paginate_data['list'] = workspace_member_list
+    return Response(
+        status=status.HTTP_200_OK,
+        data= {
+            "status":True,
+            "message":"موفق",
+            "data":paginate_data
+        }
+    )
 
 
-    return Response(status=status.HTTP_200_OK,data={
-        "status":True,
-        "message":"موفق",
-        "data":serializer_data
-    })
+
+
+

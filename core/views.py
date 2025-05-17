@@ -61,7 +61,7 @@ def send_sms_core(fullname,phone_number):
 
 @parser_classes([MultiPartParser, FormParser])
 @api_view(['POST']) 
-@permission_classes([AllowAny])
+@permission_classes([IsAuthenticated])
 def upload_file (request):
     
     file = request.FILES.get("file",None)
@@ -74,7 +74,8 @@ def upload_file (request):
         }, status=status.HTTP_400_BAD_REQUEST)
     new_file = MainFile(file=file,original_name=file.name)
     try:
-        new_file.workspace_id =request.GET.get("workspace_id")
+        new_file.workspace_id =request.user.current_workspace_id
+        new_file.save()
     except:
         pass
     new_file.save()

@@ -225,7 +225,7 @@ class LabelMangaer(APIView):
     def put(self,request,label_id):
         data= request.data
         label_obj = get_object_or_404(Label,id=label_id)
-        workspace_id = data.pop("workspace_id")
+        workspace_id = data.pop("workspace_id",None)
         serializer_data =LabelSerializer(data=request.data,instance=label_obj)
         if serializer_data.is_valid():
             serializer_data.save()
@@ -451,7 +451,7 @@ class GroupCrmManager(APIView):
 
     def get(self, request, group_id=None):
 
-        workspace_id = request.GET.get("workspace_id")
+        workspace_id = request.user.current_workspace_id
         workspace_obj = get_object_or_404(WorkSpace, id=workspace_id)
         page = request.GET.get("page",1)
         # Fetch single group if `group_id` is provided
@@ -661,7 +661,7 @@ class GroupCrmManager(APIView):
 
     def post(self, request):
         data = request.data
-        workspace_id = data.get("workspace_id")
+        workspace_id = request.user.current_workspace_id
         workspace_obj = get_object_or_404(WorkSpace, id=workspace_id)
         members = data.get("members", [])
         title = data.get("title")
@@ -714,7 +714,7 @@ class GroupCrmManager(APIView):
     def put(self,request,group_id):
         data = request.data
         group_obj = get_object_or_404(GroupCrm,id=group_id)
-        workspace_id = data.get("workspace_id")
+        workspace_id = request.user.current_workspace_id
 
      
 
@@ -808,7 +808,8 @@ def change_customer_status(request,customer_id):
 @permission_classes([IsAuthenticated])
 @api_view(['GET'])
 def get_crm_group_members(request,group_id):
-    workspace_obj= get_object_or_404(WorkSpace,id=request.GET.get("workspace_id",None))
+    workspace_id= request.user.current_workspace_id
+    workspace_obj= get_object_or_404(WorkSpace,id=workspace_id)
     group_obj = get_object_or_404(GroupCrm,id=group_id)
     print(workspace_obj.id,"@@@@")
     member_list = []
@@ -1603,6 +1604,7 @@ class CustomerStatusManager(APIView):
 
         request.data['customer_id'] = customer_id
         serializer_data = CustomerStatusSerializer(data=request.data,context={"user":request.user})
+        request.data['workspace_id'] = request.user.current_workspace_id
         if serializer_data.is_valid():
             customer_obj = serializer_data.save()
             response_data = CustomerSmallSerializer(customer_obj).data

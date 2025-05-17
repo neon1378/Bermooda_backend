@@ -192,7 +192,7 @@ class ProjectManager(APIView):
             return Response(status=status.HTTP_200_OK,data=serializer_data.data)
         department_id = request.GET.get("department_id",None)
         department_obj = get_object_or_404(ProjectDepartment,id=department_id)
-        workspace_id  = request.GET.get('workspace_id')
+        workspace_id  = request.user.current_workspace_id
         workspace_obj = get_object_or_404(WorkSpace,id=workspace_id)
         if request.user == workspace_obj.owner :
             projects = Project.objects.filter(workspace=workspace_obj,department_id=department_id)
@@ -234,7 +234,7 @@ class ProjectManager(APIView):
 
         
     def post(self, request):
-
+        request.data['workspace_id'] =request.user.current_workspace_id
 
         serializer_data =ProjectSerializer(data=request.data,context={"user":request.user})
         if serializer_data.is_valid():
@@ -257,7 +257,7 @@ class ProjectManager(APIView):
 
 
     def put(self, request, project_id):
-
+        request.data['workspace_id'] =request.user.current_workspace_id
         # Fetch the project or return a 404 response
         project_obj = get_object_or_404(Project, id=project_id)
         serializer_data = ProjectSerializer(instance=project_obj,data=request.data)
@@ -341,7 +341,7 @@ class TaskManager(APIView):
 
 
 
-        workspace_id = request.GET.get("workspace_id")
+        workspace_id = request.user.current_workspace_id
         workspace = get_object_or_404(WorkSpace, id=workspace_id)
 
         tasks = project.task.filter(done_status=False)
@@ -360,7 +360,7 @@ class TaskManager(APIView):
         file_ids = data.pop("file_id_list", [])
         category_id = data.pop("category_task")["id"]
 
-        workspace_id = data.pop("workspace_id")
+        workspace_id = data.pop("workspace_id",request.user.current_workspace_id)
 
         for check_list in check_list_data:
             try:
@@ -466,9 +466,12 @@ class TaskManager(APIView):
 
     def put(self, request):
         """Update an existing task."""
+        workspace_id = request.user.current_workspace_id
+        request.data['workspace_id'] = workspace_id
         data = request.data
+
         task = get_object_or_404(Task, id=data.get("task_id"))
-        workspace_id = data.get("workspace_id")
+
         workspace_obj = get_object_or_404(WorkSpace,id=workspace_id)
         if data.get("change_done_status"):
 
@@ -525,7 +528,8 @@ class TaskManager(APIView):
 
     def delete(self, request):
         """Delete a task."""
-        workspace_obj = get_object_or_404(WorkSpace,id=request.data.get("workspace_id",None))
+        workspace_id = request.user.current_workspace_id
+        workspace_obj = get_object_or_404(WorkSpace,id=workspace_id)
         task = get_object_or_404(Task, id=request.data["task_id"])
         project_id = task.project.id
         short_text = task.title[:7] + "..."
@@ -778,7 +782,8 @@ class CheckListManager(APIView):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_project_users(request,project_id):
-    workspace_obj = get_object_or_404(WorkSpace,id=request.GET.get("workspace_id"))
+    workspace_id = request.user.current_workspace_id
+    workspace_obj = get_object_or_404(WorkSpace,id=workspace_id)
 
     project_obj = Project.objects.get(id=project_id)
     user_list = [
