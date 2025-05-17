@@ -159,9 +159,9 @@ class WorkspaceManager(APIView):
                             "cityId": None,
                             "stateId": None,
                             "name": workspace_obj.title,
-                            "username": workspace_obj.jadoo_brand_name,
+
                             "workspaceId": workspace_obj.id,
-                            "bio": workspace_obj.business_detail,
+
                             "avatar": "",
                             "industrialActivityId": None
 
@@ -180,7 +180,7 @@ class WorkspaceManager(APIView):
                             payload['avatar'] = f"{base_url}{workspace_obj.avatar.file.url}"
                         response_data = api_connection.post(
                             data=payload,
-                            end_point="/workspace/store"
+                            end_point=f"workspace/update/{workspace_obj.jadoo_workspace_id}"
                         )
 
                         workspace_obj.jadoo_workspace_id = response_data['id']
