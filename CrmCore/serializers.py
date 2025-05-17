@@ -319,13 +319,24 @@ class CustomerSmallSerializer(serializers.ModelSerializer):
             email = validated_data.pop("email",None)
             date_time_to_remember=validated_data.get("date_time_to_remember",None)
             workspace_obj = WorkSpace.objects.get(id=workspace_id)
-            if CustomerUser.objects.filter(group_crm__workspace=workspace_obj,phone_number=phone_number).exists():
-                raise serializers.ValidationError(
-                    {
-                        "status":False,
-                        "message":"شماره تلفن وارد شده در حال حاضر در کسب و کار شما وجود دارد"
-                    }
-                )
+
+            group_crm_objs = GroupCrm.objects.filter(workspace=workspace_obj)
+            for group in group_crm_objs:
+                is_customer_exists =  CustomerUser.objects.filter(phone_number=phone_number,group_crm= group).exists()
+                if is_customer_exists:
+                    raise serializers.ValidationError(
+                        {
+                            "status": False,
+                            "message": "شماره تلفن وارد شده در حال حاضر در کسب و کار شما وجود دارد"
+                        }
+                    )
+            # if CustomerUser.objects.filter(group_crm__workspace=workspace_obj,phone_number=phone_number).exists():
+            #     raise serializers.ValidationError(
+            #         {
+            #             "status":False,
+            #             "message":"شماره تلفن وارد شده در حال حاضر در کسب و کار شما وجود دارد"
+            #         }
+            #     )
             if CustomerUser.objects.filter(group_crm__workspace=workspace_obj,email=email).exists():
                 raise serializers.ValidationError(
                     {
