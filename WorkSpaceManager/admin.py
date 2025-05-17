@@ -68,7 +68,7 @@ class MemberPermissionAdmin(admin.ModelAdmin):
 
 @admin.register(ViewName)
 class ViewNameAdmin(admin.ModelAdmin):
-    list_display = ( 'is_deleted', 'deleted_at')
+    list_display = ( "id",'is_deleted', 'deleted_at',"view_name")
     list_filter = ('is_deleted',)
     actions = ['restore_selected']
 
