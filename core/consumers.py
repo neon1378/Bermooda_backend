@@ -1093,6 +1093,7 @@ class CoreWebSocket(AsyncJsonWebsocketConsumer):
             Prefetch('check_list',
                      queryset=CheckList.objects.select_related('responsible_for_doing'))
         )
+        print(self._has_admin_access(),"@@@@@@@@@@@@@@@@@@@@@")
 
         if not self._has_admin_access():
 
