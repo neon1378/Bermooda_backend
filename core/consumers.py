@@ -1060,7 +1060,7 @@ class CoreWebSocket(AsyncJsonWebsocketConsumer):
             "data": data
         })
 
-    @sync_to_async
+
     def _get_permission_type(self):
         """Get user's permission type for the workspace"""
         try:
@@ -1074,7 +1074,7 @@ class CoreWebSocket(AsyncJsonWebsocketConsumer):
 
         except ObjectDoesNotExist:
             return None
-    @sync_to_async
+
     def _has_admin_access(self):
         print(self._get_permission_type(),"!@#!@#")
         """Check if user has admin-level permissions"""
