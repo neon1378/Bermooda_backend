@@ -212,7 +212,7 @@ class WorkspaceManager(APIView):
 
 
 @api_view(['PUT'])
-@permission_classes([IsAuthenticated,IsWorkSpaceMemberAccess])
+@permission_classes([IsAuthenticated])
 def update_workspace_information(request,workspace_id):
     workspace_obj = get_object_or_404(WorkSpace,id=workspace_id)
     request.data['user_id'] = request.user.id
@@ -696,7 +696,7 @@ def get_manager_users(request):
 
 
 class WorkSpaceMemberManger(APIView):
-    permission_classes= [IsAuthenticated,IsWorkSpaceMemberAccess]
+    permission_classes= [IsAuthenticated]
 
 
     def get(self, request, member_id=None):
