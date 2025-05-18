@@ -1094,15 +1094,17 @@ class CoreWebSocket(AsyncJsonWebsocketConsumer):
                      queryset=CheckList.objects.select_related('responsible_for_doing'))
         )
 
-        if self._has_admin_access():
+        if not self._has_admin_access():
+
+            task_list = []
+            for task in base_qs:
+                for check_list in task.check_list.all():
+                    if check_list.responsible_for_doing == self.user:
+                        task_list.append(task)
+                        break
+            return task_list
+        else:
             return base_qs
-        task_list = []
-        for task in base_qs:
-            for check_list in task.check_list.all():
-                if check_list.responsible_for_doing == self.user:
-                    task_list.append(task)
-                    break
-        return task_list
 
     async def send_event_task_list(self, event):
         project_id = event['project_id']
