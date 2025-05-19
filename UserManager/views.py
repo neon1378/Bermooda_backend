@@ -192,6 +192,11 @@ class VerifyOTPView(APIView):
         otp_record = PhoneOTP.objects.filter(phone_number=phone_number, otp=otp).first()
         if otp_record and otp_record.is_valid():
             user_account = UserAccount.objects.get(phone_number=phone_number)
+            token = Token.objects.get_or_create(user=user_account)
+            refresh = RefreshToken.for_user(user_account)
+            refresh_expiry = datetime.fromtimestamp(refresh.access_token.payload['exp'])
+            refresh_expiry_aware = make_aware(refresh_expiry)
+            user_account.last_login = datetime.now()
             otp_record.delete()
             return Response(data ={
                 'message': 'کاربر با موفقیت  احراز هویت شد',
@@ -199,6 +204,12 @@ class VerifyOTPView(APIView):
                 "data":{
                     "phone_number":phone_number,
                     "slug": user_account.slug,
+                    'jwt_token': {
+                        'refresh': str(refresh),
+                        'access': str(refresh.access_token),
+                        'refresh_expires_at': refresh_expiry_aware.isoformat(),
+                    },
+                    "token": str(token[0]),
                 }
             }, status=status.HTTP_201_CREATED)
         return Response({
@@ -1591,8 +1602,9 @@ def get_user_data (request):
         "email":request.user.email,
         "avatar_url":request.user.avatar_url(),
         "is_auth":request.user.is_auth,
-        "jtime":request.user.jtime()
-       
+        "jtime":request.user.jtime(),
+        "is_register":request.user.is_register,
+
        
     }
 
