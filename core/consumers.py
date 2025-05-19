@@ -1101,7 +1101,7 @@ class CoreWebSocket(AsyncJsonWebsocketConsumer):
         # )
 
 
-    def _get_filtered_tasks_syng(self,project_id):
+    def _get_filtered_tasks(self,project_id):
         """Optimized task fetching with smart prefetching."""
         base_qs = Task.objects.filter(
             project_id=project_id,
