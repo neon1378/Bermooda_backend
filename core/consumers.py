@@ -1071,7 +1071,7 @@ class CoreWebSocket(AsyncJsonWebsocketConsumer):
             "data": data
         })
 
-
+    @sync_to_async(thread_sensitive=True)
     def _get_permission_type(self):
         """Get user's permission type for the workspace"""
         try:
@@ -1086,6 +1086,7 @@ class CoreWebSocket(AsyncJsonWebsocketConsumer):
         except ObjectDoesNotExist:
             return None
 
+    @sync_to_async(thread_sensitive=True)
     def _has_admin_access(self):
 
         """Check if user has admin-level permissions"""
@@ -1100,7 +1101,7 @@ class CoreWebSocket(AsyncJsonWebsocketConsumer):
         #         self._get_permission_type() == "manager"
         # )
 
-
+    @sync_to_async(thread_sensitive=True)
     def _get_filtered_tasks(self,project_id):
         """Optimized task fetching with smart prefetching."""
         base_qs = Task.objects.filter(
@@ -1133,11 +1134,8 @@ class CoreWebSocket(AsyncJsonWebsocketConsumer):
             "data": data
         })
 
-
-
-
-
-    def _main_serializer_data_sync(self, project_id):
+    @sync_to_async(thread_sensitive=True)
+    def _main_serializer_data(self, project_id):
         """Generate structured task data with categories more efficiently."""
         # Fetch all categories in a single query
         category_objs = CategoryProject.objects.filter(project_id=project_id).order_by("-id")
@@ -1197,10 +1195,10 @@ class CoreWebSocket(AsyncJsonWebsocketConsumer):
         # Return sorted results
         return sorted(categories.values(), key=lambda x: (x['category_id'] is None, x['category_id']))
 
-    @sync_to_async
-    def _main_serializer_data(self,project_id):
-        return self._main_serializer_data_sync(project_id)
-    # Project Task End
+    # @sync_to_async
+    # def _main_serializer_data(self,project_id):
+    #     return self._main_serializer_data_sync(project_id)
+    # # Project Task End
 
 
 
