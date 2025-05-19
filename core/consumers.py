@@ -1087,7 +1087,7 @@ class CoreWebSocket(AsyncJsonWebsocketConsumer):
             return None
 
     def _has_admin_access(self):
-        print(self._get_permission_type(),"!@#!@#")
+
         """Check if user has admin-level permissions"""
         if  self.workspace_obj.owner == self.user:
             return True
