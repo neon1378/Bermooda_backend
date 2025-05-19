@@ -1071,7 +1071,7 @@ class CoreWebSocket(AsyncJsonWebsocketConsumer):
             "data": data
         })
 
-    @sync_to_async(thread_sensitive=True)
+
     def _get_permission_type(self):
         """Get user's permission type for the workspace"""
         try:
@@ -1101,57 +1101,108 @@ class CoreWebSocket(AsyncJsonWebsocketConsumer):
         #         self._get_permission_type() == "manager"
         # )
 
-    @sync_to_async(thread_sensitive=True)
-    def _get_filtered_tasks(self,project_id):
-        """Optimized task fetching with smart prefetching."""
-        base_qs = Task.objects.filter(
-            project_id=project_id,
-            done_status=False
-        ).select_related('category_task').prefetch_related(
-            Prefetch('check_list',
-                     queryset=CheckList.objects.select_related('responsible_for_doing'))
-        )
+
+    # def _get_filtered_tasks(self,project_id):
+    #     """Optimized task fetching with smart prefetching."""
+    #     base_qs = Task.objects.filter(
+    #         project_id=project_id,
+    #         done_status=False
+    #     ).select_related('category_task').prefetch_related(
+    #         Prefetch('check_list',
+    #                  queryset=CheckList.objects.select_related('responsible_for_doing'))
+    #     )
+    #
+    #
+    #     if not self._has_admin_access():
+    #
+    #         task_list = []
+    #         for task in base_qs:
+    #             for check_list in task.check_list.all():
+    #                 if check_list.responsible_for_doing == self.user:
+    #                     task_list.append(task)
+    #                     break
+    #         return task_list
+    #     else:
+    #         return base_qs
+    #
+    # async def send_event_task_list(self, event):
+    #     project_id = event['project_id']
+    #     data = await self._main_serializer_data(project_id = project_id)
+    #     """Handler for group send events"""
+    #     await self.send_json({
+    #         "data_type": "task_list",
+    #         "data": data
+    #     })
 
 
-        if not self._has_admin_access():
 
-            task_list = []
-            for task in base_qs:
-                for check_list in task.check_list.all():
-                    if check_list.responsible_for_doing == self.user:
-                        task_list.append(task)
-                        break
-            return task_list
-        else:
-            return base_qs
 
-    async def send_event_task_list(self, event):
-        project_id = event['project_id']
-        data = await self._main_serializer_data(project_id = project_id)
-        """Handler for group send events"""
-        await self.send_json({
-            "data_type": "task_list",
-            "data": data
-        })
 
-    @sync_to_async(thread_sensitive=True)
-    def _main_serializer_data(self, project_id):
+    def _main_serializer_data_sync(self, project_id):
         """Generate structured task data with categories more efficiently."""
         # Fetch all categories in a single query
         category_objs = CategoryProject.objects.filter(project_id=project_id).order_by("-id")
         all_categories = {cat.id: cat for cat in category_objs}
 
+        def _has_admin_access():
+
+            """Check if user has admin-level permissions"""
+            if self.workspace_obj.owner == self.user:
+                return True
+            else:
+                if _get_permission_type() == "manager":
+                    return True
+                return False
+            # return (
+            #         self.workspace_obj.owner == self.user or
+            #         self._get_permission_type() == "manager"
+            # )
+
+        def _get_permission_type():
+            """Get user's permission type for the workspace"""
+            try:
+                member = WorkspaceMember.objects.get(
+                    user_account=self.user,
+                    workspace=self.workspace_obj
+                )
+                for permission in member.permissions.all():
+                    if permission.permission_name == "project board":
+                        return permission.permission_type
+
+            except ObjectDoesNotExist:
+                return None
+        def _get_filtered_tasks(project_id):
+            """Optimized task fetching with smart prefetching."""
+            base_qs = Task.objects.filter(
+                project_id=project_id,
+                done_status=False
+            ).select_related('category_task').prefetch_related(
+                Prefetch('check_list',
+                         queryset=CheckList.objects.select_related('responsible_for_doing'))
+            )
+
+            if not _has_admin_access():
+
+                task_list = []
+                for task in base_qs:
+                    for check_list in task.check_list.all():
+                        if check_list.responsible_for_doing == self.user:
+                            task_list.append(task)
+                            break
+                return task_list
+            else:
+                return base_qs
         # Get tasks with optimized related data fetching
-        task_objs = self._get_filtered_tasks(project_id=project_id)
+        task_objs = _get_filtered_tasks(project_id=project_id)
 
         # Serialize tasks, leveraging pre-fetched related data
-        serializer_data = TaskSerializer(task_objs, many=True)
+        serializer_data = TaskSerializer(task_objs, many=True).data
 
         # Organize tasks by category using serializer data
         categories = {}
         uncategorized_tasks = []  # collect tasks with no category
 
-        for task in serializer_data.data:
+        for task in serializer_data:
             if task['category_task']:
                 category_id = task['category_task']['id']
                 if category_id not in all_categories:
@@ -1195,10 +1246,10 @@ class CoreWebSocket(AsyncJsonWebsocketConsumer):
         # Return sorted results
         return sorted(categories.values(), key=lambda x: (x['category_id'] is None, x['category_id']))
 
-    # @sync_to_async
-    # def _main_serializer_data(self,project_id):
-    #     return self._main_serializer_data_sync(project_id)
-    # # Project Task End
+    @sync_to_async
+    def _main_serializer_data(self,project_id):
+        return self._main_serializer_data_sync(project_id)
+    # Project Task End
 
 
 
