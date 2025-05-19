@@ -1100,7 +1100,7 @@ class CoreWebSocket(AsyncJsonWebsocketConsumer):
         #         self._get_permission_type() == "manager"
         # )
 
-
+    @sync_to_async
     def _get_filtered_tasks(self,project_id):
         """Optimized task fetching with smart prefetching."""
         base_qs = Task.objects.filter(
