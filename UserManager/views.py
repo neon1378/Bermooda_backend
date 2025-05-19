@@ -139,11 +139,14 @@ class SendOtpView(APIView):
     def post(self,request):
         data = request.data
         phone_number = data.get("phone_number")
-        if UserAccount.objects.filter(phone_number=phone_number).exists() and UserAccount.objects.filter(phone_number=phone_number,is_register=True).exists():
-            return Response(status=status.HTTP_400_BAD_REQUEST,data={
-                "status":False,
-                "message":"شماره وارد شده در حال حاضر در برمودا ثبت نام کرده است "
-            })
+        if UserAccount.objects.filter(phone_number=phone_number).exists() :
+            user =  UserAccount.objects.get(phone_number=phone_number)
+            if user.is_register:
+
+                return Response(status=status.HTTP_400_BAD_REQUEST,data={
+                    "status":False,
+                    "message":"شماره وارد شده در حال حاضر در برمودا ثبت نام کرده است "
+                })
 
         pattern = r"^09\d{9}$"
 
