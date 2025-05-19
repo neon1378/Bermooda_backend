@@ -1120,8 +1120,9 @@ class CoreWebSocket(AsyncJsonWebsocketConsumer):
             "data_type": "task_list",
             "data": await self._main_serializer_data(project_id)
         })
+
     @sync_to_async
-    def _main_serializer_data(self,project_id):
+    def _main_serializer_data(self, project_id):
         """Generate structured task data with categories more efficiently."""
         # Fetch all categories in a single query
         category_objs = CategoryProject.objects.filter(project_id=project_id).order_by("-id")
@@ -1133,9 +1134,10 @@ class CoreWebSocket(AsyncJsonWebsocketConsumer):
         # Serialize tasks, leveraging pre-fetched related data
         serializer_data = TaskSerializer(task_objs, many=True).data
 
-
         # Organize tasks by category using serializer data
         categories = {}
+        uncategorized_tasks = []  # collect tasks with no category
+
         for task in serializer_data:
             if task['category_task']:
                 category_id = task['category_task']['id']
@@ -1153,6 +1155,8 @@ class CoreWebSocket(AsyncJsonWebsocketConsumer):
                         "task_list": []
                     }
                 categories[category_id]['task_list'].append(task)
+            else:
+                uncategorized_tasks.append(task)
 
         # Fill in empty categories from pre-fetched data
         for category in category_objs:
@@ -1165,9 +1169,18 @@ class CoreWebSocket(AsyncJsonWebsocketConsumer):
                     "task_list": []
                 }
 
-        # Return sorted results
-        return sorted(categories.values(), key=lambda x: x['category_id'])
+        # Add uncategorized tasks to a special category
+        if uncategorized_tasks:
+            categories[None] = {
+                "category_id": None,
+                "color": None,
+                "project_id": project_id,
+                "title": "لیست انتظار",
+                "task_list": uncategorized_tasks
+            }
 
+        # Return sorted results
+        return sorted(categories.values(), key=lambda x: (x['category_id'] is None, x['category_id']))
 
     # Project Task End
 
