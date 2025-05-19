@@ -139,7 +139,7 @@ class SendOtpView(APIView):
     def post(self,request):
         data = request.data
         phone_number = data.get("phone_number")
-        if UserAccount.objects.filter(phone_number=phone_number).exists() or UserAccount.objects.filter(phone_number=phone_number,is_register=True).exists():
+        if UserAccount.objects.filter(phone_number=phone_number).exists() and UserAccount.objects.filter(phone_number=phone_number,is_register=True).exists():
             return Response(status=status.HTTP_400_BAD_REQUEST,data={
                 "status":False,
                 "message":"شماره وارد شده در حال حاضر در برمودا ثبت نام کرده است "
