@@ -1110,7 +1110,7 @@ class CoreWebSocket(AsyncJsonWebsocketConsumer):
             Prefetch('check_list',
                      queryset=CheckList.objects.select_related('responsible_for_doing'))
         )
-        print(self._has_admin_access(),"@@@@@@@@@@@@@@@@@@@@@")
+
 
         if not self._has_admin_access():
 
@@ -1126,10 +1126,11 @@ class CoreWebSocket(AsyncJsonWebsocketConsumer):
 
     async def send_event_task_list(self, event):
         project_id = event['project_id']
+        task_data= await self._main_serializer_data(project_id)
         """Handler for group send events"""
         await self.send_json({
             "data_type": "task_list",
-            "data": await self._main_serializer_data(project_id)
+            "data": task_data
         })
 
     @sync_to_async
