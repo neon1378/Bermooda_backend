@@ -1145,13 +1145,13 @@ class CoreWebSocket(AsyncJsonWebsocketConsumer):
         task_objs = self._get_filtered_tasks(project_id=project_id)
 
         # Serialize tasks, leveraging pre-fetched related data
-        serializer_data = TaskSerializer(task_objs, many=True).data
+        serializer_data = TaskSerializer(task_objs, many=True)
 
         # Organize tasks by category using serializer data
         categories = {}
         uncategorized_tasks = []  # collect tasks with no category
 
-        for task in serializer_data:
+        for task in serializer_data.data:
             if task['category_task']:
                 category_id = task['category_task']['id']
                 if category_id not in all_categories:
