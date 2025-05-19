@@ -1170,14 +1170,14 @@ class CoreWebSocket(AsyncJsonWebsocketConsumer):
                 }
 
         # Add uncategorized tasks to a special category
-        if uncategorized_tasks:
-            categories[None] = {
+
+        categories[None] = {
                 "category_id": None,
                 "color": None,
                 "project_id": project_id,
                 "title": "لیست انتظار",
                 "task_list": uncategorized_tasks
-            }
+        }
 
         # Return sorted results
         return sorted(categories.values(), key=lambda x: (x['category_id'] is None, x['category_id']))
