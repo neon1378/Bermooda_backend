@@ -218,13 +218,13 @@ class VerifyOTPView(APIView):
         }, status=status.HTTP_400_BAD_REQUEST)
 
 class CreateUserView(APIView):
-    permission_classes=[AllowAny]
+    permission_classes=[IsAuthenticated]
     def post(self,request):
 
 
         data = request.data
-        user_slug = data.get("slug")
-        user_acc = UserAccount.objects.get(slug=user_slug)
+        user_slug = data.get("slug",None)
+        user_acc = request.user
         # username=data['username']
         password = data['password']
         avatar_id = data.get("avatar_id", None)
