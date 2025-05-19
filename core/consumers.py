@@ -1126,11 +1126,11 @@ class CoreWebSocket(AsyncJsonWebsocketConsumer):
 
     async def send_event_task_list(self, event):
         project_id = event['project_id']
-        task_data= await self._main_serializer_data(project_id)
+        data = await self._main_serializer_data(project_id = project_id)
         """Handler for group send events"""
         await self.send_json({
             "data_type": "task_list",
-            "data": task_data
+            "data": data
         })
 
 
