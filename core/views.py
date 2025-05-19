@@ -61,7 +61,7 @@ def send_sms_core(fullname,phone_number):
 
 @parser_classes([MultiPartParser, FormParser])
 @api_view(['POST']) 
-@permission_classes([IsAuthenticated])
+@permission_classes([AllowAny])
 def upload_file (request):
     
     file = request.FILES.get("file",None)
