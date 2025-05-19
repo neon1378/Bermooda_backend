@@ -1085,7 +1085,7 @@ class CoreWebSocket(AsyncJsonWebsocketConsumer):
 
         except ObjectDoesNotExist:
             return None
-
+    @sync_to_async
     def _has_admin_access(self):
 
         """Check if user has admin-level permissions"""
