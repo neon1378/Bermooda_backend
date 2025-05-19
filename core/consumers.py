@@ -1125,20 +1125,17 @@ class CoreWebSocket(AsyncJsonWebsocketConsumer):
     #     else:
     #         return base_qs
     #
-    # async def send_event_task_list(self, event):
-    #     project_id = event['project_id']
-    #     data = await self._main_serializer_data(project_id = project_id)
-    #     """Handler for group send events"""
-    #     await self.send_json({
-    #         "data_type": "task_list",
-    #         "data": data
-    #     })
+    async def send_event_task_list(self, event):
+        project_id = event['project_id']
+        data = await self._main_serializer_data(project_id = project_id)
+        """Handler for group send events"""
+        await self.send_json({
+            "data_type": "task_list",
+            "data": data
+        })
 
-
-
-
-
-    def _main_serializer_data_sync(self, project_id):
+    @sync_to_async
+    def _main_serializer_data(self, project_id):
         """Generate structured task data with categories more efficiently."""
         # Fetch all categories in a single query
         category_objs = CategoryProject.objects.filter(project_id=project_id).order_by("-id")
@@ -1246,9 +1243,7 @@ class CoreWebSocket(AsyncJsonWebsocketConsumer):
         # Return sorted results
         return sorted(categories.values(), key=lambda x: (x['category_id'] is None, x['category_id']))
 
-    @sync_to_async
-    def _main_serializer_data(self,project_id):
-        return self._main_serializer_data_sync(project_id)
+
     # Project Task End
 
 
