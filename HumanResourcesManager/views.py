@@ -128,7 +128,7 @@ def get_folder_members (request):
         data= {
             "status":True,
             "message":"موفق",
-            "data":paginate_data['iist'],
+            "data":paginate_data['list'],
             "extra":{
                 "count":paginate_data['count'],
                 "next":paginate_data['next'],
