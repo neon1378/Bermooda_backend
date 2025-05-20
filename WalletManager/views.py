@@ -381,3 +381,50 @@ def check_discount_code(request):
             "message":"کد تخفیف معتبر نمیباشد",
 
         })
+
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def create_discount_json (request):
+    one = []
+    two = []
+    three = []
+    four = []
+    five = []
+    for item in Discount.objects.all():
+        if item.percentage == 10:
+            one.append(item)
+        if item.percentage == 20:
+            two.append(item)
+        if item.percentage == 30:
+            three.append(item)
+        if item.percentage == 40:
+            four.append(item)
+        if item.percentage == 50:
+            five.append(item)
+    response_data = [
+        {
+            "percentage": 10,
+            "code_list":one
+        },
+        {
+            "percentage": 10,
+            "code_list": two
+        },
+        {
+            "percentage": 10,
+            "code_list": three
+        },
+        {
+            "percentage": 10,
+            "code_list": four
+        },
+        {
+            "percentage": 10,
+            "code_list": five
+        },
+
+    ]
+
+    return JsonResponse(status=status.HTTP_200_OK,data=response_data)

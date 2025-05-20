@@ -13,6 +13,7 @@ urlpatterns = [
     path("unsuccess_payment/<int:trans_action_id>",views.unsuccess_payment),
     path("success_payment/<int:trans_action_id>",views.success_payment),
     path("CheckDiscountCode", views.check_discount_code),
+    path("create_discount_json", views.create_discount_json),
 
 
 ]
