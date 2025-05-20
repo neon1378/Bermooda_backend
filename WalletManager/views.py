@@ -427,4 +427,4 @@ def create_discount_json (request):
 
     ]
 
-    return JsonResponse(status=status.HTTP_200_OK,data=response_data)
+    return Response(status=status.HTTP_200_OK,data=response_data)
