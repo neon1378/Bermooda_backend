@@ -111,7 +111,7 @@ def get_folder_members (request):
                 {
                     "user_account":{
                         "id":member.id,
-                        "full_name":member.full_name,
+                        "full_name":member.fullname,
 
                     },
                     "type":"owner"
