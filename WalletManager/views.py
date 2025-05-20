@@ -409,19 +409,19 @@ def create_discount_json (request):
             "code_list":one
         },
         {
-            "percentage": 10,
+            "percentage": 20,
             "code_list": two
         },
         {
-            "percentage": 10,
+            "percentage": 30,
             "code_list": three
         },
         {
-            "percentage": 10,
+            "percentage": 40,
             "code_list": four
         },
         {
-            "percentage": 10,
+            "percentage": 50,
             "code_list": five
         },
 
