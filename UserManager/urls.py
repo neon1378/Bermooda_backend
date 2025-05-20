@@ -88,6 +88,9 @@ urlpatterns = [
 
     path("CreateUserDetail", views.CreateUserView.as_view()),
 
+    path("SendOtpForgetPassword", views.send_otp_forget_password),
+
+
     # path("DeleteAccount",views.delete_account),
 
     

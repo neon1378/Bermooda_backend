@@ -172,7 +172,7 @@ class SendOtpView(APIView):
             new_otp.otp = otp
             new_otp.created_at = datetime.now()
             new_otp.save()
-
+        send_sms(phone_number=phone_number, verify_code=otp)
         return Response(status=status.HTTP_200_OK, data={
             "status": True,
             "message":"کد تاییدیه با موفقیت ارسال شد ",
@@ -182,6 +182,47 @@ class SendOtpView(APIView):
         })
 
 
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def send_otp_forget_password(request):
+    data = request.data
+    phone_number = data.get("phone_number")
+
+    if not UserAccount.objects.filter(phone_number=phone_number).exists():
+        return Response(status=status.HTTP_400_BAD_REQUEST,data={
+            "status":False,
+            "message":"حساب کاربری وجود ندارد",
+
+        })
+    user_account = UserAccount.objects.get(phone_number=phone_number)
+    if not user_account.is_register:
+        return Response(status=status.HTTP_400_BAD_REQUEST,data={
+            "status":False,
+            "message":"حساب کاربری وجود ندارد",
+
+        })
+
+    otp = str(random.randint(100000, 999999))
+    if not PhoneOTP.objects.filter(phone_number=user_account.phone_number).exists():
+        new_otp = PhoneOTP.objects.create(
+            phone_number=user_account.phone_number,
+            otp=otp,
+            created_at=datetime.now()
+        )
+    else:
+        new_otp = PhoneOTP.objects.get(phone_number=user_account.phone_number)
+        new_otp.otp = otp
+        new_otp.created_at = datetime.now()
+        new_otp.save()
+        send_sms(phone_number=phone_number, verify_code=otp)
+    return Response(status=status.HTTP_200_OK, data={
+            "status": True,
+            "message":"کد تاییدیه با موفقیت ارسال شد ",
+            "data":{
+                "phone_number": user_account.phone_number
+            }
+        })
 
 
 
@@ -790,16 +831,23 @@ def change_user_password(request):
             "message":"رمز عبور و تکرار آن مطابقت ندارد",
             "data":{}
         })
-    
+
     refresh = RefreshToken.for_user(request.user)
     request.user.set_password(password)
     request.user.save()
+    token = Token.objects.get_or_create(user=request.user)
+    refresh_expiry = datetime.fromtimestamp(refresh.access_token.payload['exp'])
+    refresh_expiry_aware = make_aware(refresh_expiry)
     return Response(status =status.HTTP_202_ACCEPTED,data={
         "status":True,
         "message":"رمز عبور شما با موفقیت تغییر کرد",
         "data":{
+            'jwt_token': {
                 'refresh': str(refresh),
                 'access': str(refresh.access_token),
+                'refresh_expires_at': refresh_expiry_aware.isoformat(),
+            },
+            "token": str(token[0]),
 
         }
     })
