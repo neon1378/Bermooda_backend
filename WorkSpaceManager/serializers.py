@@ -877,7 +877,7 @@ class WorkSpaceMemberFullDataSerializer(serializers.ModelSerializer):
         if folder_slug:
             from HumanResourcesManager.models import Folder
             folder_obj = get_object_or_404(Folder, slug=folder_slug)
-            folder_obj.members.add(instance)
+            folder_obj.members.add(instance.user_account)
             folder_obj.save()
         return instance
 
