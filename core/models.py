@@ -197,3 +197,10 @@ class AppUpdate(SoftDeleteModel):
 
 class StudyCategory(SoftDeleteModel):
     title = models.CharField(max_length=60,null=True)
+
+
+
+
+
+class TestSeri(models.Model):
+    date_at = models.DateField(null=True,blank=True)

@@ -850,6 +850,9 @@ def change_user_password(request):
             "token": str(token[0]),
 
         }
+
+
+
     })
 
 @permission_classes([IsAuthenticated])

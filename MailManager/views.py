@@ -20,7 +20,7 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from Notification.views import create_notification
 class MailLabelManager(APIView):
-    permission_classes=[IsAuthenticated,IsWorkSpaceMemberAccess]
+    permission_classes=[IsAuthenticated]
     def get (self,request,label_id=None):
         if label_id:
             mail_label_obj = get_object_or_404(MailLabel,id=label_id)
@@ -300,6 +300,7 @@ def add_signature_to_mail (request,recipient_id):
             "status":True,
             "message":"success",
             "data":serializer_data.data
+
 
         })
     return Response(status=status.HTTP_400_BAD_REQUEST,data={

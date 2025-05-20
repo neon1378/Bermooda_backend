@@ -1,5 +1,5 @@
 from rest_framework import serializers
-
+from .widgets import persian_to_gregorian
 from .models import *
 class ImageSerializer (serializers.ModelSerializer):
     class Meta:
@@ -72,7 +72,6 @@ class AppUpdateSerializer(serializers.ModelSerializer):
             "myket_link",
             "download_link",
         ]
-
 
 
 
