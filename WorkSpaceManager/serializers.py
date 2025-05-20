@@ -387,7 +387,7 @@ class SkillSerializer(serializers.ModelSerializer):
 
 
 class WorkSpaceMemberFullDataSerializer(serializers.ModelSerializer):
-    folder_slug = serializers.IntegerField(required=False,allow_null=True)
+    folder_slug = serializers.SlugField(required=False,allow_null=True)
     user_account = UserSerializer(required=False, read_only=True)
     workspace_id = serializers.IntegerField(required=True, write_only=True)
     permissions = serializers.ListField(write_only=True, required=False)
