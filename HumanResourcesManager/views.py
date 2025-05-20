@@ -41,11 +41,16 @@ class FolderManager(APIView):
 
         pagination_data = pagination(query_set=folder_objs,page_number=page_number)
         pagination_data['list'] = FolderSerializer(pagination_data['list'],many=True).data
-        print(pagination_data['list'])
+
         return Response(status=status.HTTP_200_OK,data={
             "status":True,
             "message":"موفق",
-            "data":pagination_data
+            "data":pagination_data['list'],
+            "extra":{
+                "count": pagination_data['count'],
+                "next": pagination_data['next'],
+                "previous": pagination_data['previous'],
+            }
         })
     def post(self,request):
         request.data['workspace_id'] = request.user.current_workspace_id
@@ -121,7 +126,12 @@ def get_folder_members (request):
         data= {
             "status":True,
             "message":"موفق",
-            "data":paginate_data
+            "data":paginate_data['iist'],
+            "extra":{
+                "count":paginate_data['count'],
+                "next":paginate_data['next'],
+                "previous":paginate_data['previous'],
+            }
         }
     )
 
