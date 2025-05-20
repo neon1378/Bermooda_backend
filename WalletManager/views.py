@@ -394,15 +394,15 @@ def create_discount_json (request):
     five = []
     for item in Discount.objects.all():
         if item.percentage == 10:
-            one.append(item)
+            one.append(item.code)
         if item.percentage == 20:
-            two.append(item)
+            two.append(item.code)
         if item.percentage == 30:
-            three.append(item)
+            three.append(item.code)
         if item.percentage == 40:
-            four.append(item)
+            four.append(item.code)
         if item.percentage == 50:
-            five.append(item)
+            five.append(item.code)
     response_data = [
         {
             "percentage": 10,
