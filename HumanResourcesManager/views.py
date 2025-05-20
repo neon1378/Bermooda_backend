@@ -123,6 +123,7 @@ def get_folder_members (request):
             serializer_data['type'] ="member"
             workspace_member_list.append(serializer_data)
     paginate_data['list'] = workspace_member_list
+    print(paginate_data)
     return Response(
         status=status.HTTP_200_OK,
         data= {
