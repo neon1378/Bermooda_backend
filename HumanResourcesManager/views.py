@@ -106,22 +106,12 @@ def get_folder_members (request):
 
     ]
     for member in paginate_data['list']:
-        if member == folder_obj.workspace.owner:
-            workspace_member_list.append(
-                {
-                    "user_account":{
-                        "id":member.id,
-                        "full_name":member.fullname,
-
-                    },
-                    "type":"owner"
-                }
-            )
-        else:
+        if member != folder_obj.workspace.owner:
             workspace_member_obj = WorkspaceMember.objects.get(user_account=member,workspace=folder_obj.workspace)
             serializer_data = WorkSpaceMemberSerializer(workspace_member_obj).data
             serializer_data['type'] ="member"
             workspace_member_list.append(serializer_data)
+
     paginate_data['list'] = workspace_member_list
     print(paginate_data)
     return Response(
