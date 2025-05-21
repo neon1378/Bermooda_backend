@@ -625,14 +625,14 @@ class CoreWebSocket(AsyncJsonWebsocketConsumer):
 
         # Add a group for customers without a label
 
-        data_list.append({
-                "label_id": None,
-                "color": None,
-                "title": "لیست  اتتظار",
-                "group_crm_id": group_crm_id,
-                "steps": [],
-                "customer_list": no_label_customers
-            })
+        # data_list.append({
+        #         "label_id": None,
+        #         "color": None,
+        #         "title": "لیست  اتتظار",
+        #         "group_crm_id": group_crm_id,
+        #         "steps": [],
+        #         "customer_list": no_label_customers
+        #     })
 
         return sorted(data_list, key=lambda x: (x["label_id"] is None, x["label_id"]))
 
