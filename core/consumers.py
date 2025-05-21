@@ -576,47 +576,45 @@ class CoreWebSocket(AsyncJsonWebsocketConsumer):
                     return False
 
     @sync_to_async
-    def _customer_list_serializer(self,group_crm_id):
-
+    def _customer_list_serializer(self, group_crm_id):
         user_permission = self._get_user_permission()
         if user_permission:
             customer_objs = CustomerUser.objects.filter(group_crm_id=group_crm_id, is_followed=False)
         else:
             customer_objs = CustomerUser.objects.filter(group_crm_id=group_crm_id, is_followed=False,
                                                         user_account=self.user)
+
         data_list = []
+        no_label_customers = []
 
         for customer_obj in customer_objs:
-            not_exists = True
-            try:
-                for data in data_list:
-                    if data['label_id'] == customer_obj.label.id:
-                        data['customer_list'].append(CustomerSmallSerializer(customer_obj).data)
-                        not_exists = False
-                        break
-                if not_exists:
-                    data_list.append({
-                        "label_id": customer_obj.label.id,
-                        "color": customer_obj.label.color,
-                        "title": customer_obj.label.title,
-                        "steps": LabelStepSerializer(customer_obj.label.label_step.steps.all(), many=True).data,
-                        "group_crm_id": group_crm_id,
-                        "customer_list": [CustomerSmallSerializer(customer_obj).data]
-                    })
+            # if not customer_obj.label:
+            #     no_label_customers.append(CustomerSmallSerializer(customer_obj).data)
+            #     continue
 
-            except:
-                pass
-
-        label_objs = Label.objects.filter(group_crm_id=group_crm_id).order_by("-id")
-        for label in label_objs:
+            # Normal labeled customer handling
             not_exists = True
             for data in data_list:
-                if data['label_id'] == label.id:
+                if data['label_id'] == customer_obj.label.id:
+                    data['customer_list'].append(CustomerSmallSerializer(customer_obj).data)
                     not_exists = False
                     break
+
             if not_exists:
                 data_list.append({
+                    "label_id": customer_obj.label.id,
+                    "color": customer_obj.label.color,
+                    "title": customer_obj.label.title,
+                    "steps": LabelStepSerializer(customer_obj.label.label_step.steps.all(), many=True).data,
+                    "group_crm_id": group_crm_id,
+                    "customer_list": [CustomerSmallSerializer(customer_obj).data]
+                })
 
+        # Handle label entries that have no customers
+        label_objs = Label.objects.filter(group_crm_id=group_crm_id).order_by("-id")
+        for label in label_objs:
+            if not any(data['label_id'] == label.id for data in data_list):
+                data_list.append({
                     "label_id": label.id,
                     "color": label.color,
                     "title": label.title,
@@ -624,69 +622,19 @@ class CoreWebSocket(AsyncJsonWebsocketConsumer):
                     "steps": LabelStepSerializer(label.label_step.steps.all(), many=True).data,
                     "customer_list": []
                 })
-        data = sorted(data_list, key=lambda x: x["label_id"])
-        return data
 
+        # Add a group for customers without a label
 
-    # def _customer_list_serializer(self, group_crm_id):
-    #     user_permission = self._get_user_permission()
-    #     if user_permission:
-    #         customer_objs = CustomerUser.objects.filter(group_crm_id=group_crm_id, is_followed=False)
-    #     else:
-    #         customer_objs = CustomerUser.objects.filter(group_crm_id=group_crm_id, is_followed=False,
-    #                                                     user_account=self.user)
-    #
-    #     data_list = []
-    #     no_label_customers = []
-    #
-    #     for customer_obj in customer_objs:
-    #         # if not customer_obj.label:
-    #         #     no_label_customers.append(CustomerSmallSerializer(customer_obj).data)
-    #         #     continue
-    #
-    #         # Normal labeled customer handling
-    #         not_exists = True
-    #         for data in data_list:
-    #             if data['label_id'] == customer_obj.label.id:
-    #                 data['customer_list'].append(CustomerSmallSerializer(customer_obj).data)
-    #                 not_exists = False
-    #                 break
-    #
-    #         if not_exists:
-    #             data_list.append({
-    #                 "label_id": customer_obj.label.id,
-    #                 "color": customer_obj.label.color,
-    #                 "title": customer_obj.label.title,
-    #                 "steps": LabelStepSerializer(customer_obj.label.label_step.steps.all(), many=True).data,
-    #                 "group_crm_id": group_crm_id,
-    #                 "customer_list": [CustomerSmallSerializer(customer_obj).data]
-    #             })
-    #
-    #     # Handle label entries that have no customers
-    #     label_objs = Label.objects.filter(group_crm_id=group_crm_id).order_by("-id")
-    #     for label in label_objs:
-    #         if not any(data['label_id'] == label.id for data in data_list):
-    #             data_list.append({
-    #                 "label_id": label.id,
-    #                 "color": label.color,
-    #                 "title": label.title,
-    #                 "group_crm_id": group_crm_id,
-    #                 "steps": LabelStepSerializer(label.label_step.steps.all(), many=True).data,
-    #                 "customer_list": []
-    #             })
-    #
-    #     # Add a group for customers without a label
-    #
-    #     # data_list.append({
-    #     #         "label_id": None,
-    #     #         "color": None,
-    #     #         "title": "لیست  اتتظار",
-    #     #         "group_crm_id": group_crm_id,
-    #     #         "steps": [],
-    #     #         "customer_list": no_label_customers
-    #     #     })
-    #
-    #     return sorted(data_list, key=lambda x: (x["label_id"] is None, x["label_id"]))
+        # data_list.append({
+        #         "label_id": None,
+        #         "color": None,
+        #         "title": "لیست  اتتظار",
+        #         "group_crm_id": group_crm_id,
+        #         "steps": [],
+        #         "customer_list": no_label_customers
+        #     })
+
+        return sorted(data_list, key=lambda x: (x["label_id"] is None, x["label_id"]))
 
     async def move_a_customer_handler(self,data):
         group_crm_id = data.get("group_crm_id")
