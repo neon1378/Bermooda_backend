@@ -210,6 +210,6 @@ class TestSeri(models.Model):
 class Country(SoftDeleteModel):
     name = models.CharField(max_length=200,null=True)
     en_name = models.CharField(max_length=200,null=True)
-    code = models.PositiveIntegerField(null=True)
+    code = models.IntegerField(null=True)
 
 
