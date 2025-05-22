@@ -5,6 +5,7 @@ from django.shortcuts import render
 from django.middleware.csrf import get_token
 from rest_framework import mixins
 from rest_framework import generics
+from core.serializers import CountrySerializer
 import re
 
 from core.widgets import change_current_workspace_jadoo,ExternalApi
@@ -17,7 +18,7 @@ from ProjectManager.models import ProjectDepartment
 from .models import *
 from core.permission import IsWorkSpaceUser,IsWorkSpaceMemberAccess
 from MailManager.models import MailStatus
-from core.models import City,State
+from core.models import City,State,Country
 from django.contrib.auth.hashers import check_password
 import secrets
 from CrmCore.models import *
@@ -499,6 +500,21 @@ def get_all_state (request):
         "message":"succses",
         "data":state_list
     })
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def get_all_country(request):
+    countries = Country.objects.all()
+
+    serializer_data = CountrySerializer(countries,many=True)
+
+    return Response(status=status.HTTP_200_OK, data={
+        "status": True,
+        "message": "succses",
+        "data": serializer_data.data
+    })
+
 
 
 @api_view(['GET'])

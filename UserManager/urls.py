@@ -32,7 +32,10 @@ urlpatterns = [
     path("create_state_and_city",views.create_state_and_city,name="create_state_and_city"),
 
     path("get_all_state",views.get_all_state,name="get_all_state"),
+    path("get_all_country", views.get_all_country),
+
     path("get_all_city_per_state/<int:state_id>",views.get_all_city_per_state,name="get_all_city_per_state"),
+
     #category customer api
 
 

@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import *
-from core.serializers import MainFileSerializer,CitySerializer,StateSerializer
+from core.serializers import MainFileSerializer,CitySerializer,StateSerializer,CountrySerializer
 from UserManager.serializers import MemberSerializer
 from core.widgets import persian_to_gregorian
 from core.models import MainFile
@@ -156,7 +156,8 @@ class EmployeeRequestSerializer(serializers.ModelSerializer):
     doctor_document_id = serializers.IntegerField(write_only=True, required=False, allow_null=True)
     folder_slug = serializers.SlugField(write_only=True, required=True)
     folder_category_slug = serializers.SlugField(write_only=True, required=False)
-
+    country_id = serializers.IntegerField(write_only=True, required=False)
+    country = CountrySerializer(read_only=True)
     # Read-only nested
     state = StateSerializer(read_only=True)
     city = CitySerializer(read_only=True)
@@ -193,11 +194,14 @@ class EmployeeRequestSerializer(serializers.ModelSerializer):
             'emergency_type',
             'folder_category', 'folder_category_slug',
             'folder_slug', 'slug',
+            "country_id",
+            "country",
         ]
 
     def validate(self, attrs):
         """Validate fields based on request_type and leave_type."""
         request_type = attrs.get('request_type')
+        mission_type = attrs.get('mission_type')
         if not request_type:
             raise serializers.ValidationError({'request_type': 'This field is required.'})
 
@@ -246,10 +250,19 @@ class EmployeeRequestSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError({'leave_type': 'Invalid leave_type.'})
 
         elif request_type == 'administrative_mission':
-            missing = [f for f in ('city_id','state_id','mission_type','date_time_to_start','date_time_to_end') if not attrs.get(f)]
-            if missing:
-                raise serializers.ValidationError({f: 'Required for administrative_mission.' for f in missing})
+            if not mission_type:
+                raise serializers.ValidationError({'mission_type': 'This field is required.'})
+            if mission_type == "inside":
 
+                missing = [f for f in ('city_id','state_id','mission_type','date_time_to_start','date_time_to_end') if not attrs.get(f)]
+                if missing:
+                    raise serializers.ValidationError({f: 'Required for administrative_mission.' for f in missing})
+            else:
+
+                missing = [f for f in ( "country_id",'mission_type', 'date_time_to_start', 'date_time_to_end')
+                           if not attrs.get(f)]
+                if missing:
+                    raise serializers.ValidationError({f: 'Required for administrative_mission.' for f in missing})
         return attrs
 
     def create(self, validated_data):
@@ -273,7 +286,7 @@ class EmployeeRequestSerializer(serializers.ModelSerializer):
         m_type = validated_data.pop('mission_type', None)
         dt_start = validated_data.pop('date_time_to_start', None)
         dt_end = validated_data.pop('date_time_to_end', None)
-
+        country_id = validated_data.pop('country_id', None)
 
         req = EmployeeRequest(requesting_user_id=requesting_user_id)
 
@@ -319,9 +332,13 @@ class EmployeeRequestSerializer(serializers.ModelSerializer):
                 req.leave_file_documents.add(mf)
 
         else:  # administrative_mission
-            req.city_id = city_id
-            req.state_id = state_id
+            if city_id:
+                req.city_id = city_id
+            if state_id:
+                req.state_id = state_id
             req.mission_type = m_type
+            if country_id:
+                req.country_id=country_id
             req.date_time_to_start_at = persian_to_gregorian(dt_start)
             req.date_time_to_end_at = persian_to_gregorian(dt_end)
             req.address = validated_data.get('address')
@@ -345,6 +362,7 @@ class EmployeeRequestSerializer(serializers.ModelSerializer):
         leave_file_ids = validated_data.pop('leave_file_id_list', None)
         doctor_document_id = validated_data.pop('doctor_document_id', None)
         folder_slug = validated_data.pop('folder_slug', None)
+        country_id= validated_data.pop('country_id', None)
         folder_category_slug = validated_data.pop('folder_category_slug', None)
 
         # Date/time pops
@@ -365,7 +383,11 @@ class EmployeeRequestSerializer(serializers.ModelSerializer):
         if doctor_document_id is not None: instance.doctor_document_id = doctor_document_id
 
         # Dates/times
+
+
         if start_date: instance.start_date_at = persian_to_gregorian(start_date)
+        if country_id: instance.country_id = country_id
+
         if end_date: instance.end_date_at = persian_to_gregorian(end_date)
         if hourly_date: instance.hourly_leave_date = persian_to_gregorian(hourly_date)
         if t_start: instance.time_to_start_at = t_start

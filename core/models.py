@@ -204,3 +204,12 @@ class StudyCategory(SoftDeleteModel):
 
 class TestSeri(models.Model):
     date_at = models.DateField(null=True,blank=True)
+
+
+
+class Country(SoftDeleteModel):
+    name = models.CharField(max_length=200,null=True)
+    en_name = models.CharField(max_length=200,null=True)
+    code = models.PositiveIntegerField(null=True)
+
+

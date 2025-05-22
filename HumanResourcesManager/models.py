@@ -4,7 +4,7 @@ from kombu.utils import emergency_dump_state
 from core.models import SoftDeleteModel,MainFile
 from WorkSpaceManager.models import WorkSpace
 from core.widgets import generate_random_slug
-from core.models import State,City
+from core.models import State,City,Country
 from UserManager.models import UserAccount
 # Create your models here.
 
@@ -49,6 +49,9 @@ class EmployeeRequest(SoftDeleteModel):
         ("administrative_mission","Administrative Mission"),
 
     )
+
+
+
     LEAVE_TYPE = (
         ("daily_leave","Daily Leave"),
         ("sick_leave","Sick Leave"),
@@ -130,6 +133,7 @@ class EmployeeRequest(SoftDeleteModel):
         choices=EMERGENCY_TYPE,
         null=True
     )
+    country = models.ForeignKey(Country,on_delete=models.SET_NULL,null=True)
 
 
     def save(self, *args, **kwargs):
