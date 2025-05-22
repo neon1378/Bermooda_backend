@@ -505,7 +505,7 @@ def get_all_state (request):
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def get_all_country(request):
-    countries = Country.objects.all()
+    countries = Country.objects.all().order_by("-id")
 
     serializer_data = CountrySerializer(countries,many=True)
 
