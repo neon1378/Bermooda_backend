@@ -166,3 +166,10 @@ class ReadyTextSerializer(serializers.ModelSerializer):
 
 
 
+
+class UserAccountInputSerializer(serializers.Serializer):
+    user_id = serializers.CharField(required=True)
+    phone_number = serializers.CharField(required=True)
+    national_code = serializers.CharField(required=False, allow_null=True, allow_blank=True)
+    email = serializers.EmailField(required=False, allow_null=True, allow_blank=True)
+    fullname = serializers.CharField(required=False, allow_null=True, allow_blank=True)

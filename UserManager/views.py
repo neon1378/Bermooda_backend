@@ -1938,3 +1938,48 @@ def change_user(request):
         user.is_staff= False
         user.save()
     return Response(status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def store_a_user(request):
+    serializer = UserAccountInputSerializer(data=request.data)
+    if not serializer.is_valid():
+        return Response(
+            {"status": False, "message": serializer.errors},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    validated = serializer.validated_data
+    phone_number = validated['phone_number']
+    user_id = validated['user_id']
+
+    user_account, created = UserAccount.objects.get_or_create(
+        phone_number=phone_number,
+        defaults={
+            "fullname": validated.get("fullname"),
+            "email": validated.get("email"),
+            "refrence_id": user_id,
+            "national_code": validated.get("national_code")
+        }
+    )
+
+    if not created:
+        # Update existing user
+        user_account.fullname = validated.get("fullname")
+        user_account.email = validated.get("email")
+        user_account.refrence_id = user_id
+        user_account.national_code = validated.get("national_code")
+        user_account.save()
+
+    return Response(
+        {
+            "status": True,
+            "message": "Account created or updated successfully",
+            "data": {
+                "id": user_account.id,
+                "phone_number": user_account.phone_number,
+            }
+        },
+        status=status.HTTP_202_ACCEPTED
+    )

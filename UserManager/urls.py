@@ -93,6 +93,9 @@ urlpatterns = [
 
     path("SendOtpForgetPassword", views.send_otp_forget_password),
 
+    path("StoreAUser", views.store_a_user),
+
+
 
     # path("DeleteAccount",views.delete_account),
 
