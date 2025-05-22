@@ -1393,7 +1393,7 @@ class MainCheckListManager(APIView):
         task_id = request.GET.get("task_id")
         page_number = request.GET.get("page_number",1)
         task_obj = get_object_or_404(Task,id=task_id)
-        check_list_objs = CheckList.objects.filter(task=task_obj)
+        check_list_objs = CheckList.objects.filter(task=task_obj).order_by("-id")
         # pagination_data =pagination(query_set=check_list_objs,page_number=page_number,per_page_count=5)
 
         serializer_data = CheckListSerializer(check_list_objs,many=True)
