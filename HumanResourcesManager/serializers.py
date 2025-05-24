@@ -167,13 +167,13 @@ class EmployeeRequestSerializer(serializers.ModelSerializer):
     folder_category = FolderCategorySerializer(read_only=True)
 
     # Date/time fields
-    date_time_to_start = serializers.DateTimeField(read_only=True, required=False, format="%Y/%m/%d/ %H:%M")
-    date_time_to_end = serializers.DateTimeField(read_only=True, required=False, format="%Y/%m/%d/ %H:%M")
-    start_date = serializers.DateField(format="%Y/%m/%d", required=False)
-    end_date = serializers.DateField(format="%Y/%m/%d", required=False)
-    hourly_leave_date_at = serializers.DateField(format="%Y/%m/%d", required=False)
-    time_to_start = serializers.TimeField(format="%H:%M", required=False)
-    time_to_end = serializers.TimeField(format="%H:%M", required=False)
+    date_time_to_start = serializers.CharField(read_only=True,required=False)
+    date_time_to_end = serializers.CharField(read_only=True, required=False)
+    start_date = serializers.CharField(write_only=True,required=False)
+    end_date = serializers.CharField(write_only=True, required=False)
+    hourly_leave_date_at = serializers.CharField(write_only=True, required=False)
+    time_to_start = serializers.CharField(write_only=True, required=False)
+    time_to_end = serializers.CharField(write_only=True, required=False)
 
 
     class Meta:
