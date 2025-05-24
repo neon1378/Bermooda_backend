@@ -144,9 +144,12 @@ class EmployeeRequestManager(APIView):
                     "data":serializer_data
                 }
             )
-        folder_slug = request.GET.get('folder_slug')
+
         page_number=request.GET.get('page_number',1)
-        folder_obj = get_object_or_404(Folder,slug=folder_slug)
+        workspace_id = request.user.current_workspace_id
+        workspace_obj = WorkSpace.objects.get(id=workspace_id)
+        workspace_member = WorkspaceMember.objects.filter(workspace=workspace_obj, user_account=request.user).first()
+        folder_obj = workspace_member.folder
 
         employee_request_objs = EmployeeRequest.objects.filter(folder=folder_obj)
         pagination_data = pagination(query_set=employee_request_objs,page_number=page_number)
@@ -199,3 +202,22 @@ class EmployeeRequestManager(APIView):
 
 
 
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_folder_categories(request):
+    workspace_id = request.user.current_workspace_id
+    workspace_obj= WorkSpace.objects.get(id=workspace_id)
+    workspace_member = WorkspaceMember.objects.filter(workspace=workspace_obj,user_account=request.user).first()
+    categories = FolderCategory.objects.filter(folder=workspace_member.folder)
+
+    serializer_data = FolderCategorySerializer(categories,many=True).data
+    return Response(
+        status=status.HTTP_200_OK,
+        data={
+            "status":True,
+            "message":"موفق",
+            "data":serializer_data
+        }
+    )

@@ -6,5 +6,8 @@ urlpatterns=[
     path("GetFolderMembers", views.get_folder_members),
     path("EmployeeRequestManager/<str:slug>", views.EmployeeRequestManager.as_view()),
     path("EmployeeRequestManager", views.EmployeeRequestManager.as_view()),
+    path("GetFolderCategories", views.get_folder_categories),
+
 
 ]
+
