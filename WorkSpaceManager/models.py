@@ -168,7 +168,10 @@ class Link(SoftDeleteModel):
     url = models.URLField(null=True)
 class WorkspaceMember(SoftDeleteModel):
 
-
+    USER_TYPE = (
+        ("owner","Owner"),
+        ("member","Member"),
+    )
     GENDER = (
         ("male","MALE"),
         ("female","FEMALE")
@@ -239,6 +242,7 @@ class WorkspaceMember(SoftDeleteModel):
         ("base_commission", "BaseCommission"),
 
     )
+    user_type = models.CharField(max_length=11,choices=USER_TYPE,default="member",null=True)
     insurance_type = models.CharField(max_length=15,null=True,blank=True,choices=INSURANCE_TYPE)
     military_status = models.CharField(choices=MILITARY_STATUS,max_length=30,null=True,blank=True)
     exempt_type = models.CharField(choices=EXEMPT_TYPE,max_length=30,null=True,blank=True)

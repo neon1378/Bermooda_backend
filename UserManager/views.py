@@ -5,6 +5,7 @@ from django.shortcuts import render
 from django.middleware.csrf import get_token
 from rest_framework import mixins
 from rest_framework import generics
+from HumanResourcesManager.models import Folder,FolderCategory
 from core.serializers import CountrySerializer
 import re
 
@@ -1639,6 +1640,36 @@ def create_workspace(request):
 
     new_group_crm.members.add(request.user)
     new_group_crm.save()
+    new_folder = Folder.objects.create(
+        title ="پیشفرض",
+        workspace = new_workspace_obj
+
+    )
+    new_folder.members.add(new_workspace_obj.owner)
+    new_folder.save()
+    category_list = [
+        {
+            "title": "تایید شده",
+            "color_code": "#35dba8"
+        },
+        {
+            "title": "تایید نشده",
+            "color_code": "#747a80"
+        }
+
+    ]
+    for item in category_list:
+        new_category = FolderCategory.objects.create(
+            title=item["title"],
+            color_code=item["color_code"],
+            folder=new_folder
+        )
+    workspace_member = WorkspaceMember.objects.create(
+        workspace= new_workspace_obj,
+        user_account = new_workspace_obj.owner,
+        user_type= "owner",
+        folder = new_folder
+    )
 
     return Response(status=status.HTTP_201_CREATED,data={
         "status":True,
