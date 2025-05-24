@@ -154,7 +154,7 @@ class EmployeeRequestSerializer(serializers.ModelSerializer):
     requesting_user_id = serializers.IntegerField(write_only=True, required=True)
     leave_file_id_list = serializers.ListField(write_only=True, required=False)
     doctor_document_id = serializers.IntegerField(write_only=True, required=False, allow_null=True)
-    folder_slug = serializers.SlugField(write_only=True, required=True)
+
     folder_category_slug = serializers.SlugField(write_only=True, required=False)
     country_id = serializers.IntegerField(write_only=True, required=False)
     country = CountrySerializer(read_only=True)
@@ -174,7 +174,7 @@ class EmployeeRequestSerializer(serializers.ModelSerializer):
     hourly_leave_date_at = serializers.DateField(format="%Y/%m/%d", required=False)
     time_to_start = serializers.TimeField(format="%H:%M", required=False)
     time_to_end = serializers.TimeField(format="%H:%M", required=False)
-    incentive_leave_date = serializers.DateField(format="%Y/%m/%d", required=False)
+
 
     class Meta:
         model = EmployeeRequest
@@ -190,10 +190,10 @@ class EmployeeRequestSerializer(serializers.ModelSerializer):
             'hourly_leave_date_at', 'hourly_leave_date',
             'time_to_start', 'time_to_end', 'time_to_start_at', 'time_to_end_at',
             'doctor_document', 'doctor_document_id', 'doctor_name',
-            'name_of_treatment_center', 'incentive_leave_date', 'incentive_leave_date_at',
+            'name_of_treatment_center',
             'emergency_type',
             'folder_category', 'folder_category_slug',
-            'folder_slug', 'slug',
+             'slug',
             "country_id",
             "country",
         ]
@@ -226,11 +226,12 @@ class EmployeeRequestSerializer(serializers.ModelSerializer):
 
             elif leave_type == 'unpaid_leave':
                 if not attrs.get('start_date') or not attrs.get('end_date'):
-                    raise serializers.ValidationError({'start_date': 'start_date and end_date are required for unpaid_leave.'})
+                    raise serializers.ValidationError({'start_date and end_date are required for unpaid_leave.'})
 
             elif leave_type == 'incentive_leave':
-                if not attrs.get('incentive_leave_date'):
-                    raise serializers.ValidationError({'incentive_leave_date': 'Required for incentive_leave.'})
+
+                if not attrs.get('start_date_at') or attrs.get('end_date_at'):
+                    raise serializers.ValidationError({'start_date_at and end_date_at Required for incentive_leave.'})
 
             elif leave_type == 'emergency_leave':
                 emergency_type = attrs.get('emergency_type')
@@ -274,7 +275,8 @@ class EmployeeRequestSerializer(serializers.ModelSerializer):
         requesting_user_id = validated_data.pop('requesting_user_id')
         leave_file_ids = validated_data.pop('leave_file_id_list', [])
         doctor_document_id = validated_data.pop('doctor_document_id', None)
-        folder_slug = validated_data.pop('folder_slug')
+        user = self.context.get("user")
+        workspace_obj = self.context.get("workspace_obj")
         folder_category_slug = validated_data.pop('folder_category_slug', None)
 
         # Date/time pops
@@ -283,7 +285,7 @@ class EmployeeRequestSerializer(serializers.ModelSerializer):
         hourly_date = validated_data.pop('hourly_leave_date_at', None)
         t_start = validated_data.pop('time_to_start', None)
         t_end = validated_data.pop('time_to_end', None)
-        incentive_date = validated_data.pop('incentive_leave_date', None)
+
         m_type = validated_data.pop('mission_type', None)
         dt_start = validated_data.pop('date_time_to_start', None)
         dt_end = validated_data.pop('date_time_to_end', None)
@@ -314,7 +316,8 @@ class EmployeeRequestSerializer(serializers.ModelSerializer):
                 req.start_date_at = persian_to_gregorian(start_date)
                 req.end_date_at = persian_to_gregorian(end_date)
             elif req.leave_type == 'incentive_leave':
-                req.incentive_leave_date_dat = persian_to_gregorian(incentive_date)
+                req.start_date_at = persian_to_gregorian(end_date)
+                req.start_date_at = persian_to_gregorian(start_date)
             elif req.leave_type == 'emergency_leave':
                 req.emergency_type = validated_data.get('emergency_type')
                 if req.emergency_type == 'daily':
@@ -328,7 +331,7 @@ class EmployeeRequestSerializer(serializers.ModelSerializer):
                 req.reason_for_leave = validated_data.get('reason_for_leave')
 
             for fid in leave_file_ids:
-                mf = MainFile.objects.get(id=fid);
+                mf = MainFile.objects.get(id=fid)
                 mf.its_blong = True
                 req.leave_file_documents.add(mf)
 
@@ -349,7 +352,10 @@ class EmployeeRequestSerializer(serializers.ModelSerializer):
         # Folder
         if folder_category_slug:
             req.folder_category = get_object_or_404(FolderCategory, slug=folder_category_slug)
-        req.folder_obj = get_object_or_404(Folder, slug=folder_slug)
+        workspace_member = WorkspaceMember.objects.filter(user_account=user,workspace=workspace_obj).first()
+        req.folder = workspace_member.folder
+
+
 
         req.save()
         return req
@@ -362,17 +368,18 @@ class EmployeeRequestSerializer(serializers.ModelSerializer):
         city_id = validated_data.pop('city_id', None)
         leave_file_ids = validated_data.pop('leave_file_id_list', None)
         doctor_document_id = validated_data.pop('doctor_document_id', None)
-        folder_slug = validated_data.pop('folder_slug', None)
+
         country_id= validated_data.pop('country_id', None)
         folder_category_slug = validated_data.pop('folder_category_slug', None)
-
+        user = self.context.get("user")
+        workspace_obj = self.context.get("workspace_obj")
         # Date/time pops
         start_date = validated_data.pop('start_date', None)
         end_date = validated_data.pop('end_date', None)
         hourly_date = validated_data.pop('hourly_leave_date_at', None)
         t_start = validated_data.pop('time_to_start', None)
         t_end = validated_data.pop('time_to_end', None)
-        incentive_date = validated_data.pop('incentive_leave_date', None)
+
         m_type = validated_data.pop('mission_type', None)
         dt_start = validated_data.pop('date_time_to_start', None)
         dt_end = validated_data.pop('date_time_to_end', None)
@@ -393,7 +400,7 @@ class EmployeeRequestSerializer(serializers.ModelSerializer):
         if hourly_date: instance.hourly_leave_date = persian_to_gregorian(hourly_date)
         if t_start: instance.time_to_start_at = t_start
         if t_end: instance.time_to_end_at = t_end
-        if incentive_date: instance.incentive_leave_date_dat = persian_to_gregorian(incentive_date)
+
         if dt_start: instance.date_time_to_start_at = persian_to_gregorian(dt_start)
         if dt_end: instance.date_time_to_end_at = persian_to_gregorian(dt_end)
         if m_type: instance.mission_type = m_type
@@ -404,11 +411,13 @@ class EmployeeRequestSerializer(serializers.ModelSerializer):
             for fid in leave_file_ids:
                 mf = MainFile.objects.get(id=fid); mf.its_blong = True; instance.leave_file_documents.add(mf)
 
-        # Folder
-        if folder_category_slug: instance.folder_category = get_object_or_404(FolderCategory, slug=folder_category_slug)
-        if folder_slug: instance.folder_obj = get_object_or_404(Folder, slug=folder_slug)
+        if folder_category_slug:
+            instance.folder_category = get_object_or_404(FolderCategory, slug=folder_category_slug)
+        workspace_member = WorkspaceMember.objects.filter(user_account=user,workspace=workspace_obj).first()
+        instance.folder = workspace_member.folder
 
         instance.save()
+        # Folder
         return instance
 
 

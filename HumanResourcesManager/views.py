@@ -1,6 +1,8 @@
 from logging import raiseExceptions
 
 from django.shortcuts import render
+
+
 from .serializers import *
 from .models import *
 from rest_framework import status
@@ -101,19 +103,13 @@ def get_folder_members (request):
     folder_slug = request.GET.get('folder_slug')
     page_number = request.GET.get('page_number',1)
     folder_obj = get_object_or_404(Folder,slug=folder_slug)
-    paginate_data = pagination(query_set=folder_obj.members.all(),page_number=page_number)
-    workspace_member_list = [
+    workspace_members = WorkspaceMember.objects.filter(workspace=folder_obj.workspace,folder=folder_obj)
+    paginate_data = pagination(query_set=workspace_members,page_number=page_number)
 
-    ]
-    for member in paginate_data['list']:
-        if member != folder_obj.workspace.owner:
-            workspace_member_obj = WorkspaceMember.objects.get(user_account=member,workspace=folder_obj.workspace)
-            serializer_data = WorkSpaceMemberSerializer(workspace_member_obj).data
-            serializer_data['type'] ="member"
-            workspace_member_list.append(serializer_data)
 
-    paginate_data['list'] = workspace_member_list
-    print(paginate_data)
+
+    paginate_data['list'] = WorkSpaceMemberSerializer(paginate_data['list'],many=True).data
+
     return Response(
         status=status.HTTP_200_OK,
         data= {
@@ -170,7 +166,8 @@ class EmployeeRequestManager(APIView):
 
     def post(self,request):
         request.data['requesting_user_id'] = request.user.id
-        serializer_data = EmployeeRequestSerializer(data=request.data)
+        workspace_obj = WorkSpace.objects.get(id=request.user.current_workspace_id)
+        serializer_data = EmployeeRequestSerializer(data=request.data,context={"user":request.user,"workspace_obj":workspace_obj})
         if serializer_data.is_valid(raise_exception=True):
             serializer_data.save()
             return Response(
@@ -186,7 +183,8 @@ class EmployeeRequestManager(APIView):
     def put (self,request,slug):
         request_slug_obj = get_object_or_404(EmployeeRequest,slug=slug)
         request.data['requesting_user_id'] = request_slug_obj.requesting_user.id
-        serializer_data = EmployeeRequestSerializer(instance=request_slug_obj,data=request.data)
+        workspace_obj = WorkSpace.objects.get(id=request.user.current_workspace_id)
+        serializer_data = EmployeeRequestSerializer(instance=request_slug_obj,data=request.data,context={"user":request.user,"workspace_obj":workspace_obj})
         if serializer_data.is_valid(raise_exception=True):
             serializer_data.save()
             return Response(

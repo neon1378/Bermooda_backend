@@ -29,6 +29,8 @@ class Folder (SoftDeleteModel):
 
 
 
+
+
 class FolderCategory(SoftDeleteModel):
     title = models.CharField(max_length=18,null=True)
     color_code = models.CharField(max_length=20)
@@ -125,7 +127,7 @@ class EmployeeRequest(SoftDeleteModel):
 
     # incentive_leave fields
 
-    incentive_leave_date_at = models.DateField(null=True)
+
 
     # emergency_leave fields
 

@@ -11,6 +11,7 @@ import os
 from dotenv import load_dotenv
 from core.widgets import generate_random_slug
 load_dotenv()
+
 from core.models import City,State,MainFile
 from extensions.utils import costum_date
 from core.models import SoftDeleteModel
@@ -156,6 +157,10 @@ class WorkSpacePermission(SoftDeleteModel):
 
         workspace = models.ForeignKey(WorkSpace,on_delete=models.CASCADE,null=True,related_name="permissions")
 
+def folder():
+    from HumanResourcesManager.models import Folder
+    return Folder
+
 
 class Link(SoftDeleteModel):
     workspace = models.ForeignKey(WorkSpace,on_delete=models.CASCADE,null=True,related_name="links")
@@ -243,6 +248,8 @@ class WorkspaceMember(SoftDeleteModel):
     first_name = models.CharField(max_length=70,null=True)
     last_name = models.CharField(max_length=70,null=True)
     jadoo_member_id = models.BigIntegerField(default=0)
+
+    folder = models.ForeignKey("HumanResourcesManager.Folder",on_delete=models.SET_NULL,null=True,related_name="folder_members")
 
     created = models.DateField(auto_now_add=True,null=True)
     is_accepted = models.BooleanField(default=True)

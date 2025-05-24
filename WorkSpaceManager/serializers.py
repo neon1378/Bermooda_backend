@@ -631,8 +631,8 @@ class WorkSpaceMemberFullDataSerializer(serializers.ModelSerializer):
             if folder_slug:
                 from HumanResourcesManager.models import Folder
                 folder_obj = get_object_or_404(Folder,slug=folder_slug)
-                folder_obj.members.add(deleted_member)
-                folder_obj.save()
+                deleted_member.folder=folder_obj
+
             for favorite in deleted_member.favorites.all():
                 favorite.hard_delete()
 
@@ -752,8 +752,8 @@ class WorkSpaceMemberFullDataSerializer(serializers.ModelSerializer):
         if folder_slug:
             from HumanResourcesManager.models import Folder
             folder_obj = get_object_or_404(Folder,slug=folder_slug)
-            folder_obj.members.add(member)
-            folder_obj.save()
+            member.folder=folder_obj
+            member.save()
         return member
 
     def update(self, instance, validated_data):
@@ -877,8 +877,8 @@ class WorkSpaceMemberFullDataSerializer(serializers.ModelSerializer):
         if folder_slug:
             from HumanResourcesManager.models import Folder
             folder_obj = get_object_or_404(Folder, slug=folder_slug)
-            folder_obj.members.add(instance.user_account)
-            folder_obj.save()
+            instance.folder = folder_obj
+
         return instance
 
 
