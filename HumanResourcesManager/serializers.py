@@ -262,7 +262,8 @@ class EmployeeRequestSerializer(serializers.ModelSerializer):
                 missing = [f for f in ( "country_id",'mission_type', 'date_time_to_start', 'date_time_to_end')
                            if not attrs.get(f)]
                 if missing:
-                    raise serializers.ValidationError({f: 'Required for administrative_mission.' for f in missing})
+
+                    raise serializers.ValidationError({f: 'Required for administrative_mission.' for f in missing })
         return attrs
 
     def create(self, validated_data):

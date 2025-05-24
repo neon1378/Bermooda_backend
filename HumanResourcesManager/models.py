@@ -5,6 +5,7 @@ from core.models import SoftDeleteModel,MainFile
 from WorkSpaceManager.models import WorkSpace
 from core.widgets import generate_random_slug
 from core.models import State,City,Country
+import jdatetime
 from UserManager.models import UserAccount
 # Create your models here.
 
@@ -134,6 +135,36 @@ class EmployeeRequest(SoftDeleteModel):
         null=True
     )
     country = models.ForeignKey(Country,on_delete=models.SET_NULL,null=True)
+    def date_time_to_start_jalali(self):
+        try:
+            jalali_datetime = jdatetime.datetime.fromgregorian(datetime=self.date_time_to_start_at)
+            return  jalali_datetime.strftime("%Y/%m/%d %H:%M")
+        except:
+            return None
+    def date_time_to_end_jalali(self):
+        try:
+            jalali_datetime = jdatetime.datetime.fromgregorian(datetime=self.date_time_to_end_at)
+            return  jalali_datetime.strftime("%Y/%m/%d %H:%M")
+        except:
+            return None
+    def start_date_jalali(self):
+        try:
+            jalali_datetime = jdatetime.datetime.fromgregorian(datetime=self.start_date_at)
+            return  jalali_datetime.strftime("%Y/%m/%d")
+        except:
+            return None
+    def end_date_jalali(self):
+        try:
+            jalali_datetime = jdatetime.datetime.fromgregorian(datetime=self.end_date_at)
+            return  jalali_datetime.strftime("%Y/%m/%d")
+        except:
+            return None
+    def hourly_leave_date_jalali(self):
+        try:
+            jalali_datetime = jdatetime.datetime.fromgregorian(datetime=self.hourly_leave_date)
+            return  jalali_datetime.strftime("%Y/%m/%d %H:%M")
+        except:
+            return None
 
 
     def save(self, *args, **kwargs):
@@ -143,3 +174,6 @@ class EmployeeRequest(SoftDeleteModel):
                 slug = generate_random_slug()
             self.slug = slug
         super().save(*args, **kwargs)
+
+
+
