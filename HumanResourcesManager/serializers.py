@@ -300,29 +300,29 @@ class EmployeeRequestSerializer(serializers.ModelSerializer):
             req.leave_type = validated_data.get('leave_type')
             # Assign dates/times
             if req.leave_type == 'daily_leave':
-                req.start_date_at = persian_to_gregorian(start_date)
-                req.end_date_at = persian_to_gregorian(end_date)
+                req.start_date_at = persian_to_gregorian(start_date).date() if persian_to_gregorian(start_date) else None
+                req.end_date_at = persian_to_gregorian(end_date).date() if persian_to_gregorian(end_date) else None
             elif req.leave_type == 'hourly_leave':
-                req.hourly_leave_date = persian_to_gregorian(hourly_date)
+                req.hourly_leave_date = persian_to_gregorian(hourly_date).date() if persian_to_gregorian(hourly_date) else None
                 req.time_to_start_at = t_start
                 req.time_to_end_at = t_end
             elif req.leave_type == 'sick_leave':
-                req.start_date_at = persian_to_gregorian(start_date)
-                req.end_date_at = persian_to_gregorian(end_date)
+                req.start_date_at = persian_to_gregorian(start_date).date()  if persian_to_gregorian(start_date) else None
+                req.end_date_at = persian_to_gregorian(end_date).date() if persian_to_gregorian(end_date) else None
                 req.doctor_document_id = doctor_document_id
                 req.doctor_name = validated_data.get('doctor_name')
                 req.name_of_treatment_center = validated_data.get('name_of_treatment_center')
             elif req.leave_type == 'unpaid_leave':
-                req.start_date_at = persian_to_gregorian(start_date)
-                req.end_date_at = persian_to_gregorian(end_date)
+                req.start_date_at = persian_to_gregorian(start_date).date() if persian_to_gregorian(start_date) else None
+                req.end_date_at = persian_to_gregorian(end_date).date() if persian_to_gregorian(end_date) else None
             elif req.leave_type == 'incentive_leave':
-                req.start_date_at = persian_to_gregorian(end_date)
-                req.start_date_at = persian_to_gregorian(start_date)
+                req.start_date_at = persian_to_gregorian(end_date).date() if persian_to_gregorian(end_date) else None
+                req.start_date_at = persian_to_gregorian(start_date).date() if persian_to_gregorian(start_date) else None
             elif req.leave_type == 'emergency_leave':
                 req.emergency_type = validated_data.get('emergency_type')
                 if req.emergency_type == 'daily':
-                    req.start_date_at = persian_to_gregorian(start_date)
-                    req.end_date_at = persian_to_gregorian(end_date)
+                    req.start_date_at = persian_to_gregorian(start_date).date() if persian_to_gregorian(start_date) else None
+                    req.end_date_at = persian_to_gregorian(end_date).date() if persian_to_gregorian(end_date) else None
                 else:
                     req.time_to_start_at = t_start
                     req.time_to_end_at = t_end
