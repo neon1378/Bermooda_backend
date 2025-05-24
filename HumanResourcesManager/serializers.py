@@ -194,14 +194,12 @@ class EmployeeRequestSerializer(serializers.ModelSerializer):
             'emergency_type',
             'folder_category', 'folder_category_slug',
              'slug',
-            "country_id",
+            "country_id","country",
 
-            "country",
-            "date_time_to_start_jalali",
-            "date_time_to_end_jalali",
-            "start_date_jalali",
-            "end_date_jalali",
-            "hourly_leave_date_jalali",
+            "date_time_to_start_jalali","date_time_to_end_jalali",
+            "start_date_jalali","end_date_jalali","hourly_leave_date_jalali",
+
+            "resource_title","model","resource_count","reason_for_resources",
         ]
 
     def validate(self, attrs):
@@ -271,6 +269,12 @@ class EmployeeRequestSerializer(serializers.ModelSerializer):
                 if missing:
 
                     raise serializers.ValidationError({f: 'Required for administrative_mission.' for f in missing })
+
+        elif request_type == 'resources':
+            missing = [att for att in ("resource_title" ,"model","resource_count") if not attrs.get(att)]
+            if missing:
+                raise serializers.ValidationError({f: 'Required for resources.' for f in missing})
+
         return attrs
 
     def create(self, validated_data):
@@ -296,7 +300,10 @@ class EmployeeRequestSerializer(serializers.ModelSerializer):
         dt_start = validated_data.pop('date_time_to_start', None)
         dt_end = validated_data.pop('date_time_to_end', None)
         country_id = validated_data.pop('country_id', None)
-
+        resource_title = validated_data.pop("resource_title",None)
+        model = validated_data.pop("model",None)
+        resource_count = validated_data.pop("resource_count",None)
+        reason_for_resources =validated_data.pop("reason_for_resources",None)
         req = EmployeeRequest(requesting_user_id=requesting_user_id)
 
         req.request_type = validated_data.get('request_type')
@@ -341,6 +348,13 @@ class EmployeeRequestSerializer(serializers.ModelSerializer):
                 mf.its_blong = True
                 req.leave_file_documents.add(mf)
 
+
+        elif req.request_type == "resources":
+            req.resource_title = resource_title
+            req.model = model
+            req.resource_count = resource_count
+            if reason_for_resources:
+                req.reason_for_resources=reason_for_resources
         else:  # administrative_mission
             if city_id:
                 req.city_id = city_id

@@ -50,7 +50,7 @@ class EmployeeRequest(SoftDeleteModel):
     REQUEST_TYPE = (
         ("leave","Leave"),
         ("administrative_mission","Administrative Mission"),
-
+        ("resources","Resources"),
     )
 
 
@@ -80,6 +80,7 @@ class EmployeeRequest(SoftDeleteModel):
         ("outside","Outside"),
 
     )
+
     slug = models.SlugField(unique=True,null=True, blank=True)
     folder_category = models.ForeignKey(FolderCategory,on_delete=models.SET_NULL,null=True)
     folder = models.ForeignKey(Folder,on_delete=models.CASCADE,null=True)
@@ -119,8 +120,10 @@ class EmployeeRequest(SoftDeleteModel):
     doctor_name = models.CharField(max_length=20,null=True)
     name_of_treatment_center = models.CharField(max_length=255,null=True)
 
-
-
+    resource_title = models.CharField(max_length=20,null=True,blank=True)
+    model = models.CharField(max_length=30,null=True,blank=True)
+    resource_count =models.PositiveIntegerField(null=True,blank=True)
+    reason_for_resources = models.TextField(null=True,blank=True)
 
     # unpaid_leave fields
 
