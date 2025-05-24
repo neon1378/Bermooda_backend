@@ -1,3 +1,4 @@
+from celery.backends.database import retry
 from django.db import models
 from dotenv import load_dotenv
 import jdatetime
@@ -29,11 +30,17 @@ class Information(SoftDeleteModel):
 
     def __str__(self):
         return f"{self.id}"
-    def city_name (self):
-        return self.city.name
-    def state_name (self):
-        return self.state.name
 
+    def city_name (self):
+        try:
+            return self.city.name
+        except:
+            return None
+    def state_name (self):
+        try:
+            return self.state.name
+        except:
+            return None
 class ProductInvoice(SoftDeleteModel):
     title = models.CharField(max_length=50,null=True)
     count = models.PositiveIntegerField(default=0)
