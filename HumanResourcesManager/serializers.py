@@ -195,7 +195,13 @@ class EmployeeRequestSerializer(serializers.ModelSerializer):
             'folder_category', 'folder_category_slug',
              'slug',
             "country_id",
+
             "country",
+            "date_time_to_start_jalali",
+            "date_time_to_end_jalali",
+            "start_date_jalali",
+            "end_date_jalali",
+            "hourly_leave_date_jalali",
         ]
 
     def validate(self, attrs):
