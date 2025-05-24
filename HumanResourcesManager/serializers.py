@@ -200,6 +200,7 @@ class EmployeeRequestSerializer(serializers.ModelSerializer):
             "start_date_jalali","end_date_jalali","hourly_leave_date_jalali",
 
             "resource_title","model","resource_count","reason_for_resources",
+            "status",
         ]
 
     def validate(self, attrs):

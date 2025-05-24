@@ -53,7 +53,11 @@ class EmployeeRequest(SoftDeleteModel):
         ("resources","Resources"),
     )
 
-
+    STATUS = (
+        ("pending","Pending"),
+        ("approved","Approved"),
+        ("rejected","Rejected"),
+    )
 
     LEAVE_TYPE = (
         ("daily_leave","Daily Leave"),
@@ -80,7 +84,7 @@ class EmployeeRequest(SoftDeleteModel):
         ("outside","Outside"),
 
     )
-
+    status = models.CharField(max_length=20,choices=STATUS,default="pending",blank=True)
     slug = models.SlugField(unique=True,null=True, blank=True)
     folder_category = models.ForeignKey(FolderCategory,on_delete=models.SET_NULL,null=True)
     folder = models.ForeignKey(Folder,on_delete=models.CASCADE,null=True)
